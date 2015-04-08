@@ -9,7 +9,7 @@ BUILD_GCC="gcc-4.6";
 
 # ======================= 非交叉编译 ======================= 
 BUILD_LLVM_CONF_OPTION="--enable-optimized --disable-assertions";
-BUILD_LLVM_CMAKE_OPTION="-DLLVM_ENABLE_EH=ON -DLLVM_ENABLE_RTTI=ON";
+BUILD_LLVM_CMAKE_OPTION="-DLLVM_ENABLE_EH=ON -DLLVM_ENABLE_RTTI=ON -DLLVM_ENABLE_PIC=ON"; #  -DBUILD_SHARED_LIBS=ON";
 BUILD_OTHER_CONF_OPTION="";
  
 # ======================= 交叉编译配置示例(暂不可用) ======================= 
@@ -75,7 +75,7 @@ WORKING_DIR="$PWD";
 SYS_LONG_BIT=$(getconf LONG_BIT);
  
 # ======================= 检测CPU数量，编译线程数不能大于CPU数量的2倍，否则可能出问题 ======================= 
-BUILD_THREAD_OPT=4;
+BUILD_THREAD_OPT=1;
 BUILD_CPU_NUMBER=$(cat /proc/cpuinfo | grep -c "^processor[[:space:]]*:[[:space:]]*[0-9]*");
 BUILD_THREAD_OPT=$(($BUILD_CPU_NUMBER));
 if [ $BUILD_THREAD_OPT -gt 4 ]; then
@@ -247,19 +247,24 @@ function build_llvm() {
 	
 	# llvm 源码有bug，会导致开启exception时编译通不过，所以修正一下 
 	# perl -p -i -e "s;::name\(\)\s*const\s*[{];::name\(\) const LLVM_NOEXCEPT {;g" $(find "$LLVM_DIR" -name Error.cpp);
-	
+
+    CLANG_PREFIX_FLAGS="";
+    if [ ! -z "$LLD_PKG" ]; then
+        CLANG_PREFIX_FLAGS="$CLANG_PREFIX_FLAGS LD=lld";
+    fi
+            
 	sleep 1;
 	if [ "${MAKE_TOOLS}" == "cmake" ]; then
 		cmake $LLVM_DIR -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_INSTALL_PREFIX=$PREFIX_DIR $BUILD_LLVM_CMAKE_OPTION $@;
 	elif [ "${MAKE_TOOLS}" == "cmake_clang" ]; then
-		CC=clang CXX=clang++ cmake $LLVM_DIR -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_INSTALL_PREFIX=$PREFIX_DIR $BUILD_LLVM_CMAKE_OPTION $@;
+		CC=clang CXX=clang++ CXXFLAGS="-stdlib=libc++ -lc++abi -fPIC" CFLAGS="-fPIC" cmake $LLVM_DIR -D_CMAKE_TOOLCHAIN_PREFIX=llvm- -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_INSTALL_PREFIX=$PREFIX_DIR $BUILD_LLVM_CMAKE_OPTION $@;
 	elif [ "${MAKE_TOOLS}" == "automake_clang" ]; then
-		CC=clang CXX=clang++ ../$LLVM_SRC_DIR_NAME/configure --prefix=$PREFIX_DIR $BUILD_LLVM_CONF_OPTION $@;
+		CC=clang CXX=clang++ CXXFLAGS="-stdlib=libc++ -lc++abi -fPIC" CFLAGS="-fPIC" ../$LLVM_SRC_DIR_NAME/configure --prefix=$PREFIX_DIR $BUILD_LLVM_CONF_OPTION $@;
 	else
 		../$LLVM_SRC_DIR_NAME/configure --prefix=$PREFIX_DIR $BUILD_LLVM_CONF_OPTION $@;
 	fi 
-	
-	make $BUILD_THREAD_OPT;
+
+    make clean;    
 	make $BUILD_THREAD_OPT;
 	
 	# 这也是llvm的install脚本写得2b才加的hack
@@ -272,27 +277,6 @@ function build_llvm() {
 	fi
 	cd "$WORKING_DIR";
 }
-
-# unpack lldb
-if [ "0" == $(is_in_list lldb $BUILD_TARGET_COMPOMENTS) ]; then
-    LLDB_PKG=$(check_and_download "lldb" "lldb-*.tar.xz" "http://llvm.org/releases/3.6.0/lldb-3.6.0.src.tar.xz" );
-    if [ $? -ne 0 ]; then
-        echo -e "$LLDB_PKG";
-        exit -1;
-    fi
-
-    if [ ! -e "$LLVM_DIR/tools/lldb" ]; then
-	    tar -axvf $LLDB_PKG;
-    	LLDB_DIR=$(ls -d lldb-* | grep -v \.tar\.xz);
-    	mv "$LLDB_DIR" "$LLVM_DIR/tools/lldb";
-	fi
-	
-	if [ ! -e "$LLVM_DIR/tools/lldb" ]; then
-    	echo -e "\\033[31;1mlldb src not found but lldb enabled.\\033[39;49;0m";
-    	exit -1;
-	fi
-fi
-LLDB_DIR="$LLVM_DIR/tools/lldb";
 
 # unpack lld
 if [ "0" == $(is_in_list lld $BUILD_TARGET_COMPOMENTS) ]; then
@@ -364,11 +348,6 @@ POLLY_DIR="$LLVM_DIR/tools/polly";
 # openmp 集成在clang内，略过
 # llvm_test_suite 略过
 
-# 初始包准备完毕-开始第一次编译
-# Stage 1 -- compiling llvm & clang using gcc
-echo -e "\\033[31;1mStage 1: Ready to compile llvm, clang and etc. using gcc.\\033[39;49;0m";
-build_llvm "cmake" "Stage 1";
-
 # build dragonegg
 if [ ! -z "$BUILD_GCC" ] && [ "0" == $(is_in_list dragonegg $BUILD_TARGET_COMPOMENTS) ]; then
     DRAGONEGG_PKG=$(check_and_download "dragonegg" "dragonegg-*.tar.xz" "http://llvm.org/releases/3.6.0/dragonegg-3.6.0.src.tar.xz" );
@@ -378,20 +357,13 @@ if [ ! -z "$BUILD_GCC" ] && [ "0" == $(is_in_list dragonegg $BUILD_TARGET_COMPOM
     fi
 
 	tar -axvf $DRAGONEGG_PKG;
-    DRAGONEGG_DIR=$(ls -d libcxxabi-* | grep -v \.tar\.xz);
-    cd $DRAGONEGG_DIR;
-    env GCC=$BUILD_GCC LLVM_CONFIG=$PREFIX_DIR/bin/llvm-config make $BUILD_THREAD_OPT;
-    make install;
-	
-	if [ $? -ne 0 ]; then
-	    echo -e "\\033[31;1mError: build dragonegg failed.\\033[39;49;0m";
-	    exit -1;
-	fi
-	cd "$WORKING_DIR";
+    DRAGONEGG_DIR=$(ls -d dragonegg-* | grep -v \.tar\.xz);
+    mv "$DRAGONEGG_DIR" "$LLVM_DIR/projects/dragonegg";
 fi
 
+
 # unpack libcxx
-if [ "0" == $(is_in_list libcxx $BUILD_TARGET_COMPOMENTS) ]; then
+if [ ! -e "$LLVM_DIR/projects/libcxx" ] && [ "0" == $(is_in_list libcxx $BUILD_TARGET_COMPOMENTS) ]; then
     if [ -e "$LLVM_DIR/projects/libcxx" ]; then
 	    return
 	fi
@@ -404,10 +376,11 @@ if [ "0" == $(is_in_list libcxx $BUILD_TARGET_COMPOMENTS) ]; then
 	tar -axvf $LIBCXX_PKG;
 	LIBCXX_DIR=$(ls -d libcxx-* | grep -v \.tar\.xz);
 	mv "$LIBCXX_DIR" "$LLVM_DIR/projects/libcxx";
+    LIBCXX_DIR="$LLVM_DIR/projects/libcxx";
 fi
 
 # unpack libcxxabi
-if [ "0" == $(is_in_list libcxxabi $BUILD_TARGET_COMPOMENTS) ]; then
+if [ ! -e "$LLVM_DIR/projects/libcxxabi" ] && [ "0" == $(is_in_list libcxxabi $BUILD_TARGET_COMPOMENTS) ]; then
 	if [ -e "$LLVM_DIR/projects/libcxxabi" ]; then
 	    return
 	fi
@@ -421,24 +394,55 @@ if [ "0" == $(is_in_list libcxxabi $BUILD_TARGET_COMPOMENTS) ]; then
     tar -axvf $LIBCXXABI_PKG;
     LIBCXXABI_DIR=$(ls -d libcxxabi-* | grep -v \.tar\.xz);
 	mv "$LIBCXXABI_DIR" "$LLVM_DIR/projects/libcxxabi";
+    LIBCXXABI_DIR="$LLVM_DIR/projects/libcxxabi";
 fi
 
-# 编译 libcxx 和libcxxabi
-export LD_LIBRARY_PATH=$PREFIX_DIR/lib:$PREFIX_DIR/lib64:$LD_LIBRARY_PATH
-export PATH=$PREFIX_DIR/bin:$PATH
+
+## unpack lldb, gcc 编译不过，所以clang编译好后用clang编译
+if [ "0" == $(is_in_list lldb $BUILD_TARGET_COMPOMENTS) ]; then
+    LLDB_PKG=$(check_and_download "lldb" "lldb-*.tar.xz" "http://llvm.org/releases/3.6.0/lldb-3.6.0.src.tar.xz" );
+    if [ $? -ne 0 ]; then
+        echo -e "$LLDB_PKG";
+        exit -1;
+    fi
+
+    if [ ! -e "$LLVM_DIR/tools/lldb" ]; then
+	    tar -axvf $LLDB_PKG;
+    	LLDB_DIR=$(ls -d lldb-* | grep -v \.tar\.xz);
+    	mv "$LLDB_DIR" "$LLVM_DIR/tools/lldb";
+	fi
 	
+	if [ ! -e "$LLVM_DIR/tools/lldb" ]; then
+    	echo -e "\\033[31;1mlldb src not found but lldb enabled.\\033[39;49;0m";
+    	exit -1;
+	fi
+fi
+LLDB_DIR="$LLVM_DIR/tools/lldb";
+
+# 初始包准备完毕-开始第一次编译
+# Stage 1 -- compiling llvm & clang using gcc
+echo -e "\\033[31;1mStage 1: Ready to compile llvm, clang and etc. using gcc.\\033[39;49;0m";
+ build_llvm "cmake" "Stage 1"; # -DLLVM_ENABLE_LIBCXX=ON;
+
+# 编译 libcxx 和libcxxabi
+export LD_LIBRARY_PATH=$PREFIX_DIR/lib:$LD_LIBRARY_PATH
+export PATH=$PREFIX_DIR/bin:$PATH
+
+echo "add $PREFIX_DIR/bin to PTAH";
+echo "add $PREFIX_DIR/lib to LD_LIBRARY_PATH";
+
 # Stage 2 -- compiling tools
-echo -e "\\033[31;1mStage 2: Ready to compile tools. using llvm & clang.\\033[39;49;0m";
-build_llvm "cmake_clang" "Stage 2" -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang;
+# echo -e "\\033[31;1mStage 2: Ready to compile tools. using llvm & clang.\\033[39;49;0m";
+# build_llvm "cmake_clang" "Stage 2" -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang -DLLVM_ENABLE_LIBCXX=ON;
 
 # Stage 3 -- self compiling
 # 阶段三  -- 自举编译，这样就能脱离对gcc的依赖(貌似这步结束以后llvm和clang仍然依赖c++，不过libcxx和libcxxabi不依赖了)
 # libcxx 和 libcxxabi准备完毕-开始第二次编译
 echo -e "\\033[31;1mStage 3: Ready to compile tools. using llvm & clang & libcxx & libcxxabi.\\033[39;49;0m";
-build_llvm "cmake_clang" "Stage 3" -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang -DLIBCXX_CXX_ABI=libcxxabi -DLIBCXX_LIBCXXABI_INCLUDE_PATHS="$PREFIX_DIR/include/c++/v1" -DLIBCXX_CXX_ABI_LIBRARY_PATH="$PREFIX_DIR/lib";
+build_llvm "cmake_clang" "Stage 3" -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang -DLLVM_ENABLE_LIBCXX=ON -DLIBCXX_CXX_ABI=libcxxabi -DLIBCXX_LIBCXXABI_INCLUDE_PATHS="$PREFIX_DIR/include/c++/v1" -DLIBCXX_CXX_ABI_LIBRARY_PATH="$PREFIX_DIR/lib" -DLLVM_TOOLS_BINARY_DIR="$PREFIX_DIR/bin";
 
 echo -e "\\033[33;1mAddition, run the cmds below to add environment var(s).\\033[39;49;0m"
 echo -e "\\033[31;1mexport PATH=$PREFIX_DIR/bin:$PATH\\033[39;49;0m"
-echo -e "\\033[31;1mexport LD_LIBRARY_PATH=$PREFIX_DIR/lib:$PREFIX_DIR/lib64:$LD_LIBRARY_PATH\\033[39;49;0m"
-echo -e "\tor you can add $PREFIX_DIR/lib, $PREFIX_DIR/lib64 (if in x86_64) and $PREFIX_DIR/libexec to file [/etc/ld.so.conf] and then run [ldconfig]"
+echo -e "\\033[31;1mexport LD_LIBRARY_PATH=$PREFIX_DIR/lib:$LD_LIBRARY_PATH\\033[39;49;0m"
+echo -e "\tor you can add $PREFIX_DIR/lib to file [/etc/ld.so.conf] and then run [ldconfig]"
 echo -e "\\033[33;1mBuild LLVM done.\\033[39;49;0m"
