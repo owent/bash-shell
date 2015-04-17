@@ -23,8 +23,9 @@ USE_GIT_MASTER=NO
 PROTOBUF_GIT_URL=https://github.com/google/protobuf.git
 PROTOBUF_GIT_DIRNAME=protobuf
 PROTOBUF_VERSION=2.6.1
-PROTOBUF_RELEASE_URL=https://tools.muyo.co/resource/mirror/protobuf/protobuf-${PROTOBUF_VERSION}.tar.bz2
+PROTOBUF_RELEASE_URL=https://github.com/google/protobuf/releases/download/v${PROTOBUF_VERSION}/protobuf-${PROTOBUF_VERSION}.tar.bz2
 PROTOBUF_RELEASE_DIRNAME=protobuf-${PROTOBUF_VERSION}
+GTEST_RELEASE_URL=http://googletest.googlecode.com/files/gtest-1.7.0.zip
 
 BUILD_MACOSX_X86_64=YES
 
@@ -168,7 +169,7 @@ __EOF__
     if test ! -e gtest
     then
         echo "Google Test not present.  Fetching gtest-1.7.0 from the web..."
-        curl --location https://tools.muyo.co/resource/mirror/gtest/gtest-1.7.0.zip --output gtest-1.7.0.zip
+        curl --location ${GTEST_RELEASE_URL} --output gtest-1.7.0.zip
         unzip gtest-1.7.0.zip
         rm gtest-1.7.0.zip
         mv gtest-1.7.0 gtest
