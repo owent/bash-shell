@@ -96,6 +96,7 @@ echo "CXX ........................ ${CXX}"
 echo "CXXFLAGS ................... ${CXXFLAGS}"
 echo "LDFLAGS .................... ${LDFLAGS}"
 echo "LIBS ....................... ${LIBS}"
+echo "GTEST_RELEASE_URL............${GTEST_RELEASE_URL}"
 
 while true; do
     read -p "Proceed with build? (y/n) " yn
