@@ -178,7 +178,7 @@ if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list gmp $BUILD_TARGET_
         echo -e "$GMP_PKG";
         exit -1;
     fi
-    tar -jxvf $GMP_PKG;
+    tar -Jxvf $GMP_PKG;
     GMP_DIR=$(ls -d gmp-* | grep -v \.tar\.xz);
     cd $GMP_DIR;
     CPPFLAGS=-fexceptions ./configure --prefix=$PREFIX_DIR --enable-cxx --enable-assert $BUILD_OTHER_CONF_OPTION;
@@ -197,7 +197,7 @@ if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list mpfr $BUILD_TARGET
         echo -e "$MPFR_PKG";
         exit -1;
     fi
-    tar -jxvf $MPFR_PKG;
+    tar -Jxvf $MPFR_PKG;
     MPFR_DIR=$(ls -d mpfr-* | grep -v \.tar\.xz);
     cd $MPFR_DIR;
     ./configure --prefix=$PREFIX_DIR --with-gmp=$PREFIX_DIR --enable-assert $BUILD_OTHER_CONF_OPTION;
@@ -230,7 +230,7 @@ fi
   
 # install isl
 if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list isl $BUILD_TARGET_COMPOMENTS) ]; then
-    ISL_PKG=$(check_and_download "isl-0.14" "isl-*.tar.bz2" "ftp://gcc.gnu.org/pub/gcc/infrastructure/isl-0.14.tar.bz2" );
+    ISL_PKG=$(check_and_download "isl-0.12" "isl-*.tar.bz2" "ftp://gcc.gnu.org/pub/gcc/infrastructure/isl-0.12.2.tar.bz2" );
     if [ $? -ne 0 ]; then
         echo -e "$ISL_PKG";
         exit -1;
@@ -246,11 +246,33 @@ if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list isl $BUILD_TARGET_
     fi
     cd "$WORKING_DIR";
 fi
-   
+
+# install cloog 
+# TODO will be removed when it's not dependency of binutils & gdb
+if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list cloog $BUILD_TARGET_COMPOMENTS) ]; then
+    CLOOG_PKG=$(check_and_download "cloog-0.18" "cloog-0.*.tar.gz" "ftp://gcc.gnu.org/pub/gcc/infrastructure/cloog-0.18.1.tar.gz" );
+    if [ $? -ne 0 ]; then
+        echo -e "$CLOOG_PKG";
+        exit -1;
+    fi
+    tar -zxvf $CLOOG_PKG;
+    CLOOG_DIR=$(ls -d cloog-0.* | grep -v \.tar\.gz);
+    cd $CLOOG_DIR;
+    ./configure --prefix=$PREFIX_DIR --with-gmp=system --with-gmp-prefix=$PREFIX_DIR --with-bits=gmp --with-isl=system --with-isl-prefix=$PREFIX_DIR $BUILD_OTHER_CONF_OPTION;
+    make $BUILD_THREAD_OPT && make install;
+    if [ $? -ne 0 ]; then
+        echo -e "\\033[31;1mError: build cloog failed.\\033[39;49;0m";
+        exit -1;
+    fi
+
+    make check;
+    cd "$WORKING_DIR";
+fi
+
 # ======================= install gcc ======================= 
 if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list gcc $BUILD_TARGET_COMPOMENTS) ]; then
     # ======================= gcc包 ======================= 
-    GCC_PKG=$(check_and_download "gcc" "gcc-*.tar.bz2" "ftp://gcc.gnu.org/pub/gcc/releases/gcc-4.9.2/gcc-4.9.2.tar.bz2" );
+    GCC_PKG=$(check_and_download "gcc" "gcc-*.tar.bz2" "ftp://gcc.gnu.org/pub/gcc/releases/gcc-5.1.0/gcc-5.1.0.tar.bz2" );
     if [ $? -ne 0 ]; then
         echo -e "$GCC_PKG";
         exit -1;
@@ -260,7 +282,7 @@ if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list gcc $BUILD_TARGET_
     mkdir objdir;
     cd objdir;
     # ======================= 这一行的最后一个参数请注意，如果要支持其他语言要安装依赖库并打开对该语言的支持 ======================= 
-    GCC_CONF_OPTION_ALL="--prefix=$PREFIX_DIR --with-gmp=$PREFIX_DIR --with-mpc=$PREFIX_DIR --with-mpfr=$PREFIX_DIR --with-isl=$PREFIX_DIR --enable-bootstrap --enable-build-with-cxx --enable-cloog-backend=isl --disable-libjava-multilib --enable-checking=release --enable-gold --enable-ld --enable-libada --enable-libssp --enable-lto --enable-objc-gc --enable-vtable-verify $GCC_OPT_DISABLE_MULTILIB $BUILD_TARGET_CONF_OPTION";
+    GCC_CONF_OPTION_ALL="--prefix=$PREFIX_DIR --with-gmp=$PREFIX_DIR --with-mpc=$PREFIX_DIR --with-mpfr=$PREFIX_DIR --with-isl=$PREFIX_DIR --with-cloog=$PREFIX_DIR --enable-bootstrap --enable-build-with-cxx --enable-cloog-backend=isl --disable-libjava-multilib --enable-checking=release --enable-gold --enable-ld --enable-libada --enable-libssp --enable-lto --enable-objc-gc --enable-vtable-verify $GCC_OPT_DISABLE_MULTILIB $BUILD_TARGET_CONF_OPTION";
     ../$GCC_DIR/configure $GCC_CONF_OPTION_ALL;
     make $BUILD_THREAD_OPT && make install;
     cd "$WORKING_DIR";
@@ -286,7 +308,7 @@ if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list binutils $BUILD_TA
     tar -jxvf $BINUTILS_PKG;
     BINUTILS_DIR=$(ls -d binutils-* | grep -v \.tar\.bz2);
     cd $BINUTILS_DIR;
-    ./configure --prefix=$PREFIX_DIR --with-gmp=$PREFIX_DIR --with-mpc=$PREFIX_DIR --with-mpfr=$PREFIX_DIR --with-isl=$PREFIX_DIR --enable-build-with-cxx --enable-gold --enable-libada --enable-libssp --enable-lto --enable-objc-gc --disable-werror $BUILD_TARGET_CONF_OPTION;
+    ./configure --prefix=$PREFIX_DIR --with-gmp=$PREFIX_DIR --with-mpc=$PREFIX_DIR --with-mpfr=$PREFIX_DIR --with-isl=$PREFIX_DIR --with-cloog=$PREFIX_DIR --enable-build-with-cxx --enable-gold --enable-libada --enable-libssp --enable-lto --enable-objc-gc --disable-werror $BUILD_TARGET_CONF_OPTION;
     make $BUILD_THREAD_OPT && make install;
     # ---- 新版本的GCC编译器会激发binutils内某些组件的werror而导致编译失败 ----
     # ---- 另外某个版本的make check有failed用例就被发布了,应该gnu的自动化测试有遗漏 ----
@@ -316,7 +338,7 @@ if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list gdb $BUILD_TARGET_
 			    return;
 		    fi
 
-		    tar -axvf $PYTHON_PKG;
+		    tar -Jxvf $PYTHON_PKG;
 		    PYTHON_DIR=$(ls -d Python-2.* | grep -v \.tar.xz);
 		    cd $PYTHON_DIR;
 		    ./configure --prefix=$PREFIX_DIR;
@@ -329,10 +351,10 @@ if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list gdb $BUILD_TARGET_
 		    echo -e "$GDB_PKG";
 		    exit -1;
 	    fi
-	    tar -axvf $GDB_PKG;
+	    tar -Jxvf $GDB_PKG;
 	    GDB_DIR=$(ls -d gdb-* | grep -v \.tar\.xz);
 	    cd $GDB_DIR;
-	    ./configure --prefix=$PREFIX_DIR --with-gmp=$PREFIX_DIR --with-mpc=$PREFIX_DIR --with-mpfr=$PREFIX_DIR --with-isl=$PREFIX_DIR --enable-build-with-cxx --enable-gold --enable-libada --enable-libssp --enable-objc-gc $GDB_PYTHON_OPT $BUILD_TARGET_CONF_OPTION;
+	    ./configure --prefix=$PREFIX_DIR --with-gmp=$PREFIX_DIR --with-mpc=$PREFIX_DIR --with-mpfr=$PREFIX_DIR --with-isl=$PREFIX_DIR --with-cloog=$PREFIX_DIR --enable-build-with-cxx --enable-gold --enable-libada --enable-libssp --enable-objc-gc $GDB_PYTHON_OPT $BUILD_TARGET_CONF_OPTION;
 	    make $BUILD_THREAD_OPT && make install;
 	    cd "$WORKING_DIR";
 	
