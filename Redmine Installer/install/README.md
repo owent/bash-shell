@@ -43,16 +43,19 @@ thin
 ------
 
 ``bash
-gem install thin;
+# 在redmine目录的Gemfile中添加
+gem "thin"
+
+# 回到redmine根目录
+bundle install thin;
+# 注意不要直接 gem install thin , 会导致依赖关系错乱
+
 thin install;
 thin config -C /etc/thin/redmine.yml -c /usr/local/redmine -e production --server 4;
 cp -f etc/thin/redmine.yml /etc/thin/redmine.yml
 
 mkdir -p /var/run/thin;
 chown nginx:users /var/run/thin -R
-
-# 在redmine目录的Gemfile中添加
-gem "thin"
 
 # 启动脚本 
 thin start -C /etc/thin/redmine.yml
