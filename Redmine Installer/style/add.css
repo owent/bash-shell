@@ -1,0 +1,60 @@
+/** ==================== added by owent =============== **/
+body * {
+    font-size: 14px;
+}
+
+.description * {
+    font-size: 16px;
+}
+
+.subject {
+    font-size: large !important;
+}
+
+.subject a {
+    font-weight: bolder;
+    color: #800080 !important;
+}
+
+.subject h3 {
+    font-weight: bolder;
+    color: #800080;
+    font-size: xx-large;
+}
+
+.tracker {
+    color: #800000 !important;
+}
+
+.priority {
+    font-weight: bold;
+    color: #404000;
+}
+
+table.list thead th {
+    font-size: 14px !important;
+}
+
+table.list td, table.list td * {
+    font-size: large !important;
+}
+
+table.list tr td.id a {
+    color: darkblue;
+}
+
+#context-menu, #context-menu * {
+    font-size: large;
+}
+
+#checklist p, .description>p, #issue_tree p, #relations p {
+    padding: 5px 0 5px 10px;
+    background-color: #C0C0C0;
+}
+
+#checklist #checklist_items li {
+    font-size: normal;
+    font-weight: bold;
+    color: #6020A0;
+}
+
