@@ -1,0 +1,16 @@
+---
+chdir: /usr/local/redmine
+group: users
+user: nginx
+environment: production
+socket: /var/run/thin/thin.redmine.sock
+timeout: 30
+log: /home/website/redmine.root/log/thin.log
+pid: tmp/pids/thin.pid
+max_conns: 1024
+max_persistent_conns: 100
+require: []
+wait: 30
+threadpool_size: 20
+servers: 4
+daemonize: true

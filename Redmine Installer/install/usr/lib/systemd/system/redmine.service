@@ -1,0 +1,14 @@
+[Unit]
+Description=redmine - workflow
+Documentation=http://www.redmine.org/projects/redmine/wiki
+After=network.target remote-fs.target nss-lookup.target
+ 
+[Service]
+Type=forking
+PIDFile=/usr/local/redmine/tmp/pids/thin.0.pid
+ExecStart=/usr/local/bin/thin start -C /etc/thin/redmine.yml
+ExecStop=/usr/local/bin/thin stop -C /etc/thin/redmine.yml
+PrivateTmp=true
+ 
+[Install]
+WantedBy=multi-user.target
