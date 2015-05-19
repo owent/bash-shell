@@ -4,6 +4,7 @@
 /** ==================== added by owent =============== **/
 body {
     font-size: 14px;
+    font-family: 'Anonymous Pro', 'DejaVu Sans Mono', 'DejaVu Serif', Arial, 'Microsoft YaHei', Verdana, 'BitStream vera Sans', Tahoma, Helvetica, sans-serif !important;
 }
 
 .description * {
@@ -39,7 +40,7 @@ table.list thead th {
 }
 
 table.list td, table.list td * {
-    font-size: large !important;
+    font-size: larger !important;
 }
 
 table.list tr td.id a {
@@ -50,13 +51,14 @@ table.list tr td.id a {
     font-size: large;
 }
 
-#checklist p, .description>p, #issue_tree p, #relations p {
+#checklist p, .description>p, .description>p>strong, #issue_tree p, #relations p {
     padding: 5px 0 5px 10px;
     background-color: #C0C0C0;
+    font-size: large;
 }
 
 #checklist #checklist_items li {
-    font-size: normal;
+    font-size: larger;
     font-weight: bold;
     color: #6020A0;
 }
