@@ -26,7 +26,8 @@ default:
   #
   #  email_delivery:
      delivery_method: :async_smtp
-     smtp_settings:
+     async_smtp_settings:
+       tls: true
        enable_starttls_auto: true
        address: "smtp.exmail.qq.com"
        port: 465

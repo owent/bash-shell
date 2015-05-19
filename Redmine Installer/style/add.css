@@ -1,5 +1,8 @@
+/** ==================== fix style of theme Pixel-cookers =============== **/
+#top-menu { left: 0px; }
+
 /** ==================== added by owent =============== **/
-body * {
+body {
     font-size: 14px;
 }
 
