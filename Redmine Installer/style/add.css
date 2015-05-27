@@ -63,3 +63,18 @@ table.list tr td.id a {
     color: #6020A0;
 }
 
+.wiki {
+    font-size: larger;
+    color: Black;
+}
+
+.has-notes {
+    border: 1px solid #800000;
+    padding: 10px 5px 5px 10px;
+}
+
+.has-details h4, .has-details ul{
+    display: inline-block;
+}
+
+
