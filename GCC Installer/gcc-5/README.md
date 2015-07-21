@@ -56,20 +56,20 @@ CentOS 6.5 & CentOS 7
 + tar 1.23 and tar 1.26
 + perl 5.10.1 and perl 5.16.3
 + bzip2 1.0.5 and bzip2 1.0.6
-+ gcc 4.4.7 and gcc 4.8.3 
++ gcc 4.4.7 and gcc 4.8.3
 
 #### 编译的依赖库：
 + gmp 6.0.0a
-+ mpfr 3.1.2
++ mpfr 3.1.3
 + mpc 1.0.3
 + isl 0.12.2
 + cloog 0.18.1
 
 #### 编译目标：
-+ gcc 5.1.0
++ gcc 5.2.0
 + binutils 2.25
-+ python 2.7.9 *[按需]*
-+ gdb 7.9 (如果存在ncurses-devel包)
++ python 2.7.10 *[按需]*
++ gdb 7.9.1 (如果存在ncurses-devel包)
 
 #### 注：
 + (所有的库都会被安装在**$PREFEX_DIR**里)
@@ -95,3 +95,4 @@ end
 
 #### History:
 + 2015-04-13     Created
++ 2015-07-20     更新GCC版本到5.2.0，Python到2.7.10，mpfr到3.1.3, gdb到7.9.1

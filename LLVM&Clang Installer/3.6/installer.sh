@@ -2,14 +2,15 @@
 
 # Dependency: swig libedit Python
 
-# ======================================= 配置 ======================================= 
-PREFIX_DIR=/usr/local/llvm-3.6.0
-BUILD_TARGET_COMPOMENTS="llvm clang compiler_rt libcxx libcxxabi lldb clang_tools_extra";
+# ======================================= 配置 =======================================
+LLVM_VERSION=3.6.2;
+PREFIX_DIR=/usr/local/llvm-$LLVM_VERSION;
+BUILD_TARGET_COMPOMENTS="llvm clang compiler_rt libcxx libcxxabi clang_tools_extra ";
 BUILD_GCC="gcc-4.6";
 
 # ======================= 非交叉编译 ======================= 
 BUILD_LLVM_CONF_OPTION="--enable-optimized --disable-assertions";
-BUILD_LLVM_CMAKE_OPTION="-DLLVM_ENABLE_EH=ON -DLLVM_ENABLE_RTTI=ON -DLLVM_ENABLE_PIC=ON"; #  -DBUILD_SHARED_LIBS=ON";
+BUILD_LLVM_CMAKE_OPTION="-DLLVM_ENABLE_CXX1Y=ON -DLLVM_ENABLE_EH=ON -DLLVM_ENABLE_RTTI=ON -DLLVM_ENABLE_PIC=ON -DBUILD_SHARED_LIBS=ON"; #  -DBUILD_SHARED_LIBS=ON";
 BUILD_OTHER_CONF_OPTION="";
  
 # ======================= 交叉编译配置示例(暂不可用) ======================= 
@@ -67,7 +68,10 @@ done
 
 mkdir -p "$PREFIX_DIR"
 PREFIX_DIR="$( cd "$PREFIX_DIR" && pwd )";
- 
+
+# llvm 脚本fix 
+BUILD_LLVM_CONF_OPTION="$BUILD_LLVM_CONF_OPTION -DLLVM_PREFIX=$PREFIX_DIR";
+
 # ======================= 转到脚本目录 ======================= 
 WORKING_DIR="$PWD";
 
@@ -151,7 +155,7 @@ swapoff -a
  
 # unpack llvm
 if [ "0" == $(is_in_list llvm $BUILD_TARGET_COMPOMENTS) ]; then
-    LLVM_PKG=$(check_and_download "llvm" "llvm-*.tar.xz" "http://llvm.org/releases/3.6.0/llvm-3.6.0.src.tar.xz" );
+    LLVM_PKG=$(check_and_download "llvm" "llvm-*.tar.xz" "http://llvm.org/releases/$LLVM_VERSION/llvm-$LLVM_VERSION.src.tar.xz" );
     if [ $? -ne 0 ]; then
         echo -e "$LLVM_PKG";
         exit -1;
@@ -168,7 +172,7 @@ LLVM_DIR="$WORKING_DIR/$LLVM_SRC_DIR_NAME";
 
 # unpack clang
 if [ "0" == $(is_in_list clang $BUILD_TARGET_COMPOMENTS) ]; then
-    CLANG_PKG=$(check_and_download "clang" "cfe-*.tar.xz" "http://llvm.org/releases/3.6.0/cfe-3.6.0.src.tar.xz" );
+    CLANG_PKG=$(check_and_download "clang" "cfe-*.tar.xz" "http://llvm.org/releases/$LLVM_VERSION/cfe-$LLVM_VERSION.src.tar.xz" );
     if [ $? -ne 0 ]; then
         echo -e "$CLANG_PKG";
         exit -1;
@@ -184,7 +188,7 @@ CLANG_DIR="$LLVM_DIR/tools/clang";
    
 # unpack clang tools extra
 if [ "0" == $(is_in_list clang_tools_extra $BUILD_TARGET_COMPOMENTS) ]; then
-    CLANG_TOOLS_EXTRA_PKG=$(check_and_download "clang tools extra" "clang-tools-extra-*.tar.xz" "http://llvm.org/releases/3.6.0/clang-tools-extra-3.6.0.src.tar.xz" );
+    CLANG_TOOLS_EXTRA_PKG=$(check_and_download "clang tools extra" "clang-tools-extra-*.tar.xz" "http://llvm.org/releases/$LLVM_VERSION/clang-tools-extra-$LLVM_VERSION.src.tar.xz" );
     if [ $? -ne 0 ]; then
         echo -e "$CLANG_TOOLS_EXTRA_PKG";
         exit -1;
@@ -205,7 +209,7 @@ CLANG_TOOLS_EXTRA_DIR="$CLANG_DIR/tools/extra";
   
 # unpack compiler rt
 if [ "0" == $(is_in_list compiler_rt $BUILD_TARGET_COMPOMENTS) ]; then
-    COMPILER_RT_PKG=$(check_and_download "compiler rt" "compiler-rt-*.tar.xz" "http://llvm.org/releases/3.6.0/compiler-rt-3.6.0.src.tar.xz" );
+    COMPILER_RT_PKG=$(check_and_download "compiler rt" "compiler-rt-*.tar.xz" "http://llvm.org/releases/$LLVM_VERSION/compiler-rt-$LLVM_VERSION.src.tar.xz" );
     if [ $? -ne 0 ]; then
         echo -e "$COMPILER_RT_PKG";
         exit -1;
@@ -224,7 +228,7 @@ if [ "0" == $(is_in_list compiler_rt $BUILD_TARGET_COMPOMENTS) ]; then
 fi
 COMPILER_RT_DIR="$LLVM_DIR/projects/compiler-rt";
 
-LLVM_BUILD_DIR="$WORKING_DIR/llvm_build_dir";
+LLVM_BUILD_DIR="$LLVM_DIR/build";
 
 function build_llvm() {
 	if [ -e "$LLVM_BUILD_DIR" ]; then
@@ -249,38 +253,54 @@ function build_llvm() {
 	# perl -p -i -e "s;::name\(\)\s*const\s*[{];::name\(\) const LLVM_NOEXCEPT {;g" $(find "$LLVM_DIR" -name Error.cpp);
 
     CLANG_PREFIX_FLAGS="";
-    if [ ! -z "$LLD_PKG" ]; then
-        CLANG_PREFIX_FLAGS="$CLANG_PREFIX_FLAGS LD=lld";
+    if [ "0" == $(is_in_list lld $BUILD_TARGET_COMPOMENTS) ]; then
+        CLANG_PREFIX_FLAGS=(CMAKE_CXX_LINK_EXECUTABLE=lld CMAKE_C_LINK_EXECUTABLE=lld);
     fi
             
 	sleep 1;
-	if [ "${MAKE_TOOLS}" == "cmake" ]; then
-		cmake $LLVM_DIR -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_INSTALL_PREFIX=$PREFIX_DIR $BUILD_LLVM_CMAKE_OPTION $@;
-	elif [ "${MAKE_TOOLS}" == "cmake_clang" ]; then
-		CC=clang CXX=clang++ CXXFLAGS="-stdlib=libc++ -lc++abi -fPIC" CFLAGS="-fPIC" cmake $LLVM_DIR -D_CMAKE_TOOLCHAIN_PREFIX=llvm- -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_INSTALL_PREFIX=$PREFIX_DIR $BUILD_LLVM_CMAKE_OPTION $@;
-	elif [ "${MAKE_TOOLS}" == "automake_clang" ]; then
-		CC=clang CXX=clang++ CXXFLAGS="-stdlib=libc++ -lc++abi -fPIC" CFLAGS="-fPIC" ../$LLVM_SRC_DIR_NAME/configure --prefix=$PREFIX_DIR $BUILD_LLVM_CONF_OPTION $@;
-	else
-		../$LLVM_SRC_DIR_NAME/configure --prefix=$PREFIX_DIR $BUILD_LLVM_CONF_OPTION $@;
-	fi 
+    USING_NANJA="";
+    
+    which ninja;
+    if [ 0 -eq $? ]; then
+        USING_NANJA="-G Ninja";
+    fi
 
-    make clean;    
-	make $BUILD_THREAD_OPT;
-	
-	# 这也是llvm的install脚本写得2b才加的hack
-	mkdir -p lib/python2.7;
-	
-	make install;
-	if [ $? -ne 0 ]; then
-	    echo -e "\\033[31;1mError: build llvm failed in $STAGE_STEP_NAME.\\033[39;49;0m";
-	    exit -1;
-	fi
-	cd "$WORKING_DIR";
+    export LDFLAGS="-pthread -ldl";
+    if [ "${MAKE_TOOLS}" == "cmake" ]; then
+        cmake $USING_NANJA -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_INSTALL_PREFIX=$PREFIX_DIR $BUILD_LLVM_CMAKE_OPTION "$@" ..;
+    elif [ "${MAKE_TOOLS}" == "cmake_clang" ]; then
+        export LDFLAGS="$LDFLAGS -lc++abi";
+        CC=clang CXX=clang++ CXXFLAGS="-stdlib=libc++" cmake $USING_NANJA -D_CMAKE_TOOLCHAIN_PREFIX=llvm- -DCMAKE_BUILD_TYPE=RelWithDebInfo -DLLVM_TOOLS_BINARY_DIR=$PREFIX_DIR/bin -DCMAKE_INSTALL_PREFIX=$PREFIX_DIR ${CLANG_PREFIX_FLAGS[@]} $BUILD_LLVM_CMAKE_OPTION "$@" ..;
+    elif [ "${MAKE_TOOLS}" == "automake_clang" ]; then
+        export LDFLAGS="$LDFLAGS -lc++abi";
+        CC=clang CXX=clang++ CXXFLAGS="-stdlib=libc++" ../configure --prefix=$PREFIX_DIR ${CLANG_PREFIX_FLAGS[@]} $BUILD_LLVM_CONF_OPTION $@;
+    else
+        ../configure --prefix=$PREFIX_DIR $BUILD_LLVM_CONF_OPTION $@;
+    fi 
+
+    if [ ${#USING_NANJA} -gt 0 ]; then
+        ninja clean;
+        ninja $BUILD_THREAD_OPT;
+        ninja install;
+    else
+        make clean;
+        make $BUILD_THREAD_OPT; 
+
+	    # 这也是llvm的install脚本写得2b才加的hack
+	    mkdir -p lib/python2.7;
+        make install;
+    fi
+
+    if [ $? -ne 0 ]; then
+        echo -e "\\033[31;1mError: build llvm failed in $STAGE_STEP_NAME.\\033[39;49;0m";
+        exit -1;
+    fi
+    cd "$WORKING_DIR";
 }
 
 # unpack lld
 if [ "0" == $(is_in_list lld $BUILD_TARGET_COMPOMENTS) ]; then
-    LLD_PKG=$(check_and_download "lld" "lld-*.tar.xz" "http://llvm.org/releases/3.6.0/lld-3.6.0.src.tar.xz" );
+    LLD_PKG=$(check_and_download "lld" "lld-*.tar.xz" "http://llvm.org/releases/$LLVM_VERSION/lld-$LLVM_VERSION.src.tar.xz" );
     if [ $? -ne 0 ]; then
         echo -e "$LLD_PKG";
         exit -1;
@@ -302,7 +322,7 @@ LLD_DIR="$LLVM_DIR/tools/lld";
 
 # unpack polly (require gmp,cloog-isl)
 if [ "0" == $(is_in_list polly $BUILD_TARGET_COMPOMENTS) ]; then
-    POLLY_PKG=$(check_and_download "polly" "polly-*.tar.xz" "http://llvm.org/releases/3.6.0/polly-3.6.0.src.tar.xz" );
+    POLLY_PKG=$(check_and_download "polly" "polly-*.tar.xz" "http://llvm.org/releases/$LLVM_VERSION/polly-$LLVM_VERSION.src.tar.xz" );
     if [ $? -ne 0 ]; then
         echo -e "$POLLY_PKG";
         exit -1;
@@ -350,7 +370,7 @@ POLLY_DIR="$LLVM_DIR/tools/polly";
 
 # build dragonegg
 if [ ! -z "$BUILD_GCC" ] && [ "0" == $(is_in_list dragonegg $BUILD_TARGET_COMPOMENTS) ]; then
-    DRAGONEGG_PKG=$(check_and_download "dragonegg" "dragonegg-*.tar.xz" "http://llvm.org/releases/3.6.0/dragonegg-3.6.0.src.tar.xz" );
+    DRAGONEGG_PKG=$(check_and_download "dragonegg" "dragonegg-*.tar.xz" "http://llvm.org/releases/$LLVM_VERSION/dragonegg-$LLVM_VERSION.src.tar.xz" );
     if [ $? -ne 0 ]; then
         echo -e "$DRAGONEGG_PKG";
         exit -1;
@@ -367,7 +387,7 @@ if [ ! -e "$LLVM_DIR/projects/libcxx" ] && [ "0" == $(is_in_list libcxx $BUILD_T
     if [ -e "$LLVM_DIR/projects/libcxx" ]; then
 	    return
 	fi
-    LIBCXX_PKG=$(check_and_download "libc++" "libcxx-*.tar.xz" "http://llvm.org/releases/3.6.0/libcxx-3.6.0.src.tar.xz" );
+    LIBCXX_PKG=$(check_and_download "libc++" "libcxx-*.tar.xz" "http://llvm.org/releases/$LLVM_VERSION/libcxx-$LLVM_VERSION.src.tar.xz" );
     if [ $? -ne 0 ]; then
         echo -e "$LIBCXX_PKG";
         exit -1;
@@ -385,7 +405,7 @@ if [ ! -e "$LLVM_DIR/projects/libcxxabi" ] && [ "0" == $(is_in_list libcxxabi $B
 	    return
 	fi
 	
-    LIBCXXABI_PKG=$(check_and_download "libc++abi" "libcxxabi-*.tar.xz" "http://llvm.org/releases/3.6.0/libcxxabi-3.6.0.src.tar.xz" );
+    LIBCXXABI_PKG=$(check_and_download "libc++abi" "libcxxabi-*.tar.xz" "http://llvm.org/releases/$LLVM_VERSION/libcxxabi-$LLVM_VERSION.src.tar.xz" );
     if [ $? -ne 0 ]; then
         echo -e "$LIBCXXABI_PKG";
         exit -1;
@@ -397,10 +417,9 @@ if [ ! -e "$LLVM_DIR/projects/libcxxabi" ] && [ "0" == $(is_in_list libcxxabi $B
     LIBCXXABI_DIR="$LLVM_DIR/projects/libcxxabi";
 fi
 
-
 ## unpack lldb, gcc 编译不过，所以clang编译好后用clang编译
 if [ "0" == $(is_in_list lldb $BUILD_TARGET_COMPOMENTS) ]; then
-    LLDB_PKG=$(check_and_download "lldb" "lldb-*.tar.xz" "http://llvm.org/releases/3.6.0/lldb-3.6.0.src.tar.xz" );
+    LLDB_PKG=$(check_and_download "lldb" "lldb-*.tar.xz" "http://llvm.org/releases/$LLVM_VERSION/lldb-$LLVM_VERSION.src.tar.xz" );
     if [ $? -ne 0 ]; then
         echo -e "$LLDB_PKG";
         exit -1;
@@ -419,10 +438,12 @@ if [ "0" == $(is_in_list lldb $BUILD_TARGET_COMPOMENTS) ]; then
 fi
 LLDB_DIR="$LLVM_DIR/tools/lldb";
 
+
 # 初始包准备完毕-开始第一次编译
 # Stage 1 -- compiling llvm & clang using gcc
 echo -e "\\033[31;1mStage 1: Ready to compile llvm, clang and etc. using gcc.\\033[39;49;0m";
- build_llvm "cmake" "Stage 1"; # -DLLVM_ENABLE_LIBCXX=ON;
+build_llvm "cmake" "Stage 1"; # -DLLVM_ENABLE_LIBCXX=ON;
+
 
 # 编译 libcxx 和libcxxabi
 export LD_LIBRARY_PATH=$PREFIX_DIR/lib:$LD_LIBRARY_PATH

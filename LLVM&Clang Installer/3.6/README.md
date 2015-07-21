@@ -38,14 +38,13 @@ CentOS 7
 详情参见 [llvm官网](http://llvm.org/)
 
 #### 编译的依赖库：
-+ libc++ 3.6.0
-+ libc++abi 3.6.0
++ libc++ 3.6.2
++ libc++abi 3.6.2
 
 
 #### 默认编译目标：
-+ llvm 3.6.0
-+ clang 3.6.0
-+ lldb 3.6.0
++ llvm 3.6.2
++ clang 3.6.2
 + compiler_rt 
 + clang_tools_extra
 
@@ -58,6 +57,7 @@ CentOS 7
 #### History:
 + 2015-03-10     Created
 + 2015-04-08     修订，完成自举编译，优化编译流程
++ 2015-07-20     默认采用动态链接，默认关闭LLDB编译（各种链接问题，解决不了，反正已经支持gdb了就用gdb吧）
 
 
 #### 参考文献
