@@ -20,9 +20,13 @@ CERT_CONF_PATH=openssl.cnf;
 CERT_CRYPTO_LEN=2048;
 CERT_CA_SERIAL=00;
 CERT_CA_TIME=3650;
+CERT_CA_NAME=ca;
 
 while getopts "c:f:hl:n:s:t:" OPTION; do
     case $OPTION in
+        a)
+            CERT_CA_NAME="OPTARG";
+        ;;
         c)
             CERT_CLI_NAME="OPTARG";
         ;;
@@ -32,6 +36,7 @@ while getopts "c:f:hl:n:s:t:" OPTION; do
         h)
             echo "usage: $0 [options]";
             echo "options:";
+            echo "-a=[ca cert name]           set ca cert name(default=$CERT_CA_NAME).";
             echo "-c=[client cert name]       set client cert name.";
             echo "-f=[configure file]         set configure file(default=$CERT_CONF_PATH).";
             echo "-h                          help message.";
@@ -68,9 +73,11 @@ if [ ! -e CA ]; then
     echo $CERT_CA_SERIAL > CA/serial;
 fi
 
-if [ ! -e ca.key ] || [ ! -e ca.crt ]; then
+# 生成CA证书文件
+if [ ! -e $CERT_CA_NAME.key ] || [ ! -e $CERT_CA_NAME.crt ]; then
     echo "generate ca cert";
-    openssl req -new -x509 -days $CERT_CA_TIME -keyout ca.key -out ca.crt -config $CERT_CONF_PATH;
+    openssl genrsa -out $CERT_CA_NAME.key $CERT_CRYPTO_LEN;
+    openssl req -x509 -new -days $CERT_CA_TIME -key $CERT_CA_NAME.key -out $CERT_CA_NAME.crt -config $CERT_CONF_PATH;
 fi
 
 # 生成证书文件
@@ -86,7 +93,7 @@ if [ ! -z "$CERT_SVR_NAME" ]; then
     # 服务器证书
     mk_cert $CERT_SVR_NAME;
     # 签证
-    openssl ca -in $CERT_SVR_NAME.csr -out $CERT_SVR_NAME.crt -cert ca.crt -keyfile ca.key -extensions v3_req -config $CERT_CONF_PATH;
+    openssl $CERT_CA_NAME -in $CERT_SVR_NAME.csr -out $CERT_SVR_NAME.crt -cert $CERT_CA_NAME.crt -keyfile $CERT_CA_NAME.key -extensions v3_req -config $CERT_CONF_PATH;
 fi
 
 # 用于客户端验证的个人证书
