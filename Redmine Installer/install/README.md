@@ -11,7 +11,7 @@ gem sources -l
 
 2. edit Gemfile and change https://rubygems.org/ to https://ruby.taobao.org/ or http://rubygems.org/
 
-其他
+安装
 ======
 ```bash
 
@@ -21,6 +21,40 @@ bundle exec rake generate_secret_token
 RAILS_ENV=production bundle exec rake db:migrate
 
 RAILS_ENV=production REDMINE_LANG=zh bundle exec rake redmine:load_default_data
+
+# 权限设置
+mkdir -p tmp tmp/pdf public/plugin_assets
+sudo chown -R redmine:redmine files log tmp public/plugin_assets
+sudo chmod -R 755 files log tmp public/plugin_assets
+
+```
+
+升级
+======
+```bash
+
+# 1. 下载源码包并解压到新目录
+# 2. 复制config目录中涉及的几个配置文件（注意不要用老的config/settings.yml覆盖新的）
+# 3. 复制插件
+# 4. 复制（迁移）files、log、tmp目录，复制（迁移）public/themes目录
+
+# 升级安装（有ImageMagick ）
+bundle install --without development test
+
+# 升级安装（无ImageMagick ）
+bundle install --without development test rmagick
+
+# 生成密钥
+bundle exec rake generate_secret_token
+
+# 升级数据库和插件数据库
+bundle exec rake db:migrate RAILS_ENV=production
+
+bundle exec rake redmine:plugins:migrate RAILS_ENV=production
+
+# 清理临时目录
+
+bundle exec rake tmp:cache:clear tmp:sessions:clear RAILS_ENV=production
 
 # 权限设置
 mkdir -p tmp tmp/pdf public/plugin_assets
