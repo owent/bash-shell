@@ -1,6 +1,10 @@
 /** ==================== fix style of theme Pixel-cookers =============== **/
 #top-menu { left: 0px; }
 
+#main-menu ul li a.*:before {
+    content: counter(menu-list-item-flag, disc);
+}
+
 /** ==================== added by owent =============== **/
 body {
     font-size: 14px;
