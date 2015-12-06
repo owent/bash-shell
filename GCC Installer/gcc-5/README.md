@@ -59,17 +59,16 @@ CentOS 6.5 & CentOS 7
 + gcc 4.4.7 and gcc 4.8.3
 
 #### 编译的依赖库：
-+ gmp 6.0.0a
++ gmp 6.1.0
 + mpfr 3.1.3
 + mpc 1.0.3
-+ isl 0.12.2
-+ cloog 0.18.1
++ isl 0.15
 
 #### 编译目标：
-+ gcc 5.2.0
-+ binutils 2.25
-+ python 2.7.10 *[按需]*
-+ gdb 7.9.1 (如果存在ncurses-devel包)
++ gcc 5.3.0
++ binutils 2.25.1
++ python 2.7.11 *[按需]*
++ gdb 7.10.1 (如果存在ncurses-devel包)
 
 #### 注：
 + (所有的库都会被安装在**$PREFEX_DIR**里)

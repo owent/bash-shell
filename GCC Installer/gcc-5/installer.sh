@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # ======================================= 配置 =======================================
-PREFIX_DIR=/usr/local/gcc-5.2.0
+PREFIX_DIR=/usr/local/gcc-5.3.0
 BUILD_TARGET_COMPOMENTS="";
 
 # ======================= 非交叉编译 =======================
@@ -34,7 +34,7 @@ while getopts "p:cht:d:g:" OPTION; do
             echo "-p=[prefix_dir]             set prefix directory.";
             echo "-c                          clean build cache.";
             echo "-h                          help message.";
-            echo "-t=[build target]           set build target(gmp mpfr mpc isl cloog gcc binutils gdb).";
+            echo "-t=[build target]           set build target(gmp mpfr mpc isl gcc binutils gdb).";
             echo "-d=[compoment option]       add dependency compoments build options.";
             echo "-g=[gnu option]             add gcc,binutils,gdb build options.";
             exit 0;
@@ -173,7 +173,7 @@ swapoff -a
 
 # install gmp
 if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list gmp $BUILD_TARGET_COMPOMENTS) ]; then
-    GMP_PKG=$(check_and_download "gmp" "gmp-*.tar.xz" "ftp://ftp.gmplib.org/pub/gmp/gmp-6.0.0a.tar.xz" );
+    GMP_PKG=$(check_and_download "gmp" "gmp-*.tar.xz" "ftp://ftp.gmplib.org/pub/gmp/gmp-6.1.0.tar.xz" );
     if [ $? -ne 0 ]; then
         echo -e "$GMP_PKG";
         exit -1;
@@ -230,7 +230,7 @@ fi
 
 # install isl
 if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list isl $BUILD_TARGET_COMPOMENTS) ]; then
-    ISL_PKG=$(check_and_download "isl-0.12" "isl-*.tar.bz2" "ftp://gcc.gnu.org/pub/gcc/infrastructure/isl-0.12.2.tar.bz2" );
+    ISL_PKG=$(check_and_download "isl-0.12" "isl-*.tar.bz2" "ftp://gcc.gnu.org/pub/gcc/infrastructure/isl-0.15.tar.bz2" );
     if [ $? -ne 0 ]; then
         echo -e "$ISL_PKG";
         exit -1;
@@ -249,7 +249,7 @@ fi
 
 # install cloog
 # TODO will be removed when it's not dependency of binutils & gdb
-if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list cloog $BUILD_TARGET_COMPOMENTS) ]; then
+if [ "0" == $(is_in_list cloog $BUILD_TARGET_COMPOMENTS) ]; then
     CLOOG_PKG=$(check_and_download "cloog-0.18" "cloog-0.*.tar.gz" "ftp://gcc.gnu.org/pub/gcc/infrastructure/cloog-0.18.1.tar.gz" );
     if [ $? -ne 0 ]; then
         echo -e "$CLOOG_PKG";
@@ -272,7 +272,7 @@ fi
 # ======================= install gcc =======================
 if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list gcc $BUILD_TARGET_COMPOMENTS) ]; then
     # ======================= gcc包 =======================
-    GCC_PKG=$(check_and_download "gcc" "gcc-*.tar.bz2" "ftp://gcc.gnu.org/pub/gcc/releases/gcc-5.2.0/gcc-5.2.0.tar.bz2" );
+    GCC_PKG=$(check_and_download "gcc" "gcc-*.tar.bz2" "ftp://gcc.gnu.org/pub/gcc/releases/gcc-5.3.0/gcc-5.3.0.tar.bz2" );
     if [ $? -ne 0 ]; then
         echo -e "$GCC_PKG";
         exit -1;
@@ -282,7 +282,7 @@ if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list gcc $BUILD_TARGET_
     mkdir objdir;
     cd objdir;
     # ======================= 这一行的最后一个参数请注意，如果要支持其他语言要安装依赖库并打开对该语言的支持 =======================
-    GCC_CONF_OPTION_ALL="--prefix=$PREFIX_DIR --with-gmp=$PREFIX_DIR --with-mpc=$PREFIX_DIR --with-mpfr=$PREFIX_DIR --with-isl=$PREFIX_DIR --with-cloog=$PREFIX_DIR --enable-bootstrap --enable-build-with-cxx --enable-cloog-backend=isl --disable-libjava-multilib --enable-checking=release --enable-gold --enable-ld --enable-libada --enable-libssp --enable-lto --enable-objc-gc --enable-vtable-verify $GCC_OPT_DISABLE_MULTILIB $BUILD_TARGET_CONF_OPTION";
+    GCC_CONF_OPTION_ALL="--prefix=$PREFIX_DIR --with-gmp=$PREFIX_DIR --with-mpc=$PREFIX_DIR --with-mpfr=$PREFIX_DIR --with-isl=$PREFIX_DIR --enable-bootstrap --enable-build-with-cxx --disable-libjava-multilib --enable-checking=release --enable-gold --enable-ld --enable-libada --enable-libssp --enable-lto --enable-objc-gc --enable-vtable-verify --enable-shared --enable-shared-libgcc --enable-static --enable-version-specific-runtime-libs --enable-linker-build-id $GCC_OPT_DISABLE_MULTILIB $BUILD_TARGET_CONF_OPTION";
     ../$GCC_DIR/configure $GCC_CONF_OPTION_ALL;
     make $BUILD_THREAD_OPT && make install;
     cd "$WORKING_DIR";
@@ -300,7 +300,7 @@ fi
 
 # ======================= install binutils(链接器,汇编器 等) =======================
 if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list binutils $BUILD_TARGET_COMPOMENTS) ]; then
-    BINUTILS_PKG=$(check_and_download "binutils" "binutils-*.tar.bz2" "http://ftp.gnu.org/gnu/binutils/binutils-2.25.tar.bz2" );
+    BINUTILS_PKG=$(check_and_download "binutils" "binutils-*.tar.bz2" "http://ftp.gnu.org/gnu/binutils/binutils-2.25.1.tar.bz2" );
     if [ $? -ne 0 ]; then
         echo -e "$BINUTILS_PKG";
         exit -1;
@@ -308,7 +308,7 @@ if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list binutils $BUILD_TA
     tar -jxvf $BINUTILS_PKG;
     BINUTILS_DIR=$(ls -d binutils-* | grep -v \.tar\.bz2);
     cd $BINUTILS_DIR;
-    ./configure --prefix=$PREFIX_DIR --with-gmp=$PREFIX_DIR --with-mpc=$PREFIX_DIR --with-mpfr=$PREFIX_DIR --with-isl=$PREFIX_DIR --with-cloog=$PREFIX_DIR --enable-build-with-cxx --enable-gold --enable-libada --enable-libssp --enable-lto --enable-objc-gc --disable-werror $BUILD_TARGET_CONF_OPTION;
+    ./configure --prefix=$PREFIX_DIR --with-gmp=$PREFIX_DIR --with-mpc=$PREFIX_DIR --with-mpfr=$PREFIX_DIR --with-isl=$PREFIX_DIR --enable-build-with-cxx --enable-gold --enable-libada --enable-libssp --enable-lto --enable-objc-gc --disable-werror $BUILD_TARGET_CONF_OPTION;
     make $BUILD_THREAD_OPT && make install;
     # ---- 新版本的GCC编译器会激发binutils内某些组件的werror而导致编译失败 ----
     # ---- 另外某个版本的make check有failed用例就被发布了,应该gnu的自动化测试有遗漏 ----
@@ -333,7 +333,7 @@ if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list gdb $BUILD_TARGET_
 		    GDB_PYTHON_OPT="--with-python=$PREFIX_DIR";
 	    else
 		    # =======================  尝试编译安装python  =======================
-		    PYTHON_PKG=$(check_and_download "python" "Python-2.*.tar.xz" "https://www.python.org/ftp/python/2.7.10/Python-2.7.10.tar.xz" );
+		    PYTHON_PKG=$(check_and_download "python" "Python-2.*.tar.xz" "https://www.python.org/ftp/python/2.7.11/Python-2.7.11.tar.xz" );
 		    if [ $? -ne 0 ]; then
 			    return;
 		    fi
@@ -346,7 +346,7 @@ if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list gdb $BUILD_TARGET_
 	    fi
 
 	    # ======================= 正式安装GDB =======================
-	    GDB_PKG=$(check_and_download "gdb" "gdb-*.tar.xz" "http://ftp.gnu.org/gnu/gdb/gdb-7.9.1.tar.xz" );
+	    GDB_PKG=$(check_and_download "gdb" "gdb-*.tar.xz" "http://ftp.gnu.org/gnu/gdb/gdb-7.10.1.tar.xz" );
 	    if [ $? -ne 0 ]; then
 		    echo -e "$GDB_PKG";
 		    exit -1;
@@ -354,7 +354,7 @@ if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list gdb $BUILD_TARGET_
 	    tar -Jxvf $GDB_PKG;
 	    GDB_DIR=$(ls -d gdb-* | grep -v \.tar\.xz);
 	    cd $GDB_DIR;
-	    ./configure --prefix=$PREFIX_DIR --with-gmp=$PREFIX_DIR --with-mpc=$PREFIX_DIR --with-mpfr=$PREFIX_DIR --with-isl=$PREFIX_DIR --with-cloog=$PREFIX_DIR --enable-build-with-cxx --enable-gold --enable-libada --enable-libssp --enable-objc-gc $GDB_PYTHON_OPT $BUILD_TARGET_CONF_OPTION;
+	    ./configure --prefix=$PREFIX_DIR --with-gmp=$PREFIX_DIR --with-mpc=$PREFIX_DIR --with-mpfr=$PREFIX_DIR --with-isl=$PREFIX_DIR --enable-build-with-cxx --enable-gold --enable-libada --enable-libssp --enable-objc-gc $GDB_PYTHON_OPT $BUILD_TARGET_CONF_OPTION;
 	    make $BUILD_THREAD_OPT && make install;
 	    cd "$WORKING_DIR";
 
