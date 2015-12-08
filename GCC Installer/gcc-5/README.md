@@ -1,5 +1,11 @@
 Linux 编译安装 GCC 5
 ======
+
+** 重要信息： 这个版本的release包有一些问题，顺带计划剥离cloog依赖，所以暂缓更新。**
+** 新版本的gcc文档里不再官方支持isl-0.12，所以计划更新isl到最新版，但是binutils只支持isl-0.12（预计快要放出2.26，应该就支持了），另外目前最新版本的gdb 7.10.1 编译也存在问题（头文件包含有点问题）**
+
+** 所以请先使用 https://github.com/owent-utils/bash-shell/tree/gcc-5.2/GCC%20Installer/gcc-5 。可用于编译gcc 5.2.0 **
+
 详情及变更请参照: [Linux 编译安装 GCC 5](https://github.com/owt5008137/OWenT-s-Utils/tree/master/Bash%26Shell/GCC%20Installer/gcc-5)
 
 GCC 5发布啦，本脚本在之前4.9的基础上做了稍许改进
