@@ -247,28 +247,6 @@ if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list isl $BUILD_TARGET_
     cd "$WORKING_DIR";
 fi
 
-# install cloog
-# TODO will be removed when it's not dependency of binutils & gdb
-if [ "0" == $(is_in_list cloog $BUILD_TARGET_COMPOMENTS) ]; then
-    CLOOG_PKG=$(check_and_download "cloog-0.18" "cloog-0.*.tar.gz" "ftp://gcc.gnu.org/pub/gcc/infrastructure/cloog-0.18.1.tar.gz" );
-    if [ $? -ne 0 ]; then
-        echo -e "$CLOOG_PKG";
-        exit -1;
-    fi
-    tar -zxvf $CLOOG_PKG;
-    CLOOG_DIR=$(ls -d cloog-0.* | grep -v \.tar\.gz);
-    cd $CLOOG_DIR;
-    ./configure --prefix=$PREFIX_DIR --with-gmp=system --with-gmp-prefix=$PREFIX_DIR --with-bits=gmp --with-isl=system --with-isl-prefix=$PREFIX_DIR $BUILD_OTHER_CONF_OPTION;
-    make $BUILD_THREAD_OPT && make install;
-    if [ $? -ne 0 ]; then
-        echo -e "\\033[31;1mError: build cloog failed.\\033[39;49;0m";
-        exit -1;
-    fi
-
-    make check;
-    cd "$WORKING_DIR";
-fi
-
 # ======================= install gcc =======================
 if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list gcc $BUILD_TARGET_COMPOMENTS) ]; then
     # ======================= gcc包 =======================
@@ -300,7 +278,7 @@ fi
 
 # ======================= install binutils(链接器,汇编器 等) =======================
 if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list binutils $BUILD_TARGET_COMPOMENTS) ]; then
-    BINUTILS_PKG=$(check_and_download "binutils" "binutils-*.tar.bz2" "http://ftp.gnu.org/gnu/binutils/binutils-2.25.1.tar.bz2" );
+    BINUTILS_PKG=$(check_and_download "binutils" "binutils-*.tar.bz2" "http://ftp.gnu.org/gnu/binutils/binutils-2.26.tar.bz2" );
     if [ $? -ne 0 ]; then
         echo -e "$BINUTILS_PKG";
         exit -1;

@@ -72,7 +72,7 @@ CentOS 6.5 & CentOS 7
 
 #### 编译目标：
 + gcc 5.3.0
-+ binutils 2.25.1
++ binutils 2.26
 + python 2.7.11 *[按需]*
 + gdb 7.10.1 (如果存在ncurses-devel包)
 
@@ -101,3 +101,4 @@ end
 #### History:
 + 2015-04-13     Created
 + 2015-07-20     更新GCC版本到5.2.0，Python到2.7.10，mpfr到3.1.3, gdb到7.9.1
++ 2016-02-03     更新GCC版本到5.3.0，Python到2.7.11，binutils到2.26, gdb到7.10.1，移除**cloog**
