@@ -324,7 +324,7 @@ if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list gdb $BUILD_TARGET_
 	    fi
 
 	    # ======================= 正式安装GDB =======================
-	    GDB_PKG=$(check_and_download "gdb" "gdb-*.tar.xz" "http://ftp.gnu.org/gnu/gdb/gdb-7.10.1.tar.xz" );
+	    GDB_PKG=$(check_and_download "gdb" "gdb-*.tar.xz" "http://ftp.gnu.org/gnu/gdb/gdb-7.11.tar.xz" );
 	    if [ $? -ne 0 ]; then
 		    echo -e "$GDB_PKG";
 		    exit -1;

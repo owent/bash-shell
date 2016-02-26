@@ -1,11 +1,6 @@
 Linux 编译安装 GCC 5
 ======
 
-** 重要信息： 这个版本的release包有一些问题，顺带计划剥离cloog依赖，所以暂缓更新。**
-** 新版本的gcc文档里不再官方支持isl-0.12，所以计划更新isl到最新版，但是binutils只支持isl-0.12（预计快要放出2.26，应该就支持了），另外目前最新版本的gdb 7.10.1 编译也存在问题（头文件包含有点问题）**
-
-** 所以请先使用 https://github.com/owent-utils/bash-shell/tree/gcc-5.2/GCC%20Installer/gcc-5 。可用于编译gcc 5.2.0 **
-
 详情及变更请参照: [Linux 编译安装 GCC 5](https://github.com/owt5008137/OWenT-s-Utils/tree/master/Bash%26Shell/GCC%20Installer/gcc-5)
 
 GCC 5发布啦，本脚本在之前4.9的基础上做了稍许改进
@@ -74,7 +69,7 @@ CentOS 6.5 & CentOS 7
 + gcc 5.3.0
 + binutils 2.26
 + python 2.7.11 *[按需]*
-+ gdb 7.10.1 (如果存在ncurses-devel包)
++ gdb 7.11 (如果存在ncurses-devel包)
 
 #### 注：
 + (所有的库都会被安装在**$PREFEX_DIR**里)
@@ -99,6 +94,7 @@ end
 5. 编译安装gdb
 
 #### History:
-+ 2015-04-13     Created
-+ 2015-07-20     更新GCC版本到5.2.0，Python到2.7.10，mpfr到3.1.3, gdb到7.9.1
-+ 2016-02-03     更新GCC版本到5.3.0，Python到2.7.11，binutils到2.26, gdb到7.10.1，移除**cloog**
++ 2015-04-13    Created
++ 2015-07-20    更新GCC版本到5.2.0，Python到2.7.10，mpfr到3.1.3, gdb到7.9.1
++ 2016-02-03    更新GCC版本到5.3.0，Python到2.7.11，binutils到2.26, gdb到7.10.1，移除**cloog**
++ 2016-02-26    更新GDB版本到7.11,这个版本的GDB的include没问题了
