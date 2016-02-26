@@ -31,12 +31,12 @@ while getopts "p:cht:d:g:" OPTION; do
         h)
             echo "usage: $0 [options] -p=prefix_dir -c -h";
             echo "options:";
-            echo "-p=[prefix_dir]             set prefix directory.";
+            echo "-p [prefix_dir]             set prefix directory.";
             echo "-c                          clean build cache.";
             echo "-h                          help message.";
-            echo "-t=[build target]           set build target(gmp mpfr mpc isl gcc binutils gdb).";
-            echo "-d=[compoment option]       add dependency compoments build options.";
-            echo "-g=[gnu option]             add gcc,binutils,gdb build options.";
+            echo "-t [build target]           set build target(gmp mpfr mpc isl gcc binutils gdb).";
+            echo "-d [compoment option]       add dependency compoments build options.";
+            echo "-g [gnu option]             add gcc,binutils,gdb build options.";
             exit 0;
         ;;
         t)
