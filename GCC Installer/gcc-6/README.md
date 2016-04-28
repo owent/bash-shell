@@ -1,32 +1,43 @@
-Linux 编译安装 GCC 5
+Linux 编译安装 GCC 6
 ======
 
-详情及变更请参照: [Linux 编译安装 GCC 5](https://github.com/owent-utils/bash-shell/tree/master/GCC%20Installer/gcc-5)
+详情及变更请参照: [Linux 编译安装 GCC 5](https://github.com/owent-utils/bash-shell/tree/master/GCC%20Installer/gcc-6)
 
-GCC 5发布啦，本脚本在之前4.9的基础上做了稍许改进
+GCC 6发布啦，本脚本在之前GCC 5的基础上做了稍许改进
 
 由于GCC从5开始[对版本号进行重新规范](https://gcc.gnu.org/develop.html#num_scheme)，所以这里的编译脚本以后以主版本号为准。
 
 另外由于GNU官方已经不建议使用bzip2，所以依赖包会尽量使用xz压缩包
 
-GCC 5的大致内容如下：
+GCC 6的大致内容如下：
 
-1.   **默认C标准使用c11，原先是c98**
-2.  移除对cloog的依赖*(虽然gcc 5可以用新版的isl从而不依赖cloog，但是目前的gdb和binutils仍然依赖老版本的isl和cloog，所以编译脚本里用了老板的isl并会编译cloog)*
-3.  移除了一些实验性的编译器命令，转而使用标准里的
-4.  优化跨模块编译优化功能和性能
-5.  优化链接时优化功能、性能和内存消耗
-6.  寄存器分配优化
-7.  指针边界检查
-8.  **全面支持c++14**
-9.  **不再支持[http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2013/n3639.html](N3639)里定义的变长数组声明**
-10. **std::string默认情况下使用小字符串优化策略代替写时复制**（关于这个《More Exceptional C++》里有说明）
-11. **默认情况下使用新的std::list策略，std::list::size函数复杂度变为O(1)**
-12. libstdc++完全c++11（STL库完全支持）
-13. 初步的libgccjit功能
-14. 其他的不列举啦，可以参见 https://gcc.gnu.org/gcc-5/changes.html
+1.   **默认C++标准使用c++14(gnu++14)，原先是c++98(gnu++98)**
+2.  增加了严格数组越界行为检测(-fsanitize=bounds-strict)
+3.  区分类型别名的指针访问分析。这会影响类型双关的代码，可以加-fno-strict-aliasing移除
+4.  类型别名支持weakref和alias属性，有助于链接时优化。
+5.  移除值范围传播时的this指针有效性检查，
+6.  链接时优化 - 链接声明时warning和error属性
+7.  链接时优化 - C和Fortan的类型合并规则修订并支持Fortan 2008标准
+8.  链接时优化 - 不开启链接优化时保留更多的类型信息
+9.  链接时优化 - 非法的全局变量和声明检测（-Wodr-type-mismatch）
+10. 链接时优化 - 链接中间文件大小减小了约11%
+11. 链接时优化 - 通过减小数据流分区的大小提升并行链接性能，Firefox的IL流减少了66%
+12. 链接时优化 - 插件拓展，支持增量链接和全局程序优化（-r选项）
+13. 跨程序优化
+14. OpenACC 2.0a
+15. OpenMP 4.5
+16. 支持枚举类型的属性声明
+17. 错误代码现在显示一个表达式范围，之前只提供出错点
+18. 诊断提示附加到错误处
+19. 一些新的细节控制选项，不一一列出了
+20. 对SCM附加的merge标记做特殊提示
+21. 支持[C++ Concepts](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/n4377.pdf)
+22. 支持C++17的折叠表达式，*u8*字符修饰，扩展static_assert和嵌套命名空间的功能
+23. 允许非类型模板参数的常量评估
+24. 支持内存事物（-fgnu-tm）
+25. C++17的一些实验性支持
 
-编译安装 GCC 5.X.X
+编译安装 GCC 6.X.X
 ### 准备环境及依赖项
 
 1. 支持 ISO C++ 98 的编译器（GCC 3.4及以上）
@@ -44,11 +55,11 @@ GCC 5的大致内容如下：
 13. gmp库 版本4.3.2及以上 （可由GNU镜像列表 http://www.gnu.org/prep/ftp.html 或自动选择最佳镜像 http://ftpmirror.gnu.org 下载 ）
 14. mpfr库 版本2.4.2及以上 （可由GNU镜像列表 http://www.gnu.org/prep/ftp.html 或自动选择最佳镜像 http://ftpmirror.gnu.org 下载 ）
 15. mpc库 版本0.8.1及以上 （可由GNU镜像列表 http://www.gnu.org/prep/ftp.html 或自动选择最佳镜像 http://ftpmirror.gnu.org 下载 ）
-16. isl 版本 0.14 或0.12.2 （可由GNU镜像列表 http://www.gnu.org/prep/ftp.html 或自动选择最佳镜像 http://ftpmirror.gnu.org  中gcc目录中的infrastructure目录下载 ）
+16. isl 版本 0.14,0.15或0.16 （可由GNU镜像列表 http://www.gnu.org/prep/ftp.html 或自动选择最佳镜像 http://ftpmirror.gnu.org 中gcc目录中的infrastructure目录下载 ）
 
 ### 我编译的环境
 #### 系统：
-CentOS 6.5 & CentOS 7
+CentOS 6 & CentOS 7
 
 #### 系统库：
 + gzip 1.3.12 and gzip 1.5
@@ -57,16 +68,16 @@ CentOS 6.5 & CentOS 7
 + tar 1.23 and tar 1.26
 + perl 5.10.1 and perl 5.16.3
 + bzip2 1.0.5 and bzip2 1.0.6
-+ gcc 4.4.7 and gcc 4.8.3
++ gcc 4.4.7 and gcc 4.8.5
 
 #### 编译的依赖库：
 + gmp 6.1.0
-+ mpfr 3.1.3
++ mpfr 3.1.4
 + mpc 1.0.3
-+ isl 0.15
++ isl 0.16.1
 
 #### 编译目标：
-+ gcc 5.3.0
++ gcc 6.1.0
 + binutils 2.26
 + python 2.7.11 *[按需]*
 + gdb 7.11 (如果存在ncurses-devel包)
@@ -94,7 +105,4 @@ end
 5. 编译安装gdb
 
 #### History:
-+ 2015-04-13    Created
-+ 2015-07-20    更新GCC版本到5.2.0，Python到2.7.10，mpfr到3.1.3, gdb到7.9.1
-+ 2016-02-03    更新GCC版本到5.3.0，Python到2.7.11，binutils到2.26, gdb到7.10.1，移除**cloog**
-+ 2016-02-26    更新GDB版本到7.11,这个版本的GDB的include没问题了
++ 2016-04-28    Created
