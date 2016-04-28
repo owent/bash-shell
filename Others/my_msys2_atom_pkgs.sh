@@ -7,8 +7,8 @@ echo "##
 
 ## Primary
 ## msys2.org
-Server = http://mirrors.ustc.edu.cn/msys2/REPOS/MSYS2/$arch
-Server = http://mirror.bit.edu.cn/msys2/REPOS/MSYS2/$arch" > /etc/pacman.d/mirrorlist.msys ;
+Server = http://mirrors.ustc.edu.cn/msys2/REPOS/MSYS2/\$arch
+Server = http://mirror.bit.edu.cn/msys2/REPOS/MSYS2/\$arch" > /etc/pacman.d/mirrorlist.msys ;
 
 echo "##
 ##
