@@ -63,7 +63,7 @@ done
 
 # 安装扩展软件源
 rpm -ivh http://nginx.org/packages/centos/7/noarch/RPMS/nginx-release-centos-7-0.el7.ngx.noarch.rpm
-rpm -ivh http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-5.noarch.rpm
+rpm -ivh http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-6.noarch.rpm
  
 yum install -y nginx
 yum install -y autoconf zlib zlib-devel libpng libpng-devel freetype freetype-devel sendmail mariadb-server mariadb memcached procmail php php-adodb php-bcmath php-cli php-common php-devel php-enchant php-fpm php-gd php-imap php-intl php-ldap php-markdown php-mbstring php-mcrypt php-mssql php-mysql php-odbc php-pdo php-pear php-pear-DB php-pear-File php-pear-File-Util php-pear-HTTP php-pear-HTTP-* php-pear-Mail php-pear-XML-* php-pecl-mailparse php-pecl-memcache php-pecl-memprof php-pecl-mongo php-pecl-oauth php-pecl-redis php-pecl-uuid php-pgsql php-process php-pspell php-recode php-soap php-tidy php-xml php-xmlrpc php-zipstream
