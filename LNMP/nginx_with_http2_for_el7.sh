@@ -80,7 +80,7 @@ cd "$NGINX_DIR_NAME";
 --with-http_v2_module \
 --with-ipv6 \
 --with-openssl="$WORKING_DIR/$OPENSSL_DIR_NAME" \
---with-openssl-opt="shared --prefix=$OPENSSL_PREFIX_DIR -fPIC" ;
+--with-openssl-opt="-fPIC" ;
 
 make;
 make install;
