@@ -9,7 +9,7 @@
 WORKING_DIR="$PWD";
 OPENSSL_PREFIX_DIR=/usr/local/openssl-1.0.2;
 OPENSSL_VERSION=1.0.2h;
-NGINX_VERSION=1.10.0;
+NGINX_VERSION=1.10.1;
 
 OPENSSL_DIR_NAME="openssl-$OPENSSL_VERSION";
 OPENSSL_PKG_NAME="$OPENSSL_DIR_NAME.tar.gz";
@@ -18,8 +18,8 @@ NGINX_PKG_NAME="$NGINX_DIR_NAME.tar.gz";
 
 
 # 软件源
+yum install epel-release;
 rpm -ivh http://nginx.org/packages/centos/7/noarch/RPMS/nginx-release-centos-7-0.el7.ngx.noarch.rpm ;
-rpm -ivh http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-5.noarch.rpm ;
 
 # 安装依赖项
 yum install -y yum-utils yum-plugin-remove-with-leaves yum-cron yum-plugin-upgrade-helper yum-plugin-fastestmirror rpm-build;
