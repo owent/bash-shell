@@ -80,7 +80,7 @@ CentOS 6 & CentOS 7
 + gcc 6.1.0
 + binutils 2.26
 + python 2.7.11 *[按需]*
-+ gdb 7.11 (如果存在ncurses-devel包)
++ gdb 7.11.1 (如果存在ncurses-devel包)
 
 #### 注：
 + (所有的库都会被安装在**$PREFEX_DIR**里)

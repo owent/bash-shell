@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # ======================================= 配置 =======================================
-PREFIX_DIR=/usr/local/gcc-5.3.0
+PREFIX_DIR=/usr/local/gcc-5.4.0
 BUILD_TARGET_COMPOMENTS="";
 
 # ======================= 非交叉编译 =======================
@@ -250,7 +250,7 @@ fi
 # ======================= install gcc =======================
 if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list gcc $BUILD_TARGET_COMPOMENTS) ]; then
     # ======================= gcc包 =======================
-    GCC_PKG=$(check_and_download "gcc" "gcc-*.tar.bz2" "ftp://gcc.gnu.org/pub/gcc/releases/gcc-5.3.0/gcc-5.3.0.tar.bz2" );
+    GCC_PKG=$(check_and_download "gcc" "gcc-*.tar.bz2" "ftp://gcc.gnu.org/pub/gcc/releases/gcc-5.4.0/gcc-5.4.0.tar.bz2" );
     if [ $? -ne 0 ]; then
         echo -e "$GCC_PKG";
         exit -1;
