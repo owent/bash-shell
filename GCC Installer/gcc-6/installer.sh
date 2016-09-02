@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # ======================================= 配置 =======================================
-PREFIX_DIR=/usr/local/gcc-6.1.0
+PREFIX_DIR=/usr/local/gcc-6.2.0
 BUILD_TARGET_COMPOMENTS="";
 
 # ======================= 非交叉编译 =======================
@@ -173,7 +173,7 @@ swapoff -a
 
 # install gmp
 if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list gmp $BUILD_TARGET_COMPOMENTS) ]; then
-    GMP_PKG=$(check_and_download "gmp" "gmp-*.tar.xz" "ftp://ftp.gmplib.org/pub/gmp/gmp-6.1.0.tar.xz" );
+    GMP_PKG=$(check_and_download "gmp" "gmp-*.tar.xz" "ftp://ftp.gmplib.org/pub/gmp/gmp-6.1.1.tar.xz" );
     if [ $? -ne 0 ]; then
         echo -e "$GMP_PKG";
         exit -1;
@@ -250,7 +250,7 @@ fi
 # ======================= install gcc =======================
 if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list gcc $BUILD_TARGET_COMPOMENTS) ]; then
     # ======================= gcc包 =======================
-    GCC_PKG=$(check_and_download "gcc" "gcc-*.tar.bz2" "ftp://gcc.gnu.org/pub/gcc/releases/gcc-6.1.0/gcc-6.1.0.tar.bz2" );
+    GCC_PKG=$(check_and_download "gcc" "gcc-*.tar.bz2" "ftp://gcc.gnu.org/pub/gcc/releases/gcc-6.2.0/gcc-6.2.0.tar.bz2" );
     if [ $? -ne 0 ]; then
         echo -e "$GCC_PKG";
         exit -1;
@@ -278,7 +278,7 @@ fi
 
 # ======================= install binutils(链接器,汇编器 等) =======================
 if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list binutils $BUILD_TARGET_COMPOMENTS) ]; then
-    BINUTILS_PKG=$(check_and_download "binutils" "binutils-*.tar.bz2" "http://ftp.gnu.org/gnu/binutils/binutils-2.26.tar.bz2" );
+    BINUTILS_PKG=$(check_and_download "binutils" "binutils-*.tar.bz2" "http://ftp.gnu.org/gnu/binutils/binutils-2.27.tar.bz2" );
     if [ $? -ne 0 ]; then
         echo -e "$BINUTILS_PKG";
         exit -1;
@@ -311,13 +311,13 @@ if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list gdb $BUILD_TARGET_
 		    GDB_PYTHON_OPT="--with-python=$PREFIX_DIR";
 	    else
 		    # =======================  尝试编译安装python  =======================
-		    PYTHON_PKG=$(check_and_download "python" "Python-2.*.tar.xz" "https://www.python.org/ftp/python/2.7.11/Python-2.7.11.tar.xz" );
+		    PYTHON_PKG=$(check_and_download "python" "Python-*.tar.xz" "https://www.python.org/ftp/python/3.5.2/Python-3.5.2.tar.xz" );
 		    if [ $? -ne 0 ]; then
 			    return;
 		    fi
 
 		    tar -Jxvf $PYTHON_PKG;
-		    PYTHON_DIR=$(ls -d Python-2.* | grep -v \.tar.xz);
+		    PYTHON_DIR=$(ls -d Python-* | grep -v \.tar.xz);
 		    cd $PYTHON_DIR;
 		    ./configure --prefix=$PREFIX_DIR;
 		    make $BUILD_THREAD_OPT && make install && GDB_PYTHON_OPT="--with-python=$PREFIX_DIR";

@@ -71,15 +71,15 @@ CentOS 6 & CentOS 7
 + gcc 4.4.7 and gcc 4.8.5
 
 #### 编译的依赖库：
-+ gmp 6.1.0
++ gmp 6.1.1
 + mpfr 3.1.4
 + mpc 1.0.3
 + isl 0.16.1
 
 #### 编译目标：
-+ gcc 6.1.0
-+ binutils 2.26
-+ python 2.7.11 *[按需]*
++ gcc 6.2.0
++ binutils 2.27
++ python 2.7.12 *[按需]*
 + gdb 7.11.1 (如果存在ncurses-devel包)
 
 #### 注：
@@ -106,3 +106,4 @@ end
 
 #### History:
 + 2016-04-28    Created
++ 2016-09-01    更新gcc到6.2.0,gmp到6.1.1,binutils到2.27,python到3.5.2
