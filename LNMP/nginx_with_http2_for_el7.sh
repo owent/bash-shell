@@ -8,8 +8,8 @@
 
 WORKING_DIR="$PWD";
 OPENSSL_PREFIX_DIR=/usr/local/openssl-1.0.2;
-OPENSSL_VERSION=1.0.2h;
-NGINX_VERSION=1.10.1;
+OPENSSL_VERSION=1.0.2j;
+NGINX_VERSION=1.10.2;
 
 OPENSSL_DIR_NAME="openssl-$OPENSSL_VERSION";
 OPENSSL_PKG_NAME="$OPENSSL_DIR_NAME.tar.gz";
@@ -31,6 +31,13 @@ if [ ! -e "$OPENSSL_PKG_NAME" ]; then
 fi
 
 tar -axvf "$OPENSSL_PKG_NAME";
+if [ ! -e "$OPENSSL_PREFIX_DIR" ]; then
+    cd "$OPENSSL_DIR_NAME";
+    ./config --prefix="$OPENSSL_PREFIX_DIR";
+    make;
+    make install;
+    cd - ;
+fi
 
 # build nginx
 if [ ! -e "$NGINX_PKG_NAME" ]; then
