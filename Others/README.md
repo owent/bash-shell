@@ -3,6 +3,8 @@
 #### 按行替换文件
 perl -p -i -e "s;匹配项(正则表达式);目标值;g" "文件路径";
 
+#### 同步开源镜像
+rsync -arh --progress 源地址 目标地址 ; # 比如：rsync -arh --progress rsync://mirrors.tuna.tsinghua.edu.cn/msys2 .
 
 注意和说明：
 ------
