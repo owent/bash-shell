@@ -1,10 +1,10 @@
 #!/bin/sh
 
 echo "mirror of msys2 base:";
-echo "\thttps://mirrors.tuna.tsinghua.edu.cn/msys2/distrib/";
-echo "\thttp://mirrors.ustc.edu.cn/msys2/Base/";
-echo "\thttp://mirror.bit.edu.cn/msys2/Base/";
-echo "\thttp://mirrors.zju.edu.cn/msys2/msys2/Base/";
+echo -e "\thttps://mirrors.tuna.tsinghua.edu.cn/msys2/distrib/";
+echo -e "\thttp://mirrors.ustc.edu.cn/msys2/Base/";
+echo -e "\thttp://mirror.bit.edu.cn/msys2/Base/";
+echo -e "\thttp://mirrors.zju.edu.cn/msys2/msys2/Base/";
 # package source
 echo "##
 ## MSYS2 repository mirrorlist
