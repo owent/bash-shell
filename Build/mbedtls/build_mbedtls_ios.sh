@@ -35,6 +35,7 @@ if [ $# -lt 1 ]; then
 fi
 
 MBEDTLS_DIR="$(cd "$1" && pwd)";
+shift;
 
 ##########
 if [ ! -e "$MBEDTLS_DIR/CMakeLists.txt" ]; then
@@ -67,7 +68,7 @@ for ARCH in ${ARCHS}; do
     export SDKROOT="${DEVROOT}/SDKs/${PLATFORM}${SDKVERSION}.sdk"
     export BUILD_TOOLS="${DEVELOPER}"
     #export CC="${BUILD_TOOLS}/usr/bin/gcc -arch ${ARCH}"
-    export CC=${BUILD_TOOLS}/usr/bin/gcc
+    #export CC=${BUILD_TOOLS}/usr/bin/gcc
     #export LD=${BUILD_TOOLS}/usr/bin/ld
     #export CPP=${BUILD_TOOLS}/usr/bin/cpp
     #export CXX=${BUILD_TOOLS}/usr/bin/g++
@@ -85,7 +86,8 @@ for ARCH in ${ARCHS}; do
     mkdir -p "$WORKING_DIR/build/$ARCH";
     cd "$WORKING_DIR/build/$ARCH";
     
-    cmake "$MBEDTLS_DIR" -DCMAKE_OSX_SYSROOT=$SDKROOT -DCMAKE_SYSROOT=$SDKROOT -DCMAKE_OSX_ARCHITECTURES=$ARCH -DCMAKE_C_COMPILER=$CC -DCMAKE_C_FLAGS="-pipe -no-cpp-precomp" -DCMAKE_LINK_LIBRARY_FLAG="-pipe -no-cpp-precomp";
+    # add -DCMAKE_OSX_DEPLOYMENT_TARGET=7.1 to specify the min SDK version
+    cmake "$MBEDTLS_DIR" -DCMAKE_OSX_SYSROOT=$SDKROOT -DCMAKE_SYSROOT=$SDKROOT -DCMAKE_OSX_ARCHITECTURES=$ARCH -DCMAKE_C_FLAGS="-fPIC" "$@";
     make -j4;
 done
 
