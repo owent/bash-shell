@@ -90,12 +90,12 @@ mkdir -p "$PHP_LOG_DIR";
 mkdir -p "$DB_LOG_DIR";
 mkdir -p "$PHP_SESSION_DIR";
 mkdir -p "$SSL_CERT_DIR";
-chmod $USER:$GROUP -R "$NGINX_LOG_DIR";
-chmod $USER:$GROUP -R "$PHP_LOG_DIR";
-chmod $USER:$GROUP -R "$WEBSITE_DIR_PATH";
-chmod $USER:$GROUP -R "$PHP_SESSION_DIR";
-chmod $USER:$GROUP -R "$SSL_CERT_DIR";
-chmod $USER:$GROUP -R "$DB_LOG_DIR";
+chown $USER:$GROUP -R "$NGINX_LOG_DIR";
+chown $USER:$GROUP -R "$PHP_LOG_DIR";
+chown $USER:$GROUP -R "$WEBSITE_DIR_PATH";
+chown $USER:$GROUP -R "$PHP_SESSION_DIR";
+chown $USER:$GROUP -R "$SSL_CERT_DIR";
+chown $USER:$GROUP -R "$DB_LOG_DIR";
 
 # 替换nginx基础配置
 sed -i "s/worker_processes\\s*[0-9]*\\s*;/worker_processes 16/g" "$NGINX_CONF";
@@ -136,7 +136,7 @@ A-DES-CBC3-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:AES128-SHA256:AES256-SHA256:A
     ssl_dhparam $SSL_CERT_DIR/dhparam.pem;\\
     ssl_stapling on;\\
     ssl_stapling_verify on;";
-sed  "/include\\s*[^\\*]*\\*[^;]*;/i\\ $NGINX_COMMON_CONFIGURES" "$NGINX_CONF";
+sed -i "/include\\s*[^\\*]*\\*[^;]*;/i\\ $NGINX_COMMON_CONFIGURES" "$NGINX_CONF";
 
 if [ ! -e "$SSL_CERT_DIR/dhparam.pem" ]; then
     openssl dhparam -out "$SSL_CERT_DIR/dhparam.pem" 2048 ;
