@@ -13,9 +13,9 @@ PHP_CACHE_DIR_PATH=/tmp/php/cache
 PHP_EXT_LOG_DIR_PATH=/var/log/php
 PHP_OPT_COMP_INSTALL="";
 DB_DATA_DIR=/home/db
+DB_CONF_FILE_PATH=/etc/my.cnf
 
-
-while getopts "a:c:d:f:hl:m:o:" arg; do
+while getopts "a:c:d:f:hl:m:o:s:" arg; do
         case $arg in
              a)
                 PHP_CACHE_DIR_PATH="$OPTARG";
@@ -38,6 +38,9 @@ while getopts "a:c:d:f:hl:m:o:" arg; do
              m)
                 DB_DATA_DIR="$OPTARG";
                 ;;
+             s)
+                DB_CONF_FILE_PATH="$OPTARG";
+                ;;
              h)
                 echo "usage: $0 [options]
 options:
@@ -46,7 +49,7 @@ options:
 -d  <php conf dir>              dir path of php.d(Notice: must match rpm packages)
 -f  <php-fpm.d/www.conf path>   path of php-fpm.d/www.conf path(Notice: must match rpm packages)
 -h                              help message
--l  <php conf dir>              dir path of php ext logs
+-l  <log dir>                   dir path of php ext logs
 -m  <db data dir>               db data directory
 -o  <php opt compoments>        can be one or some of [xcache, zendopcache, apcu, none]
                 ";
@@ -64,7 +67,8 @@ done
 # 安装扩展软件源
 rpm -ivh http://nginx.org/packages/centos/7/noarch/RPMS/nginx-release-centos-7-0.el7.ngx.noarch.rpm
 yum install epel-release
- 
+
+yum install net-tools moreutils
 yum install -y nginx
 yum install -y autoconf zlib zlib-devel libpng libpng-devel freetype freetype-devel sendmail mariadb-server mariadb memcached procmail php php-adodb php-bcmath php-cli php-common php-devel php-enchant php-fpm php-gd php-imap php-intl php-ldap php-markdown php-mbstring php-mcrypt php-mssql php-mysql php-odbc php-pdo php-pear php-pear-DB php-pear-File php-pear-File-Util php-pear-HTTP php-pear-HTTP-* php-pear-Mail php-pear-XML-* php-pecl-mailparse php-pecl-memcache php-pecl-memprof php-pecl-mongo php-pecl-oauth php-pecl-redis php-pecl-uuid php-pgsql php-process php-pspell php-recode php-soap php-tidy php-xml php-xmlrpc php-zipstream
 systemctl disable httpd.service

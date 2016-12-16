@@ -22,7 +22,7 @@ yum install epel-release;
 rpm -ivh http://nginx.org/packages/centos/7/noarch/RPMS/nginx-release-centos-7-0.el7.ngx.noarch.rpm ;
 
 # 安装依赖项
-yum install -y yum-utils yum-plugin-remove-with-leaves yum-cron yum-plugin-upgrade-helper yum-plugin-fastestmirror rpm-build;
+yum install -y gcc gdb make automake gcc-c++ libtool yum-utils yum-plugin-remove-with-leaves yum-cron yum-plugin-upgrade-helper yum-plugin-fastestmirror rpm-build;
 yum-builddep -y nginx;
 
 # 下载openssl
