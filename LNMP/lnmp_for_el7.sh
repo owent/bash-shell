@@ -267,7 +267,11 @@ fi
 # ===========================  配置 权限  ===========================
 chown nginx:users $PHP_EXT_LOG_DIR_PATH* $PHP_CACHE_DIR_PATH /var/log/nginx -R;
 
+# 更新systemd里的最大打开文件数量
+sed -i "s/#\\s*DefaultLimitNOFILE\\s*=.*/DefaultLimitNOFILE=65536/g" /etc/systemd/system.conf;
+
 # ===========================  重启 服务  ===========================
+firewall-cmd --reload
 systemctl restart nginx.service
 systemctl restart php-fpm.service
 systemctl restart mariadb.service

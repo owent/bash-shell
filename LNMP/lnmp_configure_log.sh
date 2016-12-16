@@ -201,7 +201,7 @@ for PHP_FPM_FILE in "$PHP_FPM_CONF_DIR_PATH/"*.conf ; do
 done
 
 # 替换mysql/mariadb配置
-if [-e "$DB_CONF_FILE_PATH" ]; then
+if [ -e "$DB_CONF_FILE_PATH" ]; then
     sed -i "s#log-error\s*=.*#log-error=$DB_LOG_DIR/mariadb.log#g" "$DB_CONF_FILE_PATH";
 else
     echo -e "\\033];mcan not find my.cnf in $DB_CONF_FILE_PATH\\033;0m";
