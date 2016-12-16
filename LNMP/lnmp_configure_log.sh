@@ -96,9 +96,10 @@ chown $USER:$GROUP -R "$WEBSITE_DIR_PATH";
 chown $USER:$GROUP -R "$PHP_SESSION_DIR";
 chown $USER:$GROUP -R "$SSL_CERT_DIR";
 chown $USER:$GROUP -R "$DB_LOG_DIR";
+chmod 777 -R "$WEBSITE_DIR_PATH/log";
 
 # 替换nginx基础配置
-sed -i "s/worker_processes\\s*[0-9]*\\s*;/worker_processes 16/g" "$NGINX_CONF";
+sed -i "s/worker_processes\\s*[0-9]*\\s*;/worker_processes 16;/g" "$NGINX_CONF";
 sed -i "s;error_log\\s*[^\\;]*\\;;error_log  $NGINX_LOG_DIR/nginx-error.log warn\\;;g" "$NGINX_CONF";
 sed -i "s;access_log\\s*[^\\;]*\\;;access_log  $NGINX_LOG_DIR/nginx-access.log main\\;;g" "$NGINX_CONF";
 sed -i "/gzip/d" "$NGINX_CONF";
