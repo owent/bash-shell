@@ -7,6 +7,8 @@ Lnmp yum 安装脚本 (for CentOS)
 ------
 1. **lnmp.sh** 可用于CentOS 6及Redhat 6
 2. **lnmp_for_el7.sh** 可用于CentOS 7及Redhat 7(m替换成了MySQL开分支:mariadb)
+3. **lnmp_configure_log.sh** 用于CentOS 7及Redhat 7的LNMP缓存配置脚本
+4. **setup_swapfile.sh** 用于CentOS 7及Redhat 7的交换区配置脚本（mariadb的内存占用比较大，需要开启一下以防崩溃）
 
 ## 脚本选项
 ```shell
