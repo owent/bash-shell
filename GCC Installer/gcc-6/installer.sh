@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # ======================================= 配置 =======================================
-PREFIX_DIR=/usr/local/gcc-6.2.0
+PREFIX_DIR=/usr/local/gcc-6.3.0
 BUILD_TARGET_COMPOMENTS="";
 
 # ======================= 非交叉编译 =======================
@@ -173,7 +173,7 @@ swapoff -a
 
 # install gmp
 if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list gmp $BUILD_TARGET_COMPOMENTS) ]; then
-    GMP_PKG=$(check_and_download "gmp" "gmp-*.tar.xz" "ftp://ftp.gmplib.org/pub/gmp/gmp-6.1.1.tar.xz" );
+    GMP_PKG=$(check_and_download "gmp" "gmp-*.tar.xz" "ftp://ftp.gmplib.org/pub/gmp/gmp-6.1.2.tar.xz" );
     if [ $? -ne 0 ]; then
         echo -e "$GMP_PKG";
         exit -1;
@@ -192,7 +192,7 @@ fi
 
 # install mpfr
 if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list mpfr $BUILD_TARGET_COMPOMENTS) ]; then
-    MPFR_PKG=$(check_and_download "mpfr" "mpfr-*.tar.xz" "http://www.mpfr.org/mpfr-current/mpfr-3.1.4.tar.xz" );
+    MPFR_PKG=$(check_and_download "mpfr" "mpfr-*.tar.xz" "http://www.mpfr.org/mpfr-current/mpfr-3.1.5.tar.xz" );
     if [ $? -ne 0 ]; then
         echo -e "$MPFR_PKG";
         exit -1;
@@ -250,7 +250,7 @@ fi
 # ======================= install gcc =======================
 if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list gcc $BUILD_TARGET_COMPOMENTS) ]; then
     # ======================= gcc包 =======================
-    GCC_PKG=$(check_and_download "gcc" "gcc-*.tar.bz2" "ftp://gcc.gnu.org/pub/gcc/releases/gcc-6.2.0/gcc-6.2.0.tar.bz2" );
+    GCC_PKG=$(check_and_download "gcc" "gcc-*.tar.bz2" "ftp://gcc.gnu.org/pub/gcc/releases/gcc-6.3.0/gcc-6.3.0.tar.bz2" );
     if [ $? -ne 0 ]; then
         echo -e "$GCC_PKG";
         exit -1;
@@ -311,7 +311,7 @@ if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list gdb $BUILD_TARGET_
 		    GDB_PYTHON_OPT="--with-python=$PREFIX_DIR";
 	    else
 		    # =======================  尝试编译安装python  =======================
-		    PYTHON_PKG=$(check_and_download "python" "Python-*.tar.xz" "https://www.python.org/ftp/python/3.5.2/Python-3.5.2.tar.xz" );
+		    PYTHON_PKG=$(check_and_download "python" "Python-*.tar.xz" "https://www.python.org/ftp/python/3.6.0/Python-3.6.0.tar.xz" );
 		    if [ $? -ne 0 ]; then
 			    return;
 		    fi
@@ -324,7 +324,7 @@ if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list gdb $BUILD_TARGET_
 	    fi
 
 	    # ======================= 正式安装GDB =======================
-	    GDB_PKG=$(check_and_download "gdb" "gdb-*.tar.xz" "http://ftp.gnu.org/gnu/gdb/gdb-7.11.1.tar.xz" );
+	    GDB_PKG=$(check_and_download "gdb" "gdb-*.tar.xz" "http://ftp.gnu.org/gnu/gdb/gdb-7.12.tar.xz" );
 	    if [ $? -ne 0 ]; then
 		    echo -e "$GDB_PKG";
 		    exit -1;

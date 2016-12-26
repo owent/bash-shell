@@ -58,17 +58,17 @@ CentOS 7.1
 详情参见 [llvm官网](http://llvm.org/)
 
 #### 编译的依赖库：
-+ libc++ 3.9.0
-+ libc++abi 3.9.0
-+ libunwind 3.9.0(这个库不会install)
++ libc++ 3.9.1
++ libc++abi 3.9.1
++ libunwind 3.9.1(这个库不会install)
 
 #### 默认编译目标：
-+ llvm 3.9.0
-+ clang 3.9.0
-+ compiler_rt 3.9.0
-+ clang_tools_extra 3.9.0
-+ lldb 3.9.0
-+ lld 3.9.0
++ llvm 3.9.1
++ clang 3.9.1
++ compiler_rt 3.9.1
++ clang_tools_extra 3.9.1
++ lldb 3.9.1
++ lld 3.9.1
 
 #### 注：
 + (所有的库都会被安装在**$PREFEX_DIR**里)
@@ -78,6 +78,7 @@ CentOS 7.1
 
 #### History:
 + 2016-11-14     Created
++ 2016-12-26     更新版本到3.9.1
 
 
 #### 参考文献

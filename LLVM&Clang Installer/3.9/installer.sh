@@ -3,7 +3,7 @@
 # Dependency: libedit-devel libxml2-devel ncurses-devel python-devel swig
 
 # ======================================= 配置 =======================================
-LLVM_VERSION=3.9.0;
+LLVM_VERSION=3.9.1;
 PREFIX_DIR=/usr/local/llvm-$LLVM_VERSION;
 BUILD_TARGET_COMPOMENTS="llvm clang compiler_rt libcxx libcxxabi clang_tools_extra lldb lld libunwind";
 
@@ -436,7 +436,7 @@ export CXX=$STAGE_BUILD_PREFIX_DIR/bin/clang++ ;
 # export STAGE_BUILD_PREFIX_DIR="$PREFIX_DIR";
 build_llvm_toolchain ;
 
-if [ ! -e "$PREFIX_DIR/bin/clang" ] || [ 0 -ne $? ] ; then
+if [ ! -e "$PREFIX_DIR/bin/clang" ] ; then
     echo -e "\\033[31;1mError: build llvm $STAGE_BUILD_PREFIX_DIR failed on step 2.\\033[39;49;0m";
     exit 1;
 fi
