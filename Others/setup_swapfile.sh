@@ -8,6 +8,14 @@ SWAPFILE_COUNT=1M;
 SWAPFILE_BS=2048;
 FSTAB_PATH=/etc/fstab ;
 
+# try to detect physic memory
+PHY_MEM=$(cat /proc/meminfo | grep MemTotal | grep -v grep | awk '{print $2}');
+if [ ! -z "$PHY_MEM" ]; then
+    ((PHY_MEM=$PHY_MEM/1024));
+    ((SWAPFILE_BS=$PHY_MEM*3/2));
+    echo "Detect physic memory=$PHY_MEM MB";
+fi
+
 while getopts "p:h:b:c:" arg; do
         case $arg in
              c)
@@ -35,6 +43,8 @@ options:
         esac
 done
 
+echo "Try to setup swapfile \"$SWAPFILE_PATH\" with block number = $SWAPFILE_COUNT and block size = $SWAPFILE_BS.";
+
 mkdir -p "$(dirname $SWAPFILE_PATH)";
 
 swapoff -a ;
@@ -49,6 +59,11 @@ echo "$SWAPFILE_PATH   none    swap    sw    0   0" >> "$FSTAB_PATH";
 
 swapon -s ;
 echo "vm.swappiness=$(cat /proc/sys/vm/swappiness)" ;
+echo "Setup swapfile \"$SWAPFILE_PATH\" done. now you can run";
+echo -e "\techo 'sysctl vm.swappiness=PERCENT' > /etc/sysctl.d/99-swapfile.conf";
+echo -e "\tsysctl -p /etc/sysctl.d/99-swapfile.conf";
+echo "to control swappiness policy";
 # sysctl vm.swappiness=10 ;
+# cat /proc/sys/vm/swappiness
 
 free -h ;
