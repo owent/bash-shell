@@ -99,8 +99,16 @@ chown $USER:$GROUP -R "$DB_LOG_DIR";
 chmod 777 -R "$WEBSITE_DIR_PATH/log";
 
 # 替换nginx基础配置
-sed -i "s/worker_processes\\s*[0-9]*\\s*;/worker_processes 16;/g" "$NGINX_CONF";
+ULIMIT_OPEN_FILES=$(ulimit -n);
+if [ -z "$ULIMIT_OPEN_FILES" ] || [ "unlimited" == "$ULIMIT_OPEN_FILES" ]; then
+    ULIMIT_OPEN_FILES=51200;
+fi
+sed -i "s/worker_processes\\s*[0-9]*\\s*;/worker_processes 4;/g" "$NGINX_CONF";
 sed -i "s;error_log\\s*[^\\;]*\\;;error_log  $NGINX_LOG_DIR/nginx-error.log warn\\;;g" "$NGINX_CONF";
+sed -i "/use\\s*epoll\\s*;/d" "$NGINX_CONF";
+sed -i "s/worker_connections\\s*[0-9]*\\s*;/worker_connections $ULIMIT_OPEN_FILES;/g" "$NGINX_CONF";
+sed -i "/worker_connections\\s*[0-9]*\\s*/i use epoll;" "$NGINX_CONF";
+
 sed -i "s;access_log\\s*[^\\;]*\\;;access_log  $NGINX_LOG_DIR/nginx-access.log main\\;;g" "$NGINX_CONF";
 sed -i "/gzip/d" "$NGINX_CONF";
 sed -i "/server_tokens/d" "$NGINX_CONF";

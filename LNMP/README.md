@@ -119,3 +119,18 @@ php加速组件安装以后只有加速核心，没有UI部分，各个组件的
 	;以上是我的配置
 	```
 7. 建议修改php,nginx,php-fpm,nginx 内 server所有***日志***文件位置
+
+# 测试新版本
+## PHP7
+```bash
+# PHP7-基本包
+yum install php71 php71-php-bcmath php71-php-cli php71-php-common php71-php-devel php71-php-enchant php71-php-fpm php71-php-gd php71-php-imap php71-php-intl php71-php-ldap php71-php-mbstring php71-php-mcrypt php71-php-mysql php71-php-odbc php71-php-pdo php71-php-pear php71-php-pecl-mailparse php71-php-pecl-memcache php71-php-pecl-memprof php71-php-pecl-oauth php71-php-pecl-redis php71-php-pecl-uuid php71-php-pecl-mysql php71-php-pecl-pq php71-php-pecl-redis php71-php-pear-http php71-php-pecl-mongodb php71-php-pecl-zip php71-php-pgsql php71-php-process php71-php-pspell php71-php-recode php71-php-soap php71-php-tidy php71-php-xml php71-php-xmlrpc 
+
+# zend guard not available
+# eaccelerator not available
+# apcu
+yum install php71-php-pecl-apcu php71-php-pecl-apcu-bc
+# xcache not available
+# Zend OPcache
+yum install php71-php-opcache
+```
