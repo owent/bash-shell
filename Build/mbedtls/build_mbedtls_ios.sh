@@ -1,22 +1,5 @@
 #!/bin/bash
 
-#  Automatic build script for mbedtls
-#  for iPhoneOS and iPhoneSimulator
-#
-#  Created by owent Schulze on 2016.12.08.
-#
-#  Licensed under the Apache License, Version 2.0 (the "License");
-#  you may not use this file except in compliance with the License.
-#  You may obtain a copy of the License at
-#
-#  http://www.apache.org/licenses/LICENSE-2.0
-#
-#  Unless required by applicable law or agreed to in writing, software
-#  distributed under the License is distributed on an "AS IS" BASIS,
-#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#  See the License for the specific language governing permissions and
-#  limitations under the License.
-#
 ###########################################################################
 #  Change values here
 #
@@ -26,22 +9,55 @@ SDKVERSION=$(xcrun -sdk iphoneos --show-sdk-version);
 #
 # Don't change anything here
 WORKING_DIR="$PWD";
+
 ARCHS="i386 x86_64 armv7 armv7s arm64";
-DEVELOPER=$(xcode-select -print-path);
+DEVELOPER_ROOT=$(xcode-select -print-path);
+MBEDTLS_DIR="$PWD";
 
-if [ $# -lt 1 ]; then
-    echo "Usage: $0 <mbedtle-* dir name>";
-    exit -1;  
-fi
+# ======================= options ======================= 
+while getopts "a:d:hr:s:-" OPTION; do
+    case $OPTION in
+        a)
+            ARCHS="$OPTARG";
+        ;;
+        d)
+            DEVELOPER_ROOT="$OPTARG";
+        ;;
+        h)
+            echo "usage: $0 [options] -r SOURCE_DIR [-- [cmake options]]";
+            echo "options:";
+            echo "-a [archs]                    which arch need to built, multiple values must be split by space(default: $ARCHS)";
+            echo "-d [developer root directory] developer root directory, we use xcode-select -print-path to find default value.(default: $DEVELOPER_ROOT)";
+            echo "-s [sdk version]              sdk version, we use xcrun -sdk iphoneos --show-sdk-version to find default value.(default: $SDKVERSION)";
+            echo "-r [source dir]               root directory of this library";
+            echo "-h                            help message.";
+            exit 0;
+        ;;
+        r)
+            MBEDTLS_DIR="$OPTARG";
+        ;;
+        s)
+            SDKVERSION="$OPTARG";
+        ;;
+        -) 
+            break;
+            break;
+        ;;
+        ?)  #当有不认识的选项的时候arg为?
+            echo "unkonw argument detected";
+            exit 1;
+        ;;
+    esac
+done
 
-MBEDTLS_DIR="$(cd "$1" && pwd)";
-shift;
+shift $(($OPTIND-1));
 
 ##########
 if [ ! -e "$MBEDTLS_DIR/CMakeLists.txt" ]; then
     echo "$MBEDTLS_DIR/CMakeLists.txt not found";
     exit -2;
 fi
+MBEDTLS_DIR="$(cd "$MBEDTLS_DIR" && pwd)";
 
 mkdir -p "$WORKING_DIR/bin";
 mkdir -p "$WORKING_DIR/lib";
@@ -64,9 +80,9 @@ for ARCH in ${ARCHS}; do
     # sed -i.bak '4d' Makefile;
     echo "Please stand by..."
     
-    export DEVROOT="${DEVELOPER}/Platforms/${PLATFORM}.platform/Developer"
+    export DEVROOT="${DEVELOPER_ROOT}/Platforms/${PLATFORM}.platform/Developer"
     export SDKROOT="${DEVROOT}/SDKs/${PLATFORM}${SDKVERSION}.sdk"
-    export BUILD_TOOLS="${DEVELOPER}"
+    export BUILD_TOOLS="${DEVELOPER_ROOT}"
     #export CC="${BUILD_TOOLS}/usr/bin/gcc -arch ${ARCH}"
     #export CC=${BUILD_TOOLS}/usr/bin/gcc
     #export LD=${BUILD_TOOLS}/usr/bin/ld
