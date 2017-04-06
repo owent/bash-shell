@@ -52,6 +52,13 @@ done
 
 shift $(($OPTIND-1));
 
+echo "Ready to build for ios";
+echo "WORKING_DIR=${WORKING_DIR}";
+echo "ARCHS=${ARCHS}";
+echo "DEVELOPER_ROOT=${DEVELOPER_ROOT}";
+echo "SDKVERSION=${SDKVERSION}";
+echo "make options=$@";
+
 ##########
 if [ ! -e "$MBEDTLS_DIR/CMakeLists.txt" ]; then
     echo "$MBEDTLS_DIR/CMakeLists.txt not found";

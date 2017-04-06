@@ -59,6 +59,17 @@ done
 
 shift $(($OPTIND-1));
 
+echo "Ready to build for ios";
+echo "WORKING_DIR=${WORKING_DIR}";
+echo "ARCHS=${ARCHS}";
+echo "ANDROID_STL=${ANDROID_STL}";
+echo "NDK_ROOT=${NDK_ROOT}";
+echo "ANDROID_TOOLCHAIN=${ANDROID_TOOLCHAIN}";
+echo "ANDROID_NATIVE_API_LEVEL=${ANDROID_NATIVE_API_LEVEL}";
+echo "cmake options=$@";
+echo "SOURCE=$SRC_DIR";
+
+
 ##########
 if [ ! -e "$MBEDTLS_DIR/CMakeLists.txt" ]; then
     echo "$MBEDTLS_DIR/CMakeLists.txt not found";
@@ -83,19 +94,9 @@ for ARCH in ${ARCHS}; do
     mkdir -p "$WORKING_DIR/lib/$ARCH";
 
     # add -DCMAKE_OSX_DEPLOYMENT_TARGET=7.1 to specify the min SDK version
-    cmake "$MBEDTLS_DIR" -DCMAKE_LIBRARY_OUTPUT_DIRECTORY="$WORKING_DIR/lib/$ARCH" -DCMAKE_TOOLCHAIN_FILE="$NDK_ROOT/build/cmake/android.toolchain.cmake" -DANDROID_NDK="$NDK_ROOT" -DANDROID_NATIVE_API_LEVEL=$ANDROID_NATIVE_API_LEVEL -DANDROID_TOOLCHAIN=$ANDROID_TOOLCHAIN -DANDROID_ABI=$ARCH -DANDROID_STL=$ANDROID_STL -DANDROID_PIE=YES -DENABLE_TESTING=NO "$@";
+    cmake "$MBEDTLS_DIR" -DCMAKE_LIBRARY_OUTPUT_DIRECTORY="$WORKING_DIR/lib/$ARCH" -DCMAKE_INSTALL_PREFIX="$WORKING_DIR/$ARCH" -DCMAKE_TOOLCHAIN_FILE="$NDK_ROOT/build/cmake/android.toolchain.cmake" -DANDROID_NDK="$NDK_ROOT" -DANDROID_NATIVE_API_LEVEL=$ANDROID_NATIVE_API_LEVEL -DANDROID_TOOLCHAIN=$ANDROID_TOOLCHAIN -DANDROID_ABI=$ARCH -DANDROID_STL=$ANDROID_STL -DANDROID_PIE=YES -DENABLE_TESTING=NO "$@";
     make -j4;
-
-    cp -f $(find . -name *.a) "$WORKING_DIR/lib/$ARCH";
+    make install;
 done
-
-cd "$WORKING_DIR";
-echo "Copying include files...";
-
-if [ -e "$WORKING_DIR/include" ] && [ "$WORKING_DIR" != "$MBEDTLS_DIR" ] ; then
-    rm -rf "$WORKING_DIR/include";
-fi
-
-cp -rf "$MBEDTLS_DIR/include" "$WORKING_DIR/include";
 
 echo "Building done.";
