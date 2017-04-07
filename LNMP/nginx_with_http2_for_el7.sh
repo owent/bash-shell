@@ -7,9 +7,9 @@
 # 编译选项参考： http://nginx.org/en/linux_packages.html#arguments
 
 WORKING_DIR="$PWD";
-OPENSSL_PREFIX_DIR=/usr/local/openssl-1.0.2;
-OPENSSL_VERSION=1.0.2j;
-NGINX_VERSION=1.10.2;
+OPENSSL_PREFIX_DIR=/usr/local/openssl-1.1.0;
+OPENSSL_VERSION=1.1.0e;
+NGINX_VERSION=1.10.3;
 
 OPENSSL_DIR_NAME="openssl-$OPENSSL_VERSION";
 OPENSSL_PKG_NAME="$OPENSSL_DIR_NAME.tar.gz";
@@ -18,8 +18,11 @@ NGINX_PKG_NAME="$NGINX_DIR_NAME.tar.gz";
 
 
 # 软件源
-yum install epel-release;
-rpm -ivh http://nginx.org/packages/centos/7/noarch/RPMS/nginx-release-centos-7-0.el7.ngx.noarch.rpm ;
+yum repolist | grep "\\bepel\\b";
+if [ 0 -ne $? ]; then
+  yum install epel-release;
+  rpm -ivh http://nginx.org/packages/centos/7/noarch/RPMS/nginx-release-centos-7-0.el7.ngx.noarch.rpm ;
+fi
 
 # 安装依赖项
 yum install -y gcc gdb make automake gcc-c++ libtool yum-utils yum-plugin-remove-with-leaves yum-cron yum-plugin-upgrade-helper yum-plugin-fastestmirror rpm-build;
