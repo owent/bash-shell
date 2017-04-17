@@ -9,7 +9,7 @@
 WORKING_DIR="$PWD";
 OPENSSL_PREFIX_DIR=/usr/local/openssl-1.1.0;
 OPENSSL_VERSION=1.1.0e;
-NGINX_VERSION=1.10.3;
+NGINX_VERSION=1.12.0;
 
 OPENSSL_DIR_NAME="openssl-$OPENSSL_VERSION";
 OPENSSL_PKG_NAME="$OPENSSL_DIR_NAME.tar.gz";
@@ -18,9 +18,12 @@ NGINX_PKG_NAME="$NGINX_DIR_NAME.tar.gz";
 
 
 # 软件源
-yum repolist | grep "\\bepel\\b";
+yum repolist | grep "\\bepel\\b" ;
 if [ 0 -ne $? ]; then
-  yum install epel-release;
+  yum install epel-release ;
+fi
+yum repolist | grep "\\bnginx\\b" ;
+if [ 0 -ne $? ]; then
   rpm -ivh http://nginx.org/packages/centos/7/noarch/RPMS/nginx-release-centos-7-0.el7.ngx.noarch.rpm ;
 fi
 

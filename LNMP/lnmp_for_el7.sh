@@ -65,8 +65,14 @@ options:
 done
 
 # 安装扩展软件源
-rpm -ivh http://nginx.org/packages/centos/7/noarch/RPMS/nginx-release-centos-7-0.el7.ngx.noarch.rpm
-yum install epel-release
+yum repolist | grep "\\bepel\\b" ;
+if [ 0 -ne $? ]; then
+  yum install epel-release ;
+fi
+yum repolist | grep "\\bnginx\\b" ;
+if [ 0 -ne $? ]; then
+    rpm -ivh http://nginx.org/packages/centos/7/noarch/RPMS/nginx-release-centos-7-0.el7.ngx.noarch.rpm ;
+fi
 
 yum install net-tools moreutils
 yum install -y nginx
