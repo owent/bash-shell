@@ -9,4 +9,4 @@ echo "net.core.default_qdisc = fq
 net.ipv4.tcp_congestion_control = bbr" >> "$SYSCTL_CONF";
 
 # cat /proc/sys/net/ipv4/tcp_congestion_control
-# cat cat /proc/sys/net/core/default_qdisc
+# cat /proc/sys/net/core/default_qdisc
