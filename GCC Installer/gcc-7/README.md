@@ -3,21 +3,6 @@ Linux 编译安装 GCC 7
 
 **GCC 30周年纪念**
 
-<!-- TOC -->
-
-- [编译安装 GCC 7.X.X](#编译安装-gcc-7xx)
-    - [准备环境及依赖项](#准备环境及依赖项)
-    - [我编译的环境](#我编译的环境)
-        - [系统](#系统)
-        - [系统库](#系统库)
-        - [编译的依赖库](#编译的依赖库)
-        - [编译目标](#编译目标)
-        - [注](#注)
-        - [额外建议](#额外建议)
-        - [History](#history)
-
-<!-- /TOC -->
-
 详情及变更请参照: [Linux 编译安装 GCC 7](https://github.com/owent-utils/bash-shell/tree/master/GCC%20Installer/gcc-7)
 
 GCC 7发布啦，本脚本在之前GCC 6的基础上做了稍许更新
