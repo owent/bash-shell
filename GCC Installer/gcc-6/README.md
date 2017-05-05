@@ -1,7 +1,7 @@
 Linux 编译安装 GCC 6
 ======
 
-详情及变更请参照: [Linux 编译安装 GCC 5](https://github.com/owent-utils/bash-shell/tree/master/GCC%20Installer/gcc-6)
+详情及变更请参照: [Linux 编译安装 GCC 6](https://github.com/owent-utils/bash-shell/tree/master/GCC%20Installer/gcc-6)
 
 GCC 6发布啦，本脚本在之前GCC 5的基础上做了稍许改进
 
