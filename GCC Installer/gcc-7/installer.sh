@@ -332,7 +332,7 @@ if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list gdb $BUILD_TARGET_
 	    tar -Jxvf $GDB_PKG;
 	    GDB_DIR=$(ls -d gdb-* | grep -v \.tar\.xz);
 	    cd $GDB_DIR;
-	    ./configure --prefix=$PREFIX_DIR --with-gmp=$PREFIX_DIR --with-mpc=$PREFIX_DIR --with-mpfr=$PREFIX_DIR --with-isl=$PREFIX_DIR --enable-build-with-cxx --enable-gold --enable-libada --enable-libssp --enable-objc-gc $GDB_PYTHON_OPT $BUILD_TARGET_CONF_OPTION;
+	    ./configure --prefix=$PREFIX_DIR --with-gmp=$PREFIX_DIR --with-mpc=$PREFIX_DIR --with-mpfr=$PREFIX_DIR --with-isl=$PREFIX_DIR --enable-build-with-cxx --enable-gold --enable-libada --enable-libssp $GDB_PYTHON_OPT $BUILD_TARGET_CONF_OPTION; # --enable-objc-gc
 	    make $BUILD_THREAD_OPT && make install;
 	    cd "$WORKING_DIR";
 
