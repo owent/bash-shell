@@ -101,7 +101,7 @@ CentOS 7
 #### 编译目标
 + gcc 7.1.0
 + binutils 2.28
-+ python 3.6.1 *[按需]*
++ python 2.7.13 *[按需]*
 + gdb 7.12.1 (如果存在ncurses-devel包)
 
 #### 注

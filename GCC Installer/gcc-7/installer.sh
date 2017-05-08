@@ -118,7 +118,7 @@ function check_and_download(){
         return -1;
     fi
 
-    if [ $# -gt 3 ]; then
+    if [ -z "$4" ]; then
         wget -c "$PKG_URL";
     else
         wget -c "$PKG_URL" -O "$4";
@@ -292,7 +292,7 @@ if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list bdw-gc $BUILD_TARG
     else
         BDWGC_LIBATOMIC_OPS=check ;
     fi
-    ./configure --prefix=$PREFIX_DIR/multilib/$SYS_LONG_BIT --enable-cplusplus --with-pic=all --enable-shared=no --enable-static=yes --with-libatomic-ops=$BDWGC_LIBATOMIC_OPS ;
+    ./configure --prefix=$PREFIX_DIR/multilib/$SYS_LONG_BIT --enable-cplusplus --with-pic=yes --enable-shared=no --enable-static=yes --with-libatomic-ops=$BDWGC_LIBATOMIC_OPS ;
     make $BUILD_THREAD_OPT && make install;
     if [ $? -ne 0 ]; then
         echo -e "\\033[31;1mError: build bdw-gc failed.\\033[39;49;0m";
@@ -301,7 +301,7 @@ if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list bdw-gc $BUILD_TARG
 
     if [ $SYS_LONG_BIT == "64" ] && [ "$GCC_OPT_DISABLE_MULTILIB" == "--enable-multilib" ] ; then
         make distclean;
-        env CFLAGS=-m32 CPPFLAGS=-m32 ./configure --prefix=$PREFIX_DIR/multilib/32 --enable-cplusplus --with-pic=all --enable-shared=no --enable-static=yes --with-libatomic-ops=$BDWGC_LIBATOMIC_OPS ;
+        env CFLAGS=-m32 CPPFLAGS=-m32 ./configure --prefix=$PREFIX_DIR/multilib/32 --enable-cplusplus --with-pic=yes --enable-shared=no --enable-static=yes --with-libatomic-ops=$BDWGC_LIBATOMIC_OPS ;
 
         make $BUILD_THREAD_OPT && make install;
         if [ $? -ne 0 ]; then
@@ -379,7 +379,7 @@ if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list gdb $BUILD_TARGET_
 		    GDB_PYTHON_OPT="--with-python=$PREFIX_DIR";
 	    else
 		    # =======================  尝试编译安装python  =======================
-		    PYTHON_PKG=$(check_and_download "python" "Python-*.tar.xz" "https://www.python.org/ftp/python/3.6.1/Python-3.6.1.tar.xz" );
+		    PYTHON_PKG=$(check_and_download "python" "Python-*.tar.xz" "https://www.python.org/ftp/python/2.7.13/Python-2.7.13.tar.xz" );
 		    if [ $? -ne 0 ]; then
 			    return;
 		    fi
@@ -389,6 +389,8 @@ if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list gdb $BUILD_TARGET_
 		    cd $PYTHON_DIR;
 		    ./configure --prefix=$PREFIX_DIR;
 		    make $BUILD_THREAD_OPT && make install && GDB_PYTHON_OPT="--with-python=$PREFIX_DIR";
+
+            cd "$WORKING_DIR";
 	    fi
 
 	    # ======================= 正式安装GDB =======================
