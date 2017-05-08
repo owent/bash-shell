@@ -288,10 +288,11 @@ if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list bdw-gc $BUILD_TARG
         fi
         mv -f ../$LIBATOMIC_OPS_DIR libatomic_ops;
         $(cd libatomic_ops && bash ./autogen.sh );
-        ./configure --prefix=$PREFIX_DIR/multilib/$SYS_LONG_BIT --enable-cplusplus --with-pic=all --enable-shared=no --enable-static=yes --with-libatomic-ops=no ;
+        BDWGC_LIBATOMIC_OPS=no ;
     else
-        ./configure --prefix=$PREFIX_DIR/multilib/$SYS_LONG_BIT --enable-cplusplus --with-pic=all --enable-shared=no --enable-static=yes --with-libatomic-ops=check ;
+        BDWGC_LIBATOMIC_OPS=check ;
     fi
+    ./configure --prefix=$PREFIX_DIR/multilib/$SYS_LONG_BIT --enable-cplusplus --with-pic=all --enable-shared=no --enable-static=yes --with-libatomic-ops=$BDWGC_LIBATOMIC_OPS ;
     make $BUILD_THREAD_OPT && make install;
     if [ $? -ne 0 ]; then
         echo -e "\\033[31;1mError: build bdw-gc failed.\\033[39;49;0m";
@@ -300,17 +301,7 @@ if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list bdw-gc $BUILD_TARG
 
     if [ $SYS_LONG_BIT == "64" ] && [ "$GCC_OPT_DISABLE_MULTILIB" == "--enable-multilib" ] ; then
         make distclean;
-
-        if [ ! -z "$LIBATOMIC_OPS_DIR" ]; then
-            if [ -e libatomic_ops ]; then
-                rm -rf libatomic_ops;
-            fi
-            mv -f ../$LIBATOMIC_OPS_DIR libatomic_ops;
-            $(cd libatomic_ops && bash ./autogen.sh );
-            env CFLAGS=-m32 CPPFLAGS=-m32 ./configure --prefix=$PREFIX_DIR/multilib/32 --enable-cplusplus --with-pic=all --enable-shared=no --enable-static=yes --with-libatomic-ops=no ;
-        else
-            env CFLAGS=-m32 CPPFLAGS=-m32 ./configure --prefix=$PREFIX_DIR/multilib/32 --enable-cplusplus --with-pic=all --enable-shared=no --enable-static=yes --with-libatomic-ops=check ;
-        fi
+        env CFLAGS=-m32 CPPFLAGS=-m32 ./configure --prefix=$PREFIX_DIR/multilib/32 --enable-cplusplus --with-pic=all --enable-shared=no --enable-static=yes --with-libatomic-ops=$BDWGC_LIBATOMIC_OPS ;
 
         make $BUILD_THREAD_OPT && make install;
         if [ $? -ne 0 ]; then
