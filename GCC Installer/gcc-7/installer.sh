@@ -34,7 +34,7 @@ while getopts "p:cht:d:g:" OPTION; do
             echo "-p [prefix_dir]             set prefix directory.";
             echo "-c                          clean build cache.";
             echo "-h                          help message.";
-            echo "-t [build target]           set build target(gmp mpfr mpc isl gcc binutils gdb).";
+            echo "-t [build target]           set build target(gmp mpfr mpc isl gcc binutils gdb libatomic_ops bdw-gc).";
             echo "-d [compoment option]       add dependency compoments build options.";
             echo "-g [gnu option]             add gcc,binutils,gdb build options.";
             exit 0;
@@ -118,7 +118,11 @@ function check_and_download(){
         return -1;
     fi
 
-    wget -c "$PKG_URL";
+    if [ $# -gt 3 ]; then
+        wget -c "$PKG_URL";
+    else
+        wget -c "$PKG_URL" -O "$4";
+    fi
     PKG_VAR_VAL=$(ls -d $PKG_MATCH_EXPR);
 
     if [ -z "$PKG_VAR_VAL" ]; then
@@ -247,6 +251,55 @@ if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list isl $BUILD_TARGET_
     cd "$WORKING_DIR";
 fi
 
+# install libatomic_ops
+if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list libatomic_ops $BUILD_TARGET_COMPOMENTS) ]; then
+    LIBATOMIC_OPS_PKG=$(check_and_download "libatomic_ops-7.4.4" "libatomic_ops-*.tar.gz" "https://github.com/ivmai/libatomic_ops/archive/libatomic_ops-7_4_4.tar.gz" "libatomic_ops-7_4_4.tar.gz" );
+    if [ $? -ne 0 ]; then
+        echo -e "$LIBATOMIC_OPS_PKG";
+        exit -1;
+    fi
+    tar -zxvf $LIBATOMIC_OPS_PKG;
+    LIBATOMIC_OPS_DIR=$(ls -d libatomic_ops-* | grep -v \.tar\.gz);
+    # cd $LIBATOMIC_OPS_DIR;
+    # bash ./autogen.sh ;
+    # ./configure --prefix=$PREFIX_DIR ;
+    # make $BUILD_THREAD_OPT && make install;
+    if [ $? -ne 0 ]; then
+        echo -e "\\033[31;1mError: build libatomic_ops failed.\\033[39;49;0m";
+        exit -1;
+    fi
+    cd "$WORKING_DIR";
+fi
+
+# install bdw-gc
+if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list bdw-gc $BUILD_TARGET_COMPOMENTS) ]; then
+    BDWGC_PKG=$(check_and_download "bdw-gc-7.6.0" "gc7_6_0.tar.gz" "https://github.com/ivmai/bdwgc/archive/gc7_6_0.tar.gz" "gc7_6_0.tar.gz" );
+    if [ $? -ne 0 ]; then
+        echo -e "$BDWGC_PKG";
+        exit -1;
+    fi
+    tar -zxvf $BDWGC_PKG;
+    BDWGC_DIR=$(ls -d bdwgc-gc* | grep -v \.tar\.gz);
+    cd $BDWGC_DIR;
+    bash ./autogen.sh ;
+    if [ ! -z "$LIBATOMIC_OPS_DIR" ]; then
+        if [ -e libatomic_ops ]; then
+            rm -rf libatomic_ops;
+        fi
+        mv -f ../$LIBATOMIC_OPS_DIR libatomic_ops;
+        $(cd libatomic_ops && bash ./autogen.sh );
+        ./configure --prefix=$PREFIX_DIR --enable-cplusplus --with-pic=all --with-libatomic-ops=no ;
+    else
+        ./configure --prefix=$PREFIX_DIR --enable-cplusplus --with-pic=all --with-libatomic-ops=check ;
+    fi
+    make $BUILD_THREAD_OPT && make install;
+    if [ $? -ne 0 ]; then
+        echo -e "\\033[31;1mError: build bdw-gc failed.\\033[39;49;0m";
+        exit -1;
+    fi
+    cd "$WORKING_DIR";
+fi
+
 # ======================= install gcc =======================
 if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list gcc $BUILD_TARGET_COMPOMENTS) ]; then
     # ======================= gcc包 =======================
@@ -260,7 +313,7 @@ if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list gcc $BUILD_TARGET_
     mkdir objdir;
     cd objdir;
     # ======================= 这一行的最后一个参数请注意，如果要支持其他语言要安装依赖库并打开对该语言的支持 =======================
-    GCC_CONF_OPTION_ALL="--prefix=$PREFIX_DIR --with-gmp=$PREFIX_DIR --with-mpc=$PREFIX_DIR --with-mpfr=$PREFIX_DIR --with-isl=$PREFIX_DIR --enable-bootstrap --enable-build-with-cxx --disable-libjava-multilib --enable-checking=release --enable-gold --enable-ld --enable-libada --enable-libssp --enable-lto --enable-objc-gc --enable-vtable-verify --enable-shared --enable-static --enable-gnu-unique-object --enable-linker-build-id $GCC_OPT_DISABLE_MULTILIB $BUILD_TARGET_CONF_OPTION";
+    GCC_CONF_OPTION_ALL="--prefix=$PREFIX_DIR --with-gmp=$PREFIX_DIR --with-mpc=$PREFIX_DIR --with-mpfr=$PREFIX_DIR --with-isl=$PREFIX_DIR --with-target-bdw-gc=$PREFIX_DIR --enable-bootstrap --enable-build-with-cxx --disable-libjava-multilib --enable-checking=release --enable-gold --enable-ld --enable-libada --enable-libssp --enable-lto --enable-objc-gc --enable-vtable-verify --enable-shared --enable-static --enable-gnu-unique-object --enable-linker-build-id $GCC_OPT_DISABLE_MULTILIB $BUILD_TARGET_CONF_OPTION";
     ../$GCC_DIR/configure $GCC_CONF_OPTION_ALL;
     make $BUILD_THREAD_OPT && make install;
     cd "$WORKING_DIR";
@@ -332,7 +385,7 @@ if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list gdb $BUILD_TARGET_
 	    tar -Jxvf $GDB_PKG;
 	    GDB_DIR=$(ls -d gdb-* | grep -v \.tar\.xz);
 	    cd $GDB_DIR;
-	    ./configure --prefix=$PREFIX_DIR --with-gmp=$PREFIX_DIR --with-mpc=$PREFIX_DIR --with-mpfr=$PREFIX_DIR --with-isl=$PREFIX_DIR --enable-build-with-cxx --enable-gold --enable-libada --enable-libssp $GDB_PYTHON_OPT $BUILD_TARGET_CONF_OPTION; # --enable-objc-gc
+	    ./configure --prefix=$PREFIX_DIR --with-gmp=$PREFIX_DIR --with-mpc=$PREFIX_DIR --with-mpfr=$PREFIX_DIR --with-isl=$PREFIX_DIR --enable-build-with-cxx --enable-gold --enable-libada --enable-objc-gc --enable-libssp --enable-lto $GDB_PYTHON_OPT $BUILD_TARGET_CONF_OPTION;
 	    make $BUILD_THREAD_OPT && make install;
 	    cd "$WORKING_DIR";
 

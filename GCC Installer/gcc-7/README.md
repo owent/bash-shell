@@ -95,6 +95,8 @@ CentOS 7
 + mpfr 3.1.5
 + mpc 1.0.3
 + isl 0.16.1
++ libatomic_ops 7.4.4
++ bdw-gc 7.6.0
 
 #### 编译目标
 + gcc 7.1.0
