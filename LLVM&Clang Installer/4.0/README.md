@@ -1,7 +1,7 @@
 Linux 编译安装 LLVM + Clang 4.0
 ======
 
-详情及变更请参照: [Linux 编译安装 LLVM + Clang 4.0](https://github.com/owent-utils/bash-shell/tree/master/LLVM%26Clang Installer/4.0)
+详情及变更请参照: [Linux 编译安装 LLVM + Clang 4.0](https://github.com/owent-utils/bash-shell/tree/master/LLVM%26Clang%20Installer/4.0)
 
 LLVM + Clang 4.0 发布啦，本脚本在之前LLVM + Clang 3.9.1的基础上做了稍许更新
 
