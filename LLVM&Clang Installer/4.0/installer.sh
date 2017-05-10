@@ -377,9 +377,9 @@ if [ "0" == $(is_in_list lldb $BUILD_TARGET_COMPOMENTS) ]; then
     LLDB_DEP_PYTHON2=$?;
     which swig;
     LLDB_DEP_SWIG=$?;
-    LLDB_DEP_LIBEDIT=$(whereis libedit.so.* | awk '{print $2}');
-    LLDB_DEP_LIBXML2=$(whereis libxml2.so.* | awk '{print $2}');
-    LLDB_DEP_NCURSES=$(whereis libncurses.so.* | awk '{print $2}');
+    LLDB_DEP_LIBEDIT=$(whereis libedit.so | awk '{print $2}');
+    LLDB_DEP_LIBXML2=$(whereis libxml2.so | awk '{print $2}');
+    LLDB_DEP_NCURSES=$(whereis libncurses.so | awk '{print $2}');
     if [ 0 -eq $LLDB_DEP_PYTHON2 ] && [ 0 -eq $LLDB_DEP_SWIG ] && [ ! -z "$LLDB_DEP_LIBEDIT" ] && [ ! -z "$LLDB_DEP_LIBXML2" ] && [ ! -z "$LLDB_DEP_NCURSES" ] ; then
         LLDB_PKG=$(check_and_download "lldb" "lldb-*.tar.xz" "http://llvm.org/releases/$LLVM_VERSION/lldb-$LLVM_VERSION.src.tar.xz" );
         if [ $? -ne 0 ]; then
