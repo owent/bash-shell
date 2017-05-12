@@ -111,7 +111,7 @@ for ARCH in ${ARCHS}; do
     
     # add -DCMAKE_OSX_DEPLOYMENT_TARGET=7.1 to specify the min SDK version
     cmake "$MBEDTLS_DIR" -DCMAKE_OSX_SYSROOT=$SDKROOT -DCMAKE_SYSROOT=$SDKROOT -DCMAKE_OSX_ARCHITECTURES=$ARCH -DCMAKE_C_FLAGS="-fPIC" "$@";
-    make -j4;
+    cmake --build . ;
 done
 
 cd "$WORKING_DIR";
