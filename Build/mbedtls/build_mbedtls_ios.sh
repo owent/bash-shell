@@ -13,9 +13,10 @@ WORKING_DIR="$PWD";
 ARCHS="i386 x86_64 armv7 armv7s arm64";
 DEVELOPER_ROOT=$(xcode-select -print-path);
 MBEDTLS_DIR="$PWD";
+BUILD_TYPE="Release" ;
 
 # ======================= options ======================= 
-while getopts "a:d:hr:s:-" OPTION; do
+while getopts "a:b:d:hr:s:-" OPTION; do
     case $OPTION in
         a)
             ARCHS="$OPTARG";
@@ -27,6 +28,7 @@ while getopts "a:d:hr:s:-" OPTION; do
             echo "usage: $0 [options] -r SOURCE_DIR [-- [cmake options]]";
             echo "options:";
             echo "-a [archs]                    which arch need to built, multiple values must be split by space(default: $ARCHS)";
+            echo "-b [build type]               build type(default: $BUILD_TYPE, available: Debug, Release, RelWithDebInfo, MinSizeRel)";
             echo "-d [developer root directory] developer root directory, we use xcode-select -print-path to find default value.(default: $DEVELOPER_ROOT)";
             echo "-s [sdk version]              sdk version, we use xcrun -sdk iphoneos --show-sdk-version to find default value.(default: $SDKVERSION)";
             echo "-r [source dir]               root directory of this library";
@@ -110,7 +112,7 @@ for ARCH in ${ARCHS}; do
     cd "$WORKING_DIR/build/$ARCH";
     
     # add -DCMAKE_OSX_DEPLOYMENT_TARGET=7.1 to specify the min SDK version
-    cmake "$MBEDTLS_DIR" -DCMAKE_OSX_SYSROOT=$SDKROOT -DCMAKE_SYSROOT=$SDKROOT -DCMAKE_OSX_ARCHITECTURES=$ARCH -DCMAKE_C_FLAGS="-fPIC" "$@";
+    cmake "$MBEDTLS_DIR" -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_OSX_SYSROOT=$SDKROOT -DCMAKE_SYSROOT=$SDKROOT -DCMAKE_OSX_ARCHITECTURES=$ARCH -DCMAKE_C_FLAGS="-fPIC" "$@";
     cmake --build . ;
 done
 
