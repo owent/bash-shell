@@ -20,6 +20,9 @@ while getopts "a:b:c:n:hl:r:t:-" OPTION; do
         a)
             ARCHS="$OPTARG";
         ;;
+        b)
+            BUILD_TYPE="$OPTARG";
+        ;;
         c)
             ANDROID_STL="$OPTARG";
         ;;
