@@ -2,7 +2,7 @@
 
 echo "Mirror of msys2 base:
   https://mirrors.tuna.tsinghua.edu.cn/msys2/distrib/
-  http://mirrors.ustc.edu.cn/msys2/Base/
+  http://mirrors.ustc.edu.cn/msys2
   http://mirror.bit.edu.cn/msys2/Base/
   http://mirrors.zju.edu.cn/msys2/msys2/Base/";
 # package source
@@ -12,7 +12,7 @@ echo "##
 
 ## Primary
 ## msys2.org
-Server = http://mirrors.ustc.edu.cn/msys2/REPOS/MSYS2/\$arch
+Server = http://mirrors.ustc.edu.cn/msys2/msys/\$arch
 Server = http://mirror.bit.edu.cn/msys2/REPOS/MSYS2/\$arch
 Server = https://mirrors.tuna.tsinghua.edu.cn/msys2/msys/\$arch
 Server = http://mirrors.zju.edu.cn/msys2/msys2/REPOS/MSYS2/\$arch" > /etc/pacman.d/mirrorlist.msys ;
@@ -24,7 +24,7 @@ echo "##
 
 ## Primary
 ## msys2.org
-Server = http://mirrors.ustc.edu.cn/msys2/REPOS/MINGW/i686
+Server = http://mirrors.ustc.edu.cn/msys2/mingw/i686
 Server = http://mirror.bit.edu.cn/msys2/REPOS/MINGW/i686
 Server = https://mirrors.tuna.tsinghua.edu.cn/msys2/mingw/i686
 Server = http://mirrors.zju.edu.cn/msys2/msys2/REPOS/MINGW/i686" > /etc/pacman.d/mirrorlist.mingw32 ;
@@ -35,7 +35,7 @@ echo "##
 
 ## Primary
 ## msys2.org
-Server = http://mirrors.ustc.edu.cn/msys2/REPOS/MINGW/x86_64
+Server = http://mirrors.ustc.edu.cn/msys2/mingw/x86_64
 Server = http://mirror.bit.edu.cn/msys2/REPOS/MINGW/x86_64
 Server = https://mirrors.tuna.tsinghua.edu.cn/msys2/mingw/x86_64
 Server = http://mirrors.zju.edu.cn/msys2/msys2/REPOS/MINGW/x86_64" > /etc/pacman.d/mirrorlist.mingw64 ;
@@ -44,10 +44,10 @@ Server = http://mirrors.zju.edu.cn/msys2/msys2/REPOS/MINGW/x86_64" > /etc/pacman
 pacman -S curl wget tar vim zip unzip rsync openssh;
 
 # utils optional
-pacman -S p7zip texinfo lzip;
+pacman -S p7zip texinfo lzip m4;
 
 # dev
-pacman -S cmake m4 autoconf automake python git make;
+pacman -S cmake m4 autoconf automake python git make tig;
 
 # gcc
 pacman -S gcc gdb;
@@ -66,6 +66,14 @@ pacman -S mingw32/mingw-w64-i686-clang mingw32/mingw-w64-i686-clang-analyzer min
 
 # ruby
 pacman -S ruby;
+# ruby - gem
+gem sources --add https://gems.ruby-china.org/ --remove https://rubygems.org/ ;
+gem sources -l;
+# ruby - bundle 
+bundle config mirror.https://rubygems.org https://gems.ruby-china.org ; # or in Gemfile, edit source 'https://rubygems.org/'
+
+# ruby - rvm
+echo "ruby_url=https://cache.ruby-china.org/pub/ruby" > ~/.rvm/user/db
 
 # atom = mingw + clang + dev + git-scm
 # git can be found in https://git-scm.com, for example https://github.com/git-for-windows/git/releases/download/v2.7.4.windows.1/Git-2.7.4-64-bit.exe
