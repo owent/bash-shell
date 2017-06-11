@@ -6,7 +6,7 @@
 # curl https://get.acme.sh | sh
 
 DOMAIN_NAME=owent.net;
-INSTALL_CERT_DIR=/home/website/ssl/angel;
+INSTALL_CERT_DIR=/home/website/ssl;
 
 # using a custom port
 # ACME_SH_HTTP_PROT=88;
@@ -18,9 +18,9 @@ INSTALL_CERT_DIR=/home/website/ssl/angel;
 # firewall-cmd --add-port=tcp/$ACME_SH_TLS_PROT/tcp;
 # firewall-cmd --reload;
 
-~/.acme.sh/acme.sh --renewAll;
+~/.acme.sh/acme.sh --renew-all --ecc ;
 
-cp ~/.acme.sh/$DOMAIN_NAME/* $INSTALL_CERT_DIR;
+cp ~/.acme.sh/${DOMAIN_NAME}_ecc/* $INSTALL_CERT_DIR;
 chown nginx:users -R $INSTALL_CERT_DIR;
 
 systemctl reload nginx;

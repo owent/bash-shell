@@ -11,7 +11,7 @@ yum install certbot;
 
 certbot certonly -m $ADMIN_EMAIL --webroot \
     -w /home/website/owent_blog -d owent.net -d www.owent.net \
-    -w /home/website/angel_blog -d gf.owent.net -d angel.owent.net \
+    -w /home/website/angel_blog -d angel.owent.net -d gf.owent.net \
     ;
 
 cp -f $CERT_DIR/$DOMAIN_NAME/* /home/website/ssl/angel;

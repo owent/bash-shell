@@ -12,8 +12,9 @@ INSTALL_CERT_DIR=/home/website/ssl/angel;
 ~/.acme.sh/acme.sh --issue \
   -d owent.net -w /home/website/owent_blog \
   -d www.owent.net -w /home/website/owent_blog \
+  -d angel.owent.net -w /home/website/angel_blog \
   -d gf.owent.net -w /home/website/angel_blog \
-  -d angel.owent.net -w /home/website/angel_blog ;
+  --keylength ec-256 ; # 2048, 3072, 4096, 8192 or ec-256, ec-384
 
 # using a custom port
 # ACME_SH_HTTP_PROT=88;
@@ -23,8 +24,9 @@ INSTALL_CERT_DIR=/home/website/ssl/angel;
 # ~/.acme.sh/acme.sh --issue \
 #   -d owent.net -w /home/website/owent_blog --standalone --httpport $ACME_SH_HTTP_PROT \
 #   -d www.owent.net -w /home/website/owent_blog --standalone --httpport $ACME_SH_HTTP_PROT \
+#   -d angel.owent.net -w /home/website/angel_blog --tls --standalone --httpport $ACME_SH_HTTP_PROT \
 #   -d gf.owent.net -w /home/website/angel_blog --standalone --httpport $ACME_SH_HTTP_PROT \
-#   -d angel.owent.net -w /home/website/angel_blog --tls --standalone --httpport $ACME_SH_HTTP_PROT ;
+#   --keylength ec-256 ; # 2048, 3072, 4096, 8192 or ec-256, ec-384
 # firewall-cmd --add-port=$ACME_SH_HTTP_PROT/tcp;
 # firewall-cmd --reload;
 
@@ -36,8 +38,9 @@ INSTALL_CERT_DIR=/home/website/ssl/angel;
 # ~/.acme.sh/acme.sh --issue \
 #   -d owent.net -w /home/website/owent_blog --tls --tlsport $ACME_SH_TLS_PROT \
 #   -d www.owent.net -w /home/website/owent_blog --tls --tlsport $ACME_SH_TLS_PROT \
+#   -d angel.owent.net -w /home/website/angel_blog --tls --tlsport $ACME_SH_TLS_PROT \
 #   -d gf.owent.net -w /home/website/angel_blog --tls --tlsport $ACME_SH_TLS_PROT \
-#   -d angel.owent.net -w /home/website/angel_blog --tls --tlsport $ACME_SH_TLS_PROT ;
+#   --keylength ec-256 ; # 2048, 3072, 4096, 8192 or ec-256, ec-384
 # 
 # firewall-cmd --add-port=$ACME_SH_TLS_PROT/tcp;
 # firewall-cmd --reload;
