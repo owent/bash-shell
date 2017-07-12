@@ -166,6 +166,7 @@ https://chocolatey.org/install#install-with-powershellexe
 
 ```ps
 # Don't forget to ensure ExecutionPolicy above
+Set-ExecutionPolicy Unrestricted
 iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
 
 choco update chocolatey
@@ -173,22 +174,22 @@ choco upgrade chocolatey
 ```
 
 ```
-chroco install --yes 7zip VisualStudioCode vim-tux pandoc foobar2000 Graphviz
+choco install --yes 7zip VisualStudioCode vim-tux pandoc foobar2000 Graphviz
 
 # dev (anaconda3 also can be used instead of python3)
-chroco install --yes git git-lfs TortoiseGit python3
+choco install --yes MobaXterm git git-lfs TortoiseGit python3
 
 # dev - network
-chroco install --yes wireshark WinPcap
+choco install --yes wireshark WinPcap
 
 # c & c++
-chroco install --yes cmake doxygen
+choco install --yes cmake doxygen.install
 
 # nodejs
-chroco install --yes nodejs npm
+choco install --yes nodejs npm
 
 # java
-chroco install --yes jdk8
+choco install --yes jdk8
 ```
 
 ## Atom Editor
@@ -202,3 +203,8 @@ apm config set git "C:\Program Files\Git\bin\git.exe"
 # 其他软件记录
 
 多国语言编辑器: [Poedit](https://poedit.net/)
+
+## SSH/SFTP:
+ 
++ [xshell/xftp](https://www.netsarang.com/download/software.html)
++ [mobaxterm](http://mobaxterm.mobatek.net/)
