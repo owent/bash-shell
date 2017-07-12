@@ -13,8 +13,8 @@ echo "##
 ## Primary
 ## msys2.org
 Server = http://mirrors.ustc.edu.cn/msys2/msys/\$arch
-Server = http://mirror.bit.edu.cn/msys2/REPOS/MSYS2/\$arch
 Server = https://mirrors.tuna.tsinghua.edu.cn/msys2/msys/\$arch
+Server = http://mirror.bit.edu.cn/msys2/REPOS/MSYS2/\$arch
 Server = http://mirrors.zju.edu.cn/msys2/msys2/REPOS/MSYS2/\$arch" > /etc/pacman.d/mirrorlist.msys ;
 
 echo "##
@@ -25,8 +25,8 @@ echo "##
 ## Primary
 ## msys2.org
 Server = http://mirrors.ustc.edu.cn/msys2/mingw/i686
-Server = http://mirror.bit.edu.cn/msys2/REPOS/MINGW/i686
 Server = https://mirrors.tuna.tsinghua.edu.cn/msys2/mingw/i686
+Server = http://mirror.bit.edu.cn/msys2/REPOS/MINGW/i686
 Server = http://mirrors.zju.edu.cn/msys2/msys2/REPOS/MINGW/i686" > /etc/pacman.d/mirrorlist.mingw32 ;
 
 echo "##
@@ -36,8 +36,8 @@ echo "##
 ## Primary
 ## msys2.org
 Server = http://mirrors.ustc.edu.cn/msys2/mingw/x86_64
-Server = http://mirror.bit.edu.cn/msys2/REPOS/MINGW/x86_64
 Server = https://mirrors.tuna.tsinghua.edu.cn/msys2/mingw/x86_64
+Server = http://mirror.bit.edu.cn/msys2/REPOS/MINGW/x86_64
 Server = http://mirrors.zju.edu.cn/msys2/msys2/REPOS/MINGW/x86_64" > /etc/pacman.d/mirrorlist.mingw64 ;
 
 # utils
