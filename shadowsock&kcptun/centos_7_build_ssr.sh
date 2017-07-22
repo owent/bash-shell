@@ -16,7 +16,7 @@ else
 fi
 
 if [ ! -e shadowsocksr-libev ]; then
-    git clone https://github.com/shadowsocksr/shadowsocksr-libev.git;
+    git clone https://github.com/owent-contrib/shadowsocksr-libev.git;
     cd shadowsocksr-libev;
 else
     cd shadowsocksr-libev;
@@ -25,6 +25,7 @@ else
     git pull;
 fi
 
+./autogen.sh ;
 ./configure  --prefix="$PREFIX" && make;
 sudo make install;
 
@@ -70,7 +71,7 @@ sudo echo "# Defaults for shadowsocks initscript
 #
 # This is a POSIX shell fragment
 #
-# Note: `START', `GROUP' and `MAXFD' options are not recognized by systemd.
+# Note: 'START', 'GROUP' and 'MAXFD' options are not recognized by systemd.
 # Please change those settings in the corresponding systemd unit file.
 
 # Enable during startup?
@@ -118,12 +119,13 @@ cat /etc/passwd | grep $USER ;
 if [ 0 -ne $? ]; then
     sudo useradd $USER -M -s /sbin/nologin ;
 fi
+chown $USER:$USER -R "$PREFIX";
 
 # systemd and firewall
 if [ -e "/usr/lib/systemd/system" ] && [ ! -e "/usr/lib/systemd/system/shadowsocksr-libev.service" ]; then
     sudo cp shadowsocksr-libev.service "/usr/lib/systemd/system/shadowsocksr-libev.service" -f;
-    systemctl enable kcptun ;
-    systemctl restart kcptun ;
+    systemctl enable shadowsocksr-libev ;
+    systemctl restart shadowsocksr-libev ;
 fi
 
 if [ -e "/usr/lib/firewalld/services" ] && [ ! -e "/usr/lib/firewalld/services/shadowsocksr-libev.xml" ]; then
