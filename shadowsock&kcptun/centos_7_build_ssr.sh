@@ -105,7 +105,7 @@ if [ ! -e "/etc/shadowsocksr-libev/config.json" ]; then
     },
     "timeout": 60,
     "udp_timeout": 60,
-    "method": "aes-256-cfb",
+    "method": "chacha20",
     "obfs": "tls1.2_ticket_auth",
     "obfs_param": "baidu.com,163.com,qq.com",
     "protocol": "auth_sha1_v4",
