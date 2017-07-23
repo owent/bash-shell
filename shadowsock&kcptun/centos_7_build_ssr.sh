@@ -2,121 +2,98 @@
 
 which yum;
 
-PREFIX="/usr/local/shadowsocksr-libev";
+PREFIX="/usr/local/shadowsocksr";
 MAXFD=32768;
 USER=shadowsocksr;
-VERSION="2.4.1";
-DOWN_URL="https://github.com/shadowsocksr/shadowsocksr-libev/archive/$VERSION.tar.gz"
+VERSION="3.1.2";
+DOWN_URL="https://github.com/shadowsocksr/shadowsocksr/archive/$VERSION.tar.gz"
 
 if [ 0 -eq $? ]; then
-    sudo yum install -y gcc autoconf libtool automake make zlib-devel openssl-devel asciidoc xmlto wget;
+    sudo yum install -y gcc autoconf libtool automake make zlib-devel openssl-devel python wget;
 else
     which apt;
     if [ 0 -eq $? ]; then
-        sudo apt install -y --no-install-recommends build-essential autoconf libtool libssl-dev libpcre3-dev asciidoc xmlto wget;
+        sudo apt install -y --no-install-recommends build-essential autoconf libtool libssl-dev libpcre3-dev python wget;
     fi
 fi
 
-if [ -e "shadowsocksr-libev-$VERSION" ]; then
-    rm -rf "shadowsocksr-libev-$VERSION";
+# backup configure files
+if [ -e "$PREFIX/src/userapiconfig.py" ]; then
+    cp -f "$PREFIX/userapiconfig.py" userapiconfig.py;
 fi
 
-if [ ! -e "shadowsocksr-libev-$VERSION.tar.gz" ]; then
-    wget "$DOWN_URL" -O "shadowsocksr-libev-$VERSION.tar.gz" --no-check-certificate;
+if [ -e "$PREFIX/src/mudb.json" ]; then
+    cp -f "$PREFIX/mudb.json" mudb.json;
 fi
 
-tar -xvf "shadowsocksr-libev-$VERSION.tar.gz";
+if [ -e "$PREFIX/src/user-config.json" ]; then
+    cp -f "$PREFIX/src/user-config.json" user-config.json;
+fi
 
-cd "shadowsocksr-libev-$VERSION";
+if [ -e "shadowsocksr-$VERSION" ]; then
+    rm -rf "shadowsocksr-$VERSION";
+fi
 
-./autogen.sh ;
-./configure  --prefix="$PREFIX" && make;
+if [ ! -e "shadowsocksr-$VERSION.tar.gz" ]; then
+    wget "$DOWN_URL" -O "shadowsocksr-$VERSION.tar.gz" --no-check-certificate;
+fi
 
-sudo make install;
+tar -xvf "shadowsocksr-$VERSION.tar.gz";
 
-cd .. ;
+mkdir -p "$PREFIX/log";
+
+if [ -e "$PREFIX/src" ]; then
+    rm -rf "$PREFIX/src";
+fi
+cp -rf "shadowsocksr-$VERSION" "$PREFIX/src";
+cd "shadowsocksr-$VERSION";
+
+./initcfg.sh
+
+# restore configure
+if [ -e userapiconfig.py ]; then
+    mv -f userapiconfig.py "$PREFIX/src/userapiconfig.py";
+fi
+
+if [ -e mudb.json ]; then
+    mv -f mudb.json "$PREFIX/src/mudb.json";
+fi
+
+if [ -e user-config.json ]; then
+    mv -f user-config.json "$PREFIX/src/user-config.json";
+fi
 
 # add systemd
-echo "#  This file is part of Shadowsocksr-libev.
+echo "#  This file is part of shadowsocksr.
 #
-#  Shadowsocksr-libev is free software; you can redistribute it and/or modify
+#  shadowsocksr is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation; either version 3 of the License, or
 #  (at your option) any later version.
 #
 #  This file is default for Debian packaging. See also
-#  /etc/default/Shadowsocksr-libev for environment variables.
+#  /etc/default/shadowsocksr for environment variables.
 
 [Unit]
-Description=Shadowsocksr-libev Default Server Service
-Documentation=man:Shadowsocksr-libev(8)
+Description=shadowsocksr Default Server Service
+Documentation=man:shadowsocksr(8)
 After=network.target
 
 [Service]
 Type=simple
-EnvironmentFile=/etc/default/shadowsocksr-libev
+EnvironmentFile=/etc/default/shadowsocksr
 User=$USER
 Group=$USER
 LimitNOFILE=$MAXFD
-ExecStart=$PREFIX/bin/ss-server -c \$CONFFILE \$DAEMON_ARGS
+ExecStart=/usr/bin/python $PREFIX/src/server.py -d start --pid-file $PREFIX/shadowsocksr.pid --log-file $PREFIX/log/shadowsocksr.log
+ExecStop=/usr/bin/python $PREFIX/src/server.py -d stop --pid-file $PREFIX/shadowsocksr.pid --log-file $PREFIX/log/shadowsocksr.log
+ExecRestart=/usr/bin/python $PREFIX/src/server.py -d restart --pid-file $PREFIX/shadowsocksr.pid --log-file $PREFIX/log/shadowsocksr.log
+Pidfile=$PREFIX/shadowsocksr.pid
+
 
 [Install]
 WantedBy=multi-user.target
-" > shadowsocksr-libev.service;
-
-if [ ! -e /etc/default ]; then
-    sudo mkdir -p /etc/default;
-fi
-
-# add env file
-sudo echo "# Defaults for shadowsocks initscript
-# sourced by /etc/init.d/shadowsocksr-libev
-# installed at /etc/default/shadowsocksr-libev by the maintainer scripts
-
-#
-# This is a POSIX shell fragment
-#
-# Note: 'START', 'GROUP' and 'MAXFD' options are not recognized by systemd.
-# Please change those settings in the corresponding systemd unit file.
-
-# Enable during startup?
-START=yes
-
-# Configuration file
-CONFFILE=\"/etc/shadowsocksr-libev/config.json\"
-
-# Extra command line arguments
-DAEMON_ARGS=\"-u\"
-
-# User and group to run the server as
-USER=$USER
-GROUP=$USER
-
-# Number of maximum file descriptors
-MAXFD=$MAXFD
-" > /etc/default/shadowsocksr-libev;
-
-# add config file
-if [ ! -e "/etc/shadowsocksr-libev/config.json" ]; then
-    sudo mkdir -p /etc/shadowsocksr-libev ;
-
-    sudo echo '{
-    "local_port": 1080,
-    "server_port": 8380,
-    "password": "your password",
-    "timeout": 300,
-    "udp_timeout": 60,
-    "method": "chacha20",
-    "obfs": "tls1.2_ticket_auth",
-    "obfs_param": "",
-    "protocol": "auth_sha1_v4",
-    "protocol_param": "",
-    "redirect": "",
-    "dns_ipv6": false,
-    "fast_open": true,
-    "workers": 4
-}' > /etc/shadowsocksr-libev/config.json;
-fi
+" > shadowsocksr.service;
 
 # add user
 cat /etc/passwd | grep $USER ;
@@ -126,21 +103,27 @@ fi
 chown $USER:$USER -R "$PREFIX";
 
 # systemd and firewall
-if [ -e "/usr/lib/systemd/system" ] && [ ! -e "/usr/lib/systemd/system/shadowsocksr-libev.service" ]; then
-    sudo cp shadowsocksr-libev.service "/usr/lib/systemd/system/shadowsocksr-libev.service" -f;
-    systemctl enable shadowsocksr-libev ;
-    systemctl restart shadowsocksr-libev ;
+if [ -e "/usr/lib/systemd/system" ] && [ ! -e "/usr/lib/systemd/system/shadowsocksr.service" ]; then
+    sudo cp shadowsocksr.service "/usr/lib/systemd/system/shadowsocksr.service" -f;
+    systemctl enable shadowsocksr ;
+    systemctl restart shadowsocksr ;
 fi
 
-if [ -e "/usr/lib/firewalld/services" ] && [ ! -e "/usr/lib/firewalld/services/shadowsocksr-libev.xml" ]; then
+if [ -e "/usr/lib/firewalld/services" ] && [ ! -e "/usr/lib/firewalld/services/shadowsocksr.xml" ]; then
     echo "setup firewalld";
     sudo echo '<?xml version="1.0" encoding="utf-8"?>
 <service>
-  <short>shadowsocksr-libev</short>
-  <description>shadowsocksr-libev.</description>
-  <port protocol="tcp" port="8380"/>
-  <port protocol="udp" port="8380"/>
-</service>' > "/usr/lib/firewalld/services/shadowsocksr-libev.xml" ;
-    sudo firewall-cmd --permanent --add-service=shadowsocksr-libev ;
+  <short>shadowsocksr</short>
+  <description>shadowsocksr.</description>
+  <port protocol="tcp" port="8388"/>
+  <port protocol="udp" port="8388"/>
+</service>' > "/usr/lib/firewalld/services/shadowsocksr.xml" ;
+    sudo firewall-cmd --permanent --add-service=shadowsocksr ;
     sudo firewall-cmd --reload ;
 fi
+
+echo "All configure done.";
+echo "Please edit $PREFIX/userapiconfig.py and set API_INTERFACE = 'mudbjson', SERVER_PUB_ADDR = 'your ip address'";
+echo "You can edit $PREFIX/mudb.json to set multi-user configure or using mujson_mgr.py";
+echo "firewalld configure can be found here /usr/lib/firewalld/services/shadowsocksr.xml, please run firewall-cmd --reload after edit it";
+echo "systemd configure can be found here /usr/lib/systemd/system/shadowsocksr.service, please run systemctl disable/enable/restart shadowsocksr after edit it";
