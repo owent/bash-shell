@@ -5,28 +5,35 @@ which yum;
 PREFIX="/usr/local/shadowsocksr-libev";
 MAXFD=32768;
 USER=shadowsocksr;
+VERSION="2.4.1";
+DOWN_URL="https://github.com/shadowsocksr/shadowsocksr-libev/archive/$VERSION.tar.gz"
 
 if [ 0 -eq $? ]; then
-    sudo yum install -y gcc autoconf libtool automake make zlib-devel openssl-devel asciidoc xmlto git;
+    sudo yum install -y gcc autoconf libtool automake make zlib-devel openssl-devel asciidoc xmlto wget;
 else
     which apt;
     if [ 0 -eq $? ]; then
-        sudo apt install -y --no-install-recommends build-essential autoconf libtool libssl-dev libpcre3-dev asciidoc xmlto git;
+        sudo apt install -y --no-install-recommends build-essential autoconf libtool libssl-dev libpcre3-dev asciidoc xmlto wget;
     fi
 fi
 
-if [ ! -e shadowsocksr-libev ]; then
-    git clone https://github.com/owent-contrib/shadowsocksr-libev.git;
-    cd shadowsocksr-libev;
-else
-    cd shadowsocksr-libev;
-    git reset --hard;
-    git clean -dfx;
-    git pull;
+if [ -e "shadowsocksr-libev-$VERSION" ]; then
+    rm -rf "shadowsocksr-libev-$VERSION";
 fi
+
+if [ ! -e "shadowsocksr-libev-$VERSION.tar.gz" ]; then
+    wget "$DOWN_URL" -O "shadowsocksr-libev-$VERSION.tar.gz" --no-check-certificate;
+fi
+
+tar -xvf "shadowsocksr-libev-$VERSION.tar.gz";
+
+cd "shadowsocksr-libev-$VERSION";
 
 ./autogen.sh ;
 ./configure  --prefix="$PREFIX" && make;
+
+exit 0;
+
 sudo make install;
 
 cd .. ;
