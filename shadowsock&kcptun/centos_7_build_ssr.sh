@@ -81,12 +81,10 @@ After=network.target
 
 [Service]
 Type=simple
-EnvironmentFile=/etc/default/shadowsocksr
 User=$USER
 Group=$USER
 LimitNOFILE=$MAXFD
 ExecStart=/usr/bin/python $PREFIX/src/server.py m > /dev/null 2>&1
-
 
 [Install]
 WantedBy=multi-user.target
@@ -123,4 +121,4 @@ echo "All configure done.";
 echo "Please edit $PREFIX/userapiconfig.py and set API_INTERFACE = 'mudbjson', SERVER_PUB_ADDR = 'your ip address'";
 echo "You can edit $PREFIX/mudb.json to set multi-user configure or using mujson_mgr.py";
 echo "firewalld configure can be found here /usr/lib/firewalld/services/shadowsocksr.xml, please run firewall-cmd --reload after edit it";
-echo "systemd configure can be found here /usr/lib/systemd/system/shadowsocksr.service, please run systemctl disable/enable/restart shadowsocksr after edit it";
+echo "systemd configure can be found here /usr/lib/systemd/system/shadowsocksr.service, please run systemctl daemon-reload or systemctl disable/enable/restart shadowsocksr after edit it";
