@@ -101,9 +101,6 @@ if [ ! -e "/etc/shadowsocksr-libev/config.json" ]; then
     sudo mkdir -p /etc/shadowsocksr-libev ;
 
     sudo echo '{
-    "server": "0.0.0.0",
-    "server_ipv6": "[::]",
-    "local_address": "127.0.0.1",
     "local_port": 1080,
     "server_port": 8380,
     "password": "your password",
@@ -111,7 +108,7 @@ if [ ! -e "/etc/shadowsocksr-libev/config.json" ]; then
     "udp_timeout": 60,
     "method": "chacha20",
     "obfs": "tls1.2_ticket_auth",
-    "obfs_param": "baidu.com,163.com,qq.com",
+    "obfs_param": "",
     "protocol": "auth_sha1_v4",
     "protocol_param": "",
     "redirect": "",
