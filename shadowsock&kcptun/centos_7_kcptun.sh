@@ -5,8 +5,9 @@
 KCPTUN_HOME=/home/kcptun ;
 KCPTUN_SYSTEMD=/usr/lib/systemd/system/kcptun.service ;
 KCPTUN_URL=https://github.com/xtaci/kcptun/releases/download/v20170525/kcptun-linux-amd64-20170525.tar.gz ;
-KCPTUN_PORTS=(8350 8351 8352) ;
-KCPTUN_PORT_OFF=1000 ;
+KCPTUN_PORTS=(8380) ;
+KCPTUN_PORT_OFF=200 ;
+KCPTUN_OPTIONS="--crypt none --mtu 1350 --nocomp --mode fast --dscp 46";
 KCPTUN_SS_LOCAL=127.0.0.1 ;
 
 mkdir -p "$KCPTUN_HOME/log";
@@ -23,7 +24,7 @@ After=syslog.target network.target
 
 [Service]
 Type=simple
-ExecStart=$KCPTUN_HOME/server_linux_amd64 -l :$KCPTUN_PORT -t $KCPTUN_SS_LOCAL:$LOCAL_PORT --crypt none --mtu 1350 --nocomp --mode fast --dscp 46 --log $KCPTUN_HOME/log/kcptun-$KCPTUN_PORTS.log
+ExecStart=$KCPTUN_HOME/server_linux_amd64 -l :$KCPTUN_PORT -t $KCPTUN_SS_LOCAL:$LOCAL_PORT $KCPTUN_OPTIONS --log $KCPTUN_HOME/log/kcptun-$KCPTUN_PORTS.log
 ExecStop=/bin/kill -s QUIT \$MAINPID
 PrivateTmp=true
 Restart=on-failure

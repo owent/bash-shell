@@ -32,8 +32,6 @@ cd "shadowsocksr-libev-$VERSION";
 ./autogen.sh ;
 ./configure  --prefix="$PREFIX" && make;
 
-exit 0;
-
 sudo make install;
 
 cd .. ;
@@ -105,19 +103,21 @@ if [ ! -e "/etc/shadowsocksr-libev/config.json" ]; then
     sudo echo '{
     "server": "0.0.0.0",
     "server_ipv6": "[::]",
+    "local_address": "127.0.0.1",
     "local_port": 1080,
-    "port_password": {
-        "8350": "your password of port 8350",
-        "8351": "your password of port 8351",
-        "8352": "your password of port 8352"
-    },
-    "timeout": 60,
+    "server_port": 8380,
+    "password": "your password",
+    "timeout": 300,
     "udp_timeout": 60,
     "method": "chacha20",
     "obfs": "tls1.2_ticket_auth",
     "obfs_param": "baidu.com,163.com,qq.com",
     "protocol": "auth_sha1_v4",
-    "protocol_param": ""
+    "protocol_param": "",
+    "redirect": "",
+    "dns_ipv6": false,
+    "fast_open": true,
+    "workers": 4
 }' > /etc/shadowsocksr-libev/config.json;
 fi
 
@@ -141,12 +141,8 @@ if [ -e "/usr/lib/firewalld/services" ] && [ ! -e "/usr/lib/firewalld/services/s
 <service>
   <short>shadowsocksr-libev</short>
   <description>shadowsocksr-libev.</description>
-  <port protocol="tcp" port="8350"/>
-  <port protocol="udp" port="8350"/>
-  <port protocol="tcp" port="8351"/>
-  <port protocol="udp" port="8351"/>
-  <port protocol="tcp" port="8352"/>
-  <port protocol="udp" port="8352"/>
+  <port protocol="tcp" port="8380"/>
+  <port protocol="udp" port="8380"/>
 </service>' > "/usr/lib/firewalld/services/shadowsocksr-libev.xml" ;
     sudo firewall-cmd --permanent --add-service=shadowsocksr-libev ;
     sudo firewall-cmd --reload ;
