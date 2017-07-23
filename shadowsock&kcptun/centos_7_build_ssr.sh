@@ -85,10 +85,7 @@ EnvironmentFile=/etc/default/shadowsocksr
 User=$USER
 Group=$USER
 LimitNOFILE=$MAXFD
-ExecStart=/usr/bin/python $PREFIX/src/server.py -d start --pid-file $PREFIX/shadowsocksr.pid --log-file $PREFIX/log/shadowsocksr.log
-ExecStop=/usr/bin/python $PREFIX/src/server.py -d stop --pid-file $PREFIX/shadowsocksr.pid --log-file $PREFIX/log/shadowsocksr.log
-ExecRestart=/usr/bin/python $PREFIX/src/server.py -d restart --pid-file $PREFIX/shadowsocksr.pid --log-file $PREFIX/log/shadowsocksr.log
-Pidfile=$PREFIX/shadowsocksr.pid
+ExecStart=/usr/bin/python $PREFIX/src/server.py m > /dev/null 2>&1
 
 
 [Install]
