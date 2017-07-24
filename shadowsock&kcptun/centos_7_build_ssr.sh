@@ -105,8 +105,9 @@ chown $USER:$USER -R "$PREFIX";
 # systemd and firewall
 if [ -e "/usr/lib/systemd/system" ] && [ ! -e "/usr/lib/systemd/system/shadowsocksr.service" ]; then
     sudo cp shadowsocksr.service "/usr/lib/systemd/system/shadowsocksr.service" -f;
-    systemctl enable shadowsocksr ;
-    systemctl restart shadowsocksr ;
+    sudo systemctl daemon-reload ;
+    sudo systemctl enable shadowsocksr ;
+    sudo systemctl restart shadowsocksr ;
 fi
 
 if [ -e "/etc/firewalld/services" ] && [ ! -e "/etc/firewalld/services/shadowsocksr.xml" ]; then
@@ -118,6 +119,7 @@ if [ -e "/etc/firewalld/services" ] && [ ! -e "/etc/firewalld/services/shadowsoc
   <port protocol="tcp" port="8388"/>
   <port protocol="udp" port="8388"/>
 </service>' > "/etc/firewalld/services/shadowsocksr.xml" ;
+    sudo firewall-cmd --reload ;
     sudo firewall-cmd --permanent --add-service shadowsocksr ;
     sudo firewall-cmd --reload ;
 fi

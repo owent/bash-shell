@@ -38,9 +38,9 @@ SuccessExitStatus=SIGTERM
 
 [Install]
 WantedBy=multi-user.target" > /usr/lib/systemd/system/kcptun-$KCPTUN_PORT.service ;
-
-        systemctl enable kcptun-$KCPTUN_PORT ;
-        systemctl start kcptun-$KCPTUN_PORT ;
+        sudo sudo systemctl daemon-reload ;
+        sudo systemctl enable kcptun-$KCPTUN_PORT ;
+        sudo systemctl start kcptun-$KCPTUN_PORT ;
         echo "systemd configured at /usr/lib/systemd/system/kcptun-$KCPTUN_PORT.service, please run systemctl daemon-reload or systemctl disable/enable/restart kcptun-$KCPTUN_PORT after edit it";
     fi
 
@@ -53,6 +53,7 @@ WantedBy=multi-user.target" > /usr/lib/systemd/system/kcptun-$KCPTUN_PORT.servic
     <port protocol=\"tcp\" port=\"$LOCAL_PORT\"/>
     <port protocol=\"udp\" port=\"$LOCAL_PORT\"/>
 </service>" > "/etc/firewalld/services/kcptun-$KCPTUN_PORT.xml" ;
+        sudo firewall-cmd --reload ;
         sudo firewall-cmd --permanent --add-service "kcptun-$KCPTUN_PORT" ;
         sudo firewall-cmd --reload ;
     fi
