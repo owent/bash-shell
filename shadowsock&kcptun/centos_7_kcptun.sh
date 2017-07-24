@@ -5,7 +5,7 @@
 KCPTUN_HOME=/home/kcptun ;
 KCPTUN_SYSTEMD=/usr/lib/systemd/system/kcptun.service ;
 KCPTUN_URL=https://github.com/xtaci/kcptun/releases/download/v20170525/kcptun-linux-amd64-20170525.tar.gz ;
-KCPTUN_PORTS=(8380) ;
+KCPTUN_PORTS=($*) ;
 KCPTUN_PORT_OFF=200 ;
 KCPTUN_OPTIONS="--crypt none --mtu 1350 --nocomp --mode fast --dscp 46";
 KCPTUN_SS_LOCAL=127.0.0.1 ;

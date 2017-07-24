@@ -48,7 +48,8 @@ fi
 cp -rf "shadowsocksr-$VERSION" "$PREFIX/src";
 cd "shadowsocksr-$VERSION";
 
-./initcfg.sh
+chmod +x *;
+./initcfg.sh;
 
 # restore configure
 if [ -e userapiconfig.py ]; then
@@ -85,6 +86,10 @@ User=$USER
 Group=$USER
 LimitNOFILE=$MAXFD
 ExecStart=/usr/bin/python $PREFIX/src/server.py m > /dev/null 2>&1
+ExecStop=/bin/kill -s QUIT
+PrivateTmp=true
+Restart=on-failure
+RestartPreventExitStatus=SIGTERM
 
 [Install]
 WantedBy=multi-user.target
@@ -104,21 +109,23 @@ if [ -e "/usr/lib/systemd/system" ] && [ ! -e "/usr/lib/systemd/system/shadowsoc
     systemctl restart shadowsocksr ;
 fi
 
-if [ -e "/usr/lib/firewalld/services" ] && [ ! -e "/usr/lib/firewalld/services/shadowsocksr.xml" ]; then
+if [ -e "/etc/firewalld/services" ] && [ ! -e "/etc/firewalld/services/shadowsocksr.xml" ]; then
     echo "setup firewalld";
     sudo echo '<?xml version="1.0" encoding="utf-8"?>
 <service>
   <short>shadowsocksr</short>
-  <description>shadowsocksr.</description>
+  <description>shadowsocksr</description>
   <port protocol="tcp" port="8388"/>
   <port protocol="udp" port="8388"/>
-</service>' > "/usr/lib/firewalld/services/shadowsocksr.xml" ;
-    sudo firewall-cmd --permanent --add-service=shadowsocksr ;
+</service>' > "/etc/firewalld/services/shadowsocksr.xml" ;
+    sudo firewall-cmd --permanent --add-service shadowsocksr ;
     sudo firewall-cmd --reload ;
 fi
 
 echo "All configure done.";
 echo "Please edit $PREFIX/userapiconfig.py and set API_INTERFACE = 'mudbjson', SERVER_PUB_ADDR = 'your ip address'";
 echo "You can edit $PREFIX/mudb.json to set multi-user configure or using mujson_mgr.py";
-echo "firewalld configure can be found here /usr/lib/firewalld/services/shadowsocksr.xml, please run firewall-cmd --reload after edit it";
+echo "firewalld configure can be found here /etc/firewalld/services/shadowsocksr.xml, please run firewall-cmd --reload after edit it";
 echo "systemd configure can be found here /usr/lib/systemd/system/shadowsocksr.service, please run systemctl daemon-reload or systemctl disable/enable/restart shadowsocksr after edit it";
+echo "Example:";
+echo "  python mujson_mgr.py -a -m chacha20 -O auth_sha1_v4 -o tls1.2_ticket_auth -p 8351 -k YOURPASSWORD";
