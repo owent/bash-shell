@@ -12,7 +12,7 @@ KCPTUN_SS_LOCAL=127.0.0.1 ;
 
 mkdir -p "$KCPTUN_HOME/log";
 
-FILENAME="$(bashname $KCPTUN_URL)";
+FILENAME="$(basename $KCPTUN_URL)";
 
 if [ ! -e "$KCPTUN_HOME/$FILENAME" ]; then
     wget "$KCPTUN_URL" -O "$KCPTUN_HOME/$FILENAME" ;
