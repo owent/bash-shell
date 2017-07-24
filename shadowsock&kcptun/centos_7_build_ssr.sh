@@ -125,7 +125,11 @@ fi
 echo "All configure done.";
 echo "Please edit $PREFIX/userapiconfig.py and set API_INTERFACE = 'mudbjson', SERVER_PUB_ADDR = 'your ip address'";
 echo "You can edit $PREFIX/mudb.json to set multi-user configure or using mujson_mgr.py";
-echo "firewalld configure can be found here /etc/firewalld/services/shadowsocksr.xml, please run firewall-cmd --reload after edit it";
-echo "systemd configure can be found here /usr/lib/systemd/system/shadowsocksr.service, please run systemctl daemon-reload or systemctl disable/enable/restart shadowsocksr after edit it";
+if [ -e "/etc/firewalld/services/shadowsocksr.xml" ]; then
+    echo "firewalld configured at /etc/firewalld/services/shadowsocksr.xml, please run firewall-cmd --reload after edit it";
+fi
+if [ -e "/usr/lib/systemd/system/shadowsocksr.service" ]; then
+    echo "systemd configured at /usr/lib/systemd/system/shadowsocksr.service, please run systemctl daemon-reload or systemctl disable/enable/restart shadowsocksr after edit it";
+fi
 echo "Example:";
 echo "  python mujson_mgr.py -a -m chacha20 -O auth_sha1_v4 -o tls1.2_ticket_auth -p 8351 -k YOURPASSWORD";
