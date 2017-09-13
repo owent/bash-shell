@@ -53,6 +53,7 @@ while getopts "dp:cht:l:g:m:" OPTION; do
             echo "options:";
             echo "-p [prefix_dir]             set prefix directory.";
             echo "-c                          clean build cache.";
+            echo "-d                          download only.";
             echo "-h                          help message.";
             echo "-t [build target]           set build target(llvm clang compiler_rt libcxx libcxxabi lldb polly openmp clang_tools_extra llvm_test_suite libunwind).";
             echo "-l [llvm cpnfigure option]  add llvm build options.";
@@ -83,8 +84,10 @@ while getopts "dp:cht:l:g:m:" OPTION; do
     esac
 done
 
-mkdir -p "$PREFIX_DIR"
-PREFIX_DIR="$( cd "$PREFIX_DIR" && pwd )";
+if [ $BUILD_DOWNLOAD_ONLY -eq 0 ]; then
+    mkdir -p "$PREFIX_DIR"
+    PREFIX_DIR="$( cd "$PREFIX_DIR" && pwd )";
+fi
 
 # llvm 脚本fix 
 BUILD_LLVM_CONF_OPTION="$BUILD_LLVM_CONF_OPTION -DLLVM_PREFIX=$PREFIX_DIR";
@@ -338,6 +341,10 @@ function build_llvm_toolchain() {
     fi
     POLLY_DIR="$LLVM_DIR/tools/polly";
 
+    if [ $BUILD_DOWNLOAD_ONLY -ne 0 ]; then
+        return 0;
+    fi
+
     # ready to build 
     # if [ ! -e "$STAGE_BUILD_PREFIX_DIR/bin/llvm-config" ]; then
         cd "$LLVM_DIR";
@@ -379,9 +386,11 @@ function build_llvm_toolchain() {
 }
 
 build_llvm_toolchain ;
-if [ ! -e "$STAGE_BUILD_PREFIX_DIR/bin/clang" ] || [ 0 -ne $?] ; then
-    echo -e "\\033[31;1mError: build llvm $STAGE_BUILD_PREFIX_DIR failed on step 1.\\033[39;49;0m";
-    exit 1;
+if [ ! -e "$STAGE_BUILD_PREFIX_DIR/bin/clang" ] || [ 0 -ne $? ] ; then
+    if [ $BUILD_DOWNLOAD_ONLY -eq 0 ]; then
+        echo -e "\\033[31;1mError: build llvm $STAGE_BUILD_PREFIX_DIR failed on step 1.\\033[39;49;0m";
+        exit 1;
+    fi
 fi
 CXX_ABI_PATH=$(find "$STAGE_BUILD_PREFIX_DIR/include" -name "cxxabi.h");
 if [ ! -z "$CXX_ABI_PATH" ]; then
@@ -462,23 +471,29 @@ export CXX=$STAGE_BUILD_PREFIX_DIR/bin/clang++ ;
 build_llvm_toolchain ;
 
 if [ ! -e "$PREFIX_DIR/bin/clang" ] ; then
-    echo -e "\\033[31;1mError: build llvm $STAGE_BUILD_PREFIX_DIR failed on step 2.\\033[39;49;0m";
-    exit 1;
+    if [ $BUILD_DOWNLOAD_ONLY -eq 0 ]; then
+        echo -e "\\033[31;1mError: build llvm $STAGE_BUILD_PREFIX_DIR failed on step 2.\\033[39;49;0m";
+        exit 1;
+    fi
 fi
 
-LLVM_CONFIG_PATH="$PREFIX_DIR/bin/llvm-config";
-echo -e "\\033[33;1mAddition, run the cmds below to add environment var(s).\\033[39;49;0m";
-echo -e "\\033[31;1mexport PATH=$($LLVM_CONFIG_PATH --bindir):$PATH\\033[39;49;0m";
-echo -e "\\033[33;1mBuild LLVM done.\\033[39;49;0m";
-echo "";
-echo -e "\\033[32;1mSample flags to build exectable file:.\\033[39;49;0m";
-echo -e "\\033[35;1m\tCC=$STAGE_BUILD_PREFIX_DIR/bin/clang\\033[39;49;0m";
-echo -e "\\033[35;1m\tCXX=$STAGE_BUILD_PREFIX_DIR/bin/clang++\\033[39;49;0m";
-echo -e "\\033[35;1m\tCFLAGS=$($LLVM_CONFIG_PATH --cflags) -std=libc++\\033[39;49;0m";
-if [ ! -z "$(find $($LLVM_CONFIG_PATH --libdir) -name libc++abi.so)" ]; then
-    echo -e "\\033[35;1m\tCXXFLAGS=$($LLVM_CONFIG_PATH --cxxflags) -std=libc++\\033[39;49;0m";
-    echo -e "\\033[35;1m\tLDFLAGS=$($LLVM_CONFIG_PATH --ldflags) -lc++ -lc++abi\\033[39;49;0m";
+if [ $BUILD_DOWNLOAD_ONLY -eq 0 ]; then
+    LLVM_CONFIG_PATH="$PREFIX_DIR/bin/llvm-config";
+    echo -e "\\033[33;1mAddition, run the cmds below to add environment var(s).\\033[39;49;0m";
+    echo -e "\\033[31;1mexport PATH=$($LLVM_CONFIG_PATH --bindir):$PATH\\033[39;49;0m";
+    echo -e "\\033[33;1mBuild LLVM done.\\033[39;49;0m";
+    echo "";
+    echo -e "\\033[32;1mSample flags to build exectable file:.\\033[39;49;0m";
+    echo -e "\\033[35;1m\tCC=$STAGE_BUILD_PREFIX_DIR/bin/clang\\033[39;49;0m";
+    echo -e "\\033[35;1m\tCXX=$STAGE_BUILD_PREFIX_DIR/bin/clang++\\033[39;49;0m";
+    echo -e "\\033[35;1m\tCFLAGS=$($LLVM_CONFIG_PATH --cflags) -std=libc++\\033[39;49;0m";
+    if [ ! -z "$(find $($LLVM_CONFIG_PATH --libdir) -name libc++abi.so)" ]; then
+        echo -e "\\033[35;1m\tCXXFLAGS=$($LLVM_CONFIG_PATH --cxxflags) -std=libc++\\033[39;49;0m";
+        echo -e "\\033[35;1m\tLDFLAGS=$($LLVM_CONFIG_PATH --ldflags) -lc++ -lc++abi\\033[39;49;0m";
+    else
+        echo -e "\\033[35;1m\tCXXFLAGS=$($LLVM_CONFIG_PATH --cxxflags)\\033[39;49;0m";
+        echo -e "\\033[35;1m\tLDFLAGS=$($LLVM_CONFIG_PATH --ldflags)\\033[39;49;0m";
+    fi
 else
-    echo -e "\\033[35;1m\tCXXFLAGS=$($LLVM_CONFIG_PATH --cxxflags)\\033[39;49;0m";
-    echo -e "\\033[35;1m\tLDFLAGS=$($LLVM_CONFIG_PATH --ldflags)\\033[39;49;0m";
-fi 
+    echo -e "\\033[35;1mDownloaded: $BUILD_TARGET_COMPOMENTS.\\033[39;49;0m";
+fi
