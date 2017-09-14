@@ -386,7 +386,8 @@ function build_llvm_toolchain() {
 }
 
 build_llvm_toolchain ;
-if [ ! -e "$STAGE_BUILD_PREFIX_DIR/bin/clang" ] || [ 0 -ne $? ] ; then
+
+if [ 0 -ne $? ] ; then
     if [ $BUILD_DOWNLOAD_ONLY -eq 0 ]; then
         echo -e "\\033[31;1mError: build llvm $STAGE_BUILD_PREFIX_DIR failed on step 1.\\033[39;49;0m";
         exit 1;
