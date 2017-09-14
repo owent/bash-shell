@@ -92,16 +92,16 @@ CentOS 7
 
 #### 编译的依赖库
 + gmp 6.1.2
-+ mpfr 3.1.5
++ mpfr 3.1.6
 + mpc 1.0.3
 + isl 0.16.1
-+ libatomic_ops 7.4.4
++ libatomic_ops 7.4.6
 + bdw-gc 7.6.0
 
 #### 编译目标
-+ gcc 7.1.0
-+ binutils 2.28
-+ python 2.7.13 *[按需]*
++ gcc 7.2.0
++ binutils 2.29
++ python 2.7.14 *[按需]*
 + gdb 7.12.1 (如果存在ncurses-devel包)
 
 #### 注
@@ -128,3 +128,4 @@ end
 
 #### History
 + 2017-05-05    Created
++ 2017-09-14    增加仅下载模式，更新mpfr到的3.1.6，libatomic_ops到7.4.6，gcc到7.2.0，binutils 2.29，python到2.7.14，gdb到7.12.1
