@@ -147,7 +147,7 @@ pacman -S ruby;
 ## Ubuntu & WSL
 ```
 ## basic
-apt-get install -y vim curl wget uuid-dev libuuid1 libcurl4-openssl-dev libssl-dev python3-setuptools python3-pip python3-mako perl automake gdb valgrind libncurses5-dev git unzip lunzip p7zip-full gcc cpp autoconf colorgcc telnet iotop htop g++ make libtool build-essential
+apt-get install -y vim curl wget uuid-dev libuuid1 libcurl4-openssl-dev libssl-dev python3-setuptools python3-pip python3-mako perl automake gdb valgrind libncurses5-dev git unzip lunzip p7zip-full gcc cpp autoconf colorgcc telnet iotop htop g++ make libtool build-essential pkg-config
 
 ## clang-llvm
 

@@ -107,6 +107,7 @@ if [ $BUILD_THREAD_OPT -gt 8 ]; then
     BUILD_THREAD_OPT=8;
 fi
 BUILD_THREAD_OPT="-j$BUILD_THREAD_OPT";
+# BUILD_THREAD_OPT="";
 echo -e "\\033[32;1mnotice: $BUILD_CPU_NUMBER cpu(s) detected. use $BUILD_THREAD_OPT for multi-thread compile.";
 
 # ======================= 统一的包检查和下载函数 =======================
@@ -248,7 +249,7 @@ fi
 
 # install isl
 if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list isl $BUILD_TARGET_COMPOMENTS) ]; then
-    ISL_PKG=$(check_and_download "isl-0.16.1" "isl-*.tar.bz2" "ftp://gcc.gnu.org/pub/gcc/infrastructure/isl-0.16.1.tar.bz2" );
+    ISL_PKG=$(check_and_download "isl-0.16.1" "isl-*.tar.bz2" "http://gcc.gnu.org/pub/gcc/infrastructure/isl-0.16.1.tar.bz2" );
     if [ $? -ne 0 ]; then
         echo -e "$ISL_PKG";
         exit -1;
@@ -257,6 +258,7 @@ if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list isl $BUILD_TARGET_
         tar -jxvf $ISL_PKG;
         ISL_DIR=$(ls -d isl-* | grep -v \.tar\.bz2);
         cd $ISL_DIR;
+        autoreconf -i ;
         ./configure --prefix=$PREFIX_DIR --with-gmp-prefix=$PREFIX_DIR $BUILD_OTHER_CONF_OPTION;
         make $BUILD_THREAD_OPT && make install;
         if [ $? -ne 0 ]; then
@@ -269,7 +271,7 @@ fi
 
 # install libatomic_ops
 if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list libatomic_ops $BUILD_TARGET_COMPOMENTS) ]; then
-    LIBATOMIC_OPS_PKG=$(check_and_download "libatomic_ops-7.4.4" "libatomic_ops-*.tar.gz" "https://github.com/ivmai/libatomic_ops/releases/download/v7.4.6/libatomic_ops-7.4.6.tar.gz" "libatomic_ops-7.4.6.tar.gz" );
+    LIBATOMIC_OPS_PKG=$(check_and_download "libatomic_ops-7.4.6" "libatomic_ops-*.tar.gz" "https://github.com/ivmai/libatomic_ops/releases/download/v7.4.6/libatomic_ops-7.4.6.tar.gz" "libatomic_ops-7.4.6.tar.gz" );
     if [ $? -ne 0 ]; then
         echo -e "$LIBATOMIC_OPS_PKG";
         exit -1;
@@ -291,7 +293,7 @@ fi
 
 # install bdw-gc
 if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list bdw-gc $BUILD_TARGET_COMPOMENTS) ]; then
-    BDWGC_PKG=$(check_and_download "bdw-gc-7.6.0" "gc7_6_0.tar.gz" "https://github.com/ivmai/bdwgc/archive/gc7_6_0.tar.gz" "gc7_6_0.tar.gz" );
+    BDWGC_PKG=$(check_and_download "bdw-gc-7.4.4" "gc7_4_4.tar.gz" "https://github.com/ivmai/bdwgc/archive/gc7_4_4.tar.gz" "gc7_4_4.tar.gz" );
     if [ $? -ne 0 ]; then
         echo -e "$BDWGC_PKG";
         exit -1;
@@ -300,13 +302,13 @@ if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list bdw-gc $BUILD_TARG
         tar -zxvf $BDWGC_PKG;
         BDWGC_DIR=$(ls -d bdwgc-gc* | grep -v \.tar\.gz);
         cd $BDWGC_DIR;
-        bash ./autogen.sh ;
         if [ ! -z "$LIBATOMIC_OPS_DIR" ]; then
             if [ -e libatomic_ops ]; then
                 rm -rf libatomic_ops;
             fi
             mv -f ../$LIBATOMIC_OPS_DIR libatomic_ops;
             $(cd libatomic_ops && bash ./autogen.sh );
+            autoreconf -i;
             BDWGC_LIBATOMIC_OPS=no ;
         else
             BDWGC_LIBATOMIC_OPS=check ;
