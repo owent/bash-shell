@@ -352,7 +352,7 @@ if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list gcc $BUILD_TARGET_
         cd objdir;
         # ======================= 这一行的最后一个参数请注意，如果要支持其他语言要安装依赖库并打开对该语言的支持 =======================
         GCC_CONF_OPTION_ALL="--prefix=$PREFIX_DIR --with-gmp=$PREFIX_DIR --with-mpc=$PREFIX_DIR --with-mpfr=$PREFIX_DIR --with-isl=$PREFIX_DIR $BDWGC_PREBIUILT --enable-bootstrap --enable-build-with-cxx --disable-libjava-multilib --enable-checking=release --enable-gold --enable-ld --enable-libada --enable-libssp --enable-lto --enable-objc-gc --enable-vtable-verify --enable-shared --enable-static --enable-gnu-unique-object --enable-linker-build-id $GCC_OPT_DISABLE_MULTILIB $BUILD_TARGET_CONF_OPTION";
-        ../$GCC_DIR/configure $GCC_CONF_OPTION_ALL ;
+        env CFLAGS="--ggc-min-expand=0 --ggc-min-heapsize=6291456" CXXFLAGS="--ggc-min-expand=0 --ggc-min-heapsize=6291456" ../$GCC_DIR/configure $GCC_CONF_OPTION_ALL ;
         make $BUILD_THREAD_OPT && make install;
         cd "$WORKING_DIR";
 
@@ -399,17 +399,20 @@ if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list gdb $BUILD_TARGET_
 	    echo -e "\\033[32;1mwarning: libncurses not found, skip build [gdb].\\033[39;49;0m";
     else
 	    # ======================= 检查Python开发包，如果存在，则增加 --with-pyton 选项 =======================
-	    if [ ! -z "$(find /usr/include -name Python.h)" ]; then
-		    GDB_PYTHON_OPT="--with-python";
-	    elif [ ! -z "$(find $PREFIX_DIR -name Python.h)" ]; then
-		    GDB_PYTHON_OPT="--with-python=$PREFIX_DIR";
-	    else
-		    # =======================  尝试编译安装python  =======================
-		    PYTHON_PKG=$(check_and_download "python" "Python-*.tar.xz" "https://www.python.org/ftp/python/2.7.14/Python-2.7.14.tar.xz" );
-		    if [ $? -ne 0 ]; then
-			    return;
-		    fi
-            if [ $BUILD_DOWNLOAD_ONLY -eq 0 ]; then
+        if [ $BUILD_DOWNLOAD_ONLY -ne 0 ]; then
+            PYTHON_PKG=$(check_and_download "python" "Python-*.tar.xz" "https://www.python.org/ftp/python/2.7.14/Python-2.7.14.tar.xz" );
+        else
+            if [ ! -z "$(find /usr/include -name Python.h)" ]; then
+                GDB_PYTHON_OPT="--with-python";
+            elif [ ! -z "$(find $PREFIX_DIR -name Python.h)" ]; then
+                GDB_PYTHON_OPT="--with-python=$PREFIX_DIR";
+            else
+                # =======================  尝试编译安装python  =======================
+                PYTHON_PKG=$(check_and_download "python" "Python-*.tar.xz" "https://www.python.org/ftp/python/2.7.14/Python-2.7.14.tar.xz" );
+                if [ $? -ne 0 ]; then
+                    return;
+                fi
+
                 tar -Jxvf $PYTHON_PKG;
                 PYTHON_DIR=$(ls -d Python-* | grep -v \.tar.xz);
                 cd $PYTHON_DIR;
@@ -418,7 +421,7 @@ if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list gdb $BUILD_TARGET_
 
                 cd "$WORKING_DIR";
             fi
-	    fi
+        fi
 
 	    # ======================= 正式安装GDB =======================
 	    GDB_PKG=$(check_and_download "gdb" "gdb-*.tar.xz" "http://ftp.gnu.org/gnu/gdb/gdb-8.0.1.tar.xz" );
