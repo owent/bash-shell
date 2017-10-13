@@ -104,26 +104,31 @@ function check_and_download(){
     PKG_MATCH_EXPR="$2";
     PKG_URL="$3";
      
-    PKG_VAR_VAL=$(ls -d $PKG_MATCH_EXPR);
-    if [ ! -z "$PKG_VAR_VAL" ]; then
-        echo "$PKG_VAR_VAL"
+    PKG_VAR_VAL=($(find . -maxdepth 1 -name "$PKG_MATCH_EXPR"));
+    if [ ${#PKG_VAR_VAL} -gt 0 ]; then
+        echo "${PKG_VAR_VAL[0]}"
         return 0;
     fi
      
     if [ -z "$PKG_URL" ]; then
         echo -e "\\033[31;1m$PKG_NAME not found.\\033[39;49;0m" 
-        return -1;
+        return 1;
     fi
      
-    wget -c "$PKG_URL";
-    PKG_VAR_VAL=$(ls -d $PKG_MATCH_EXPR);
+    if [ -z "$4" ]; then
+        wget -c "$PKG_URL";
+    else
+        wget -c "$PKG_URL" -O "$4";
+    fi
+
+    PKG_VAR_VAL=($(find . -maxdepth 1 -name "$PKG_MATCH_EXPR"));
      
-    if [ -z "$PKG_VAR_VAL" ]; then
+    if [ ${#PKG_VAR_VAL} -eq 0 ]; then
         echo -e "\\033[31;1m$PKG_NAME not found.\\033[39;49;0m" 
-        return -1;
+        return 1;
     fi
      
-    echo "$PKG_VAR_VAL";
+    echo "${PKG_VAR_VAL[0]}";
 }
 
 # ======================= 列表检查函数 ======================= 
@@ -178,7 +183,7 @@ function build_llvm_toolchain() {
         LLVM_PKG=$(check_and_download "llvm" "llvm-*.tar.xz" "http://llvm.org/releases/$LLVM_VERSION/llvm-$LLVM_VERSION.src.tar.xz" );
         if [ $? -ne 0 ]; then
             echo -e "$LLVM_PKG";
-            return -1;
+            return 1;
         fi
         if [ $BUILD_DOWNLOAD_ONLY -eq 0 ]; then
             LLVM_SRC_DIR_NAME=$(ls -d llvm-* | grep -v \.tar\.xz);
@@ -189,7 +194,7 @@ function build_llvm_toolchain() {
 
             if [ "" == "$LLVM_SRC_DIR_NAME" ]; then
                 echo -e "\\033[31;1mError: build llvm src dir not found.\\033[39;49;0m";
-                exit -1;
+                exit 1;
             fi
             LLVM_DIR="$WORKING_DIR/$LLVM_SRC_DIR_NAME";
         fi
@@ -200,7 +205,7 @@ function build_llvm_toolchain() {
         CLANG_PKG=$(check_and_download "clang" "cfe-*.tar.xz" "http://llvm.org/releases/$LLVM_VERSION/cfe-$LLVM_VERSION.src.tar.xz" );
         if [ $? -ne 0 ]; then
             echo -e "$CLANG_PKG";
-            exit -1;
+            exit 1;
         fi
         if [ $BUILD_DOWNLOAD_ONLY -eq 0 ]; then
             if [ ! -e "$LLVM_DIR/tools/clang" ]; then

@@ -115,31 +115,32 @@ function check_and_download(){
     PKG_NAME="$1";
     PKG_MATCH_EXPR="$2";
     PKG_URL="$3";
-
-    PKG_VAR_VAL=$(ls -d $PKG_MATCH_EXPR);
-    if [ ! -z "$PKG_VAR_VAL" ]; then
-        echo "$PKG_VAR_VAL"
+     
+    PKG_VAR_VAL=($(find . -maxdepth 1 -name "$PKG_MATCH_EXPR"));
+    if [ ${#PKG_VAR_VAL} -gt 0 ]; then
+        echo "${PKG_VAR_VAL[0]}"
         return 0;
     fi
-
+     
     if [ -z "$PKG_URL" ]; then
-        echo -e "\\033[31;1m$PKG_NAME not found.\\033[39;49;0m"
-        return -1;
+        echo -e "\\033[31;1m$PKG_NAME not found.\\033[39;49;0m" 
+        return 1;
     fi
-
+     
     if [ -z "$4" ]; then
         wget -c "$PKG_URL";
     else
         wget -c "$PKG_URL" -O "$4";
     fi
-    PKG_VAR_VAL=$(ls -d $PKG_MATCH_EXPR);
-
-    if [ -z "$PKG_VAR_VAL" ]; then
-        echo -e "\\033[31;1m$PKG_NAME not found.\\033[39;49;0m"
-        return -1;
+    
+    PKG_VAR_VAL=($(find . -maxdepth 1 -name "$PKG_MATCH_EXPR"));
+     
+    if [ ${#PKG_VAR_VAL} -eq 0 ]; then
+        echo -e "\\033[31;1m$PKG_NAME not found.\\033[39;49;0m" 
+        return 1;
     fi
-
-    echo "$PKG_VAR_VAL";
+     
+    echo "${PKG_VAR_VAL[0]}";
 }
 
 # ======================= 列表检查函数 =======================
@@ -346,9 +347,12 @@ if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list gcc $BUILD_TARGET_
         exit -1;
     fi
     if [ $BUILD_DOWNLOAD_ONLY -eq 0 ]; then
-        tar -Jxvf $GCC_PKG;
         GCC_DIR=$(ls -d gcc-* | grep -v \.tar\.xz);
-        mkdir objdir;
+        if [ -z "$GCC_DIR" ]; then
+            tar -axvf $GCC_PKG;
+            GCC_DIR=$(ls -d gcc-* | grep -v \.tar\.xz);
+        fi
+        mkdir -p objdir;
         cd objdir;
         # ======================= 这一行的最后一个参数请注意，如果要支持其他语言要安装依赖库并打开对该语言的支持 =======================
         GCC_CONF_OPTION_ALL="--prefix=$PREFIX_DIR --with-gmp=$PREFIX_DIR --with-mpc=$PREFIX_DIR --with-mpfr=$PREFIX_DIR --with-isl=$PREFIX_DIR $BDWGC_PREBIUILT --enable-bootstrap --enable-build-with-cxx --disable-libjava-multilib --enable-checking=release --enable-gold --enable-ld --enable-libada --enable-libssp --enable-lto --enable-objc-gc --enable-vtable-verify --enable-shared --enable-static --enable-gnu-unique-object --enable-linker-build-id $GCC_OPT_DISABLE_MULTILIB $BUILD_TARGET_CONF_OPTION";
@@ -368,6 +372,8 @@ if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list gcc $BUILD_TARGET_
     fi
 fi
 
+export CC=$PREFIX_DIR/bin/gcc ;
+export CXX=$PREFIX_DIR/bin/g++ ;
 
 # ======================= install binutils(链接器,汇编器 等) =======================
 if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list binutils $BUILD_TARGET_COMPOMENTS) ]; then
