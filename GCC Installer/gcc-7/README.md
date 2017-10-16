@@ -79,7 +79,7 @@ GCC 7的大致(C/C++)内容如下：
 
 ### 我编译的环境
 #### 系统
-CentOS 7
+CentOS 7 & CentOS 6.2
 
 #### 系统库
 + gzip 1.5
@@ -129,3 +129,4 @@ end
 #### History
 + 2017-05-05    Created
 + 2017-09-14    增加仅下载模式，更新mpfr到的3.1.6，libatomic_ops到7.4.6，gcc到7.2.0，binutils 2.29，python到2.7.14，gdb到7.12.1
++ 2017-10-14    增加一些低版本环境的适配支持，支持通过CC和CXX指定编译器

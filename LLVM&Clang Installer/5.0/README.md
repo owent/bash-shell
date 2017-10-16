@@ -50,7 +50,7 @@ LLVM + Clang 5.0 发布啦，本脚本在之前LLVM + Clang 4.0 的基础上做�
 
 ### 我编译的环境
 #### 系统：
-CentOS 7.3
+CentOS 7.3 & CentOS 6.2
 
 #### 系统库：
 详情参见 [llvm官网](http://llvm.org/)
@@ -76,6 +76,7 @@ CentOS 7.3
 
 #### History:
 + 2017-09-13     Created
++ 2017-10-14     增加一些低版本环境的适配支持，支持通过CC和CXX指定编译器
 
 
 #### 参考文献
