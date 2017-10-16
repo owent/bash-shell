@@ -398,6 +398,9 @@ if [ 0 -ne $? ] ; then
         exit 1;
     fi
 fi
+
+cd "$WORKING_DIR";
+
 CXX_ABI_PATH=$(find "$STAGE_BUILD_PREFIX_DIR/include" -name "cxxabi.h");
 if [ ! -z "$CXX_ABI_PATH" ]; then
     CXX_ABI_DIR=${CXX_ABI_PATH%%/cxxabi.h};
