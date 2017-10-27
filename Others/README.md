@@ -158,6 +158,55 @@ apt-get install -y llvm$LLVM_VER lldb$LLVM_VER  libc++abi1 libc++abi-dev libc++-
 apt-get install -y lld$LLVM_VER ;
 ```
 
+下载离线包和离线安装
+
+```bash
+
+APT_DOWNLOAD_CACHE="";
+function APT_DOWNLOAD_IN_LIST() {
+    ele="$1";
+    shift;
+
+    for i in $@; do
+        if [ "$ele" == "$i" ]; then
+            echo "0";
+            return 0;
+        fi
+    done
+    echo "1";
+    return 1;
+}
+
+function APT_DOWNLOAD_INNER() {
+    for PKG in "$@"; do
+        if [ "0" != $(APT_DOWNLOAD_IN_LIST $PKG $APT_DOWNLOAD_CACHE) ]; then
+            APT_DOWNLOAD_CACHE="$APT_DOWNLOAD_CACHE $PKG";
+            # 下载离线包
+            DEPPKGS="$(apt-cache depends -i $PKG 2>/dev/null | grep -v 'PreDepends:' | awk '/Depends:/ {print $2}' | xargs echo)";
+            if [ -z "$DEPPKGS" ]; then
+                echo -e "\\033[32;1mDownloading: $PKG\\033[0m";
+            else
+                echo -e "\\033[32;1mDownloading: $PKG(depends: $DEPPKGS)\\033[0m";
+            fi
+            apt-get download $PKG ;
+
+            # 依赖包
+            for DEPPKG in $DEPPKGS; do
+                APT_DOWNLOAD_INNER $DEPPKG;
+            done
+        fi
+    done
+}
+
+function APT_DOWNLOAD() {
+    APT_DOWNLOAD_CACHE="";
+    APT_DOWNLOAD_INNER "$@";
+}
+
+# 安装
+dpkg -i DEB包 ;
+```
+
 ## Windows & Chocolatey
 
 https://chocolatey.org
