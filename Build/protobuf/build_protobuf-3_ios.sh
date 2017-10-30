@@ -136,21 +136,27 @@ for ARCH in ${ARCHS}; do
     cd "$WORKING_DIR/build_job_dir/$ARCH";
     
     # add -DCMAKE_OSX_DEPLOYMENT_TARGET=7.1 to specify the min SDK version
-    cmake "$PROTOBUF_SRC_DIR" -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_OSX_SYSROOT=$SDKROOT -DCMAKE_SYSROOT=$SDKROOT -DCMAKE_OSX_ARCHITECTURES=$ARCH -DCMAKE_C_FLAGS="$OTHER_CFLAGS" -DCMAKE_CXX_FLAGS="$OTHER_CFLAGS" $LIB_CMAKE_FLAGS "$@";
-    cmake --build . ;
+    mkdir -p "$WORKING_DIR/install/$ARCH";
+    cmake "$PROTOBUF_SRC_DIR" -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_INSTALL_PREFIX="$WORKING_DIR/install/$ARCH" \
+          -DCMAKE_OSX_SYSROOT=$SDKROOT -DCMAKE_SYSROOT=$SDKROOT -DCMAKE_OSX_ARCHITECTURES=$ARCH \
+          -DCMAKE_C_FLAGS="$OTHER_CFLAGS" -DCMAKE_CXX_FLAGS="$OTHER_CFLAGS" $LIB_CMAKE_FLAGS "$@";
+    cmake --build . --target install ;
 done
 
 cd "$WORKING_DIR";
 echo "Linking and packaging library...";
 
 for LIB_NAME in "libprotobuf" "libprotobuf-lite" "libprotoc"; do
-    lipo -create $(find "$WORKING_DIR/build_job_dir" -name $LIB_NAME.a) -output "$WORKING_DIR/lib/$LIB_NAME.a";
+    lipo -create $(find "$WORKING_DIR/install" -name $LIB_NAME.a) -output "$WORKING_DIR/lib/$LIB_NAME.a";
 done
 
 if [ -e "$WORKING_DIR/include" ] && [ "$WORKING_DIR" != "$PROTOBUF_SRC_DIR" ] ; then
     rm -rf "$WORKING_DIR/include";
 fi
 
-cp -rf "$PROTOBUF_SRC_DIR/include" "$WORKING_DIR/include";
+for INC_DIR in $(find "$WORKING_DIR/install" -name include); do
+    cp -rf "$INC_DIR" "$WORKING_DIR/include";
+    break;
+done
 
 echo "Building done.";
