@@ -5,8 +5,8 @@ which yum;
 PREFIX="/usr/local/shadowsocksr";
 MAXFD=32768;
 USER=shadowsocksr;
-VERSION="3.1.2";
-DOWN_URL="https://github.com/shadowsocksr/shadowsocksr/archive/$VERSION.tar.gz"
+VERSION="3.2.1";
+DOWN_URL="https://github.com/shadowsocksrr/shadowsocksr/archive/$VERSION.tar.gz"
 
 if [ 0 -eq $? ]; then
     sudo yum install -y gcc autoconf libtool automake make zlib-devel openssl-devel python wget;
