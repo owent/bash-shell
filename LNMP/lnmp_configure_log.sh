@@ -124,10 +124,10 @@ NGINX_COMMON_CONFIGURES="\\
     gzip_types       text/plain text/css application/x-javascript text/xml application/xml application/xml+rss text/javascript application/javascript;\\
     gzip_vary on; \\
 \\
-    # 去除 nginx 版本\\
+    # remove nginx version\\
     server_tokens off;\\
 \\
-    # 去除 Nginx 的 X-Powered-By header\\
+    # remove nginx header: X-Powered-By header\\
     fastcgi_hide_header X-Powered-By;\\
 \\
     ssl_protocols TLSv1 TLSv1.1 TLSv1.2; # omit SSLv3 because of POODLE (CVE-2014-3566)\\
@@ -144,7 +144,9 @@ NGINX_COMMON_CONFIGURES="\\
     ssl_dhparam $SSL_CERT_DIR/dhparam.pem;\\
     ssl_stapling on;\\
     ssl_stapling_verify on;";
-sed -i "/include\\s*[^\\*]*\\*[^;]*;/i\\ $NGINX_COMMON_CONFIGURES" "$NGINX_CONF";
+INSERT_NUM=($(grep "include\\s*[^\\*]*\\*[^;]*;" /etc/nginx/nginx.conf -n | cut -d: -f1));
+INSERT_NUM=${INSERT_NUM[((${#INSERT_NUM}-1))]};
+sed -i "${INSERT_NUM}/i\\ $NGINX_COMMON_CONFIGURES" "$NGINX_CONF";
 
 if [ ! -e "$SSL_CERT_DIR/dhparam.pem" ]; then
     openssl dhparam -out "$SSL_CERT_DIR/dhparam.pem" 2048 ;
@@ -176,14 +178,14 @@ fastcgi_param  SERVER_ADMIN       $ADMIN_EMAIL;" >> "$NGINX_CONF_FASTCGI_PARAMS"
 # 替换PHP配置
 if [ -e "$PHP_CONF_FILE_PATH" ]; then
     sed -i 's;date.timezone\s*=.*;date.timezone = "Asia/Shanghai";g' "$PHP_CONF_FILE_PATH";
-    sed -i '/error_log\s*=\s*./d' "$PHP_CONF_FILE_PATH";
-    sed -i "/php\\.net\\/error-log/a error_log = $PHP_LOG_DIR/php-error.log" "$PHP_CONF_FILE_PATH";
+    sed -i "/error_log[ \t]*=[ \t]*./d" "$PHP_CONF_FILE_PATH";
+    sed -i "/error-log/a error_log = $PHP_LOG_DIR/php-error.log" "$PHP_CONF_FILE_PATH";
 
-    sed -i '/sendmail_from\s*=\s*./d' "$PHP_CONF_FILE_PATH";
+    sed -i "/sendmail_from[ \t]*=[ \t]*./d" "$PHP_CONF_FILE_PATH";
     sed -i "/sendmail_path\\s*=\\s*/a sendmail_from = $ADMIN_EMAIL" "$PHP_CONF_FILE_PATH";
 
-    sed -i '/session\\.save_path\s*=\s*./d' "$PHP_CONF_FILE_PATH";
-    sed -i "/php\\.net\\/session\\.save-path/a session.save_path = \"$PHP_SESSION_DIR\"" "$PHP_CONF_FILE_PATH";
+    sed -i "/session\\.save_path[ \t]*=[ \t]*./d" "$PHP_CONF_FILE_PATH";
+    sed -i "/session\\.save-path/a session.save_path = \"$PHP_SESSION_DIR\"" "$PHP_CONF_FILE_PATH";
 else
     echo -e "\\033];mcan not find php.ini in $PHP_CONF_FILE_PATH\\033;0m";
 fi
