@@ -98,7 +98,7 @@ if [ ! -e "$WORKING_DIR/build_job_dir/host" ]; then
     mkdir -p "$WORKING_DIR/build_job_dir/host";
     cd "$WORKING_DIR/build_job_dir/host-build";
     cmake "$PROTOBUF_SRC_DIR" "-DCMAKE_INSTALL_PREFIX=$WORKING_DIR/build_job_dir/host" -Dprotobuf_BUILD_TESTS=NO -Dprotobuf_BUILD_EXAMPLES=NO -DBUILD_SHARED_LIBS=NO;
-    cmake --build . --target install;
+    cmake --build . --target install -- -j8 ;
     cd - ;
 fi
 export PATH=$WORKING_DIR/build_job_dir/host/bin:$WORKING_DIR/build_job_dir/host-build:$PATH;
@@ -134,7 +134,7 @@ for ARCH in ${ARCHS}; do
         -DANDROID_STL=$ANDROID_STL -DCMAKE_ANDROID_STL_TYPE=$ANDROID_STL \
         -DANDROID_PIE=YES -DCMAKE_SHARED_LINKER_FLAGS="$OTHER_LD_FLAGS" -DCMAKE_EXE_LINKER_FLAGS="$OTHER_LD_FLAGS" $LIB_CMAKE_FLAGS "$@";
 
-    cmake --build . --target install ;
+    cmake --build . --target install -- -j8 ;
 
 done
 

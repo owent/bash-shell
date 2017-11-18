@@ -90,7 +90,7 @@ if [ ! -e "$WORKING_DIR/build_job_dir/host" ]; then
     mkdir -p "$WORKING_DIR/build_job_dir/host";
     cd "$WORKING_DIR/build_job_dir/host-build";
     cmake "$PROTOBUF_SRC_DIR" "-DCMAKE_INSTALL_PREFIX=$WORKING_DIR/build_job_dir/host" -Dprotobuf_BUILD_TESTS=NO -Dprotobuf_BUILD_EXAMPLES=NO -DBUILD_SHARED_LIBS=NO;
-    cmake --build . --target install;
+    cmake --build . --target install -- -j8 ;
     cd - ;
 fi
 export PATH=$WORKING_DIR/build_job_dir/host/bin:$WORKING_DIR/build_job_dir/host-build:$PATH;
@@ -140,7 +140,7 @@ for ARCH in ${ARCHS}; do
     cmake "$PROTOBUF_SRC_DIR" -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_INSTALL_PREFIX="$WORKING_DIR/install/$ARCH" \
           -DCMAKE_OSX_SYSROOT=$SDKROOT -DCMAKE_SYSROOT=$SDKROOT -DCMAKE_OSX_ARCHITECTURES=$ARCH \
           -DCMAKE_C_FLAGS="$OTHER_CFLAGS" -DCMAKE_CXX_FLAGS="$OTHER_CFLAGS" $LIB_CMAKE_FLAGS "$@";
-    cmake --build . --target install ;
+    cmake --build . --target install -- -j8 ;
 done
 
 cd "$WORKING_DIR";
