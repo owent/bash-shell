@@ -9,7 +9,7 @@ WORKING_DIR="$PWD";
 ARCHS="x86 x86_64 armeabi armeabi-v7a arm64-v8a";
 NDK_ROOT=$NDK_ROOT;
 PROTOBUF_SRC_DIR="$PWD";
-ANDROID_NATIVE_API_LEVEL=16 ;
+CONF_ANDROID_NATIVE_API_LEVEL=16 ;
 ANDROID_TOOLCHAIN=clang ;
 ANDROID_STL=c++_static ; #
 BUILD_TYPE="Release" ;   
@@ -39,7 +39,7 @@ while getopts "a:b:c:n:hl:r:t:-" OPTION; do
             echo "-b [build type]               build type(default: $BUILD_TYPE, available: Debug, Release, RelWithDebInfo, MinSizeRel)";
             echo "-c [android stl]              stl used by ndk(default: $ANDROID_STL, available: system, stlport_static, stlport_shared, gnustl_static, gnustl_shared, c++_static, c++_shared, none)";
             echo "-n [ndk root directory]       ndk root directory.(default: $DEVELOPER_ROOT)";
-            echo "-l [api level]                API level, see $NDK_ROOT/platforms for detail.(default: $ANDROID_NATIVE_API_LEVEL)";
+            echo "-l [api level]                API level, see $NDK_ROOT/platforms for detail.(default: $CONF_ANDROID_NATIVE_API_LEVEL)";
             echo "-r [source dir]               root directory of this library";
             echo "-t [toolchain]                ANDROID_TOOLCHAIN.(gcc version/clang, default: $ANDROID_TOOLCHAIN, @see CMAKE_ANDROID_NDK_TOOLCHAIN_VERSION in cmake)";
             echo "-h                            help message.";
@@ -52,7 +52,7 @@ while getopts "a:b:c:n:hl:r:t:-" OPTION; do
             ANDROID_TOOLCHAIN="$OPTARG";
         ;;
         l)
-            ANDROID_NATIVE_API_LEVEL=$OPTARG;
+            CONF_ANDROID_NATIVE_API_LEVEL=$OPTARG;
         ;;
         -) 
             break;
@@ -73,7 +73,7 @@ echo "ARCHS=${ARCHS}";
 echo "ANDROID_STL=${ANDROID_STL}";
 echo "NDK_ROOT=${NDK_ROOT}";
 echo "ANDROID_TOOLCHAIN=${ANDROID_TOOLCHAIN}";
-echo "ANDROID_NATIVE_API_LEVEL=${ANDROID_NATIVE_API_LEVEL}";
+echo "ANDROID_NATIVE_API_LEVEL=${CONF_ANDROID_NATIVE_API_LEVEL}";
 echo "cmake options=$@";
 echo "SOURCE=$SRC_DIR";
 
@@ -105,7 +105,7 @@ export PATH=$WORKING_DIR/build_job_dir/host/bin:$WORKING_DIR/build_job_dir/host-
 
 for ARCH in ${ARCHS}; do
     echo "================== Compling $ARCH ==================";
-    echo "Building protobuf for android-$ANDROID_NATIVE_API_LEVEL ${ARCH}"
+    echo "Building protobuf for android-$CONF_ANDROID_NATIVE_API_LEVEL ${ARCH}"
     
     # sed -i.bak '4d' Makefile;
     echo "Please stand by..."
@@ -120,8 +120,10 @@ for ARCH in ${ARCHS}; do
     # 64 bits must at least using android-21
     # @see $NDK_ROOT/build/cmake/android.toolchain.cmake
     echo $ARCH | grep -E '64(-v8a)?$' ;
-    if [ $? -eq 0 ] && [ $ANDROID_NATIVE_API_LEVEL -lt 21 ]; then
+    if [ $? -eq 0 ] && [ $CONF_ANDROID_NATIVE_API_LEVEL -lt 21 ]; then
         ANDROID_NATIVE_API_LEVEL=21 ;
+    else
+        ANDROID_NATIVE_API_LEVEL=$CONF_ANDROID_NATIVE_API_LEVEL ;
     fi
 
     cmake "$PROTOBUF_SRC_DIR" -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_INSTALL_PREFIX="$WORKING_DIR/$ARCH" \
