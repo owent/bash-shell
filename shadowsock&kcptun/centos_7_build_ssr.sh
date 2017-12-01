@@ -7,6 +7,8 @@ MAXFD=32768;
 USER=shadowsocksr;
 VERSION="3.2.1";
 DOWN_URL="https://github.com/shadowsocksrr/shadowsocksr/archive/$VERSION.tar.gz"
+LIBSODIUM_VERSION="1.0.15";
+LIBSODIUM_URL="https://download.libsodium.org/libsodium/releases/libsodium-$LIBSODIUM_VERSION.tar.gz";
 
 if [ 0 -eq $? ]; then
     sudo yum install -y gcc autoconf libtool automake make zlib-devel openssl-devel python wget;
@@ -15,6 +17,16 @@ else
     if [ 0 -eq $? ]; then
         sudo apt install -y --no-install-recommends build-essential autoconf libtool libssl-dev libpcre3-dev python wget;
     fi
+fi
+
+if [ ! -e "/usr/local/libsodium-$LIBSODIUM_VERSION" ]; then
+    if [ ! -e "libsodium-$LIBSODIUM_VERSION.tar.gz" ]; then
+        wget -c "$LIBSODIUM_URL";
+    fi
+    tar -axvf libsodium-$LIBSODIUM_VERSION.tar.gz;
+    $(cd libsodium-$LIBSODIUM_VERSION && ./autogen.sh && ./configure --prefix=/usr/local/libsodium-$LIBSODIUM_VERSION && make install -j4);
+    echo "/usr/local/libsodium-$LIBSODIUM_VERSION/lib" > /etc/ld.so.conf.d/libsodium.conf;
+    ldconfig;
 fi
 
 # backup configure files
