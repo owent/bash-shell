@@ -1,5 +1,13 @@
 #!/bin/bash
 
+# All available environments
+# PREFIX
+# MAXFD
+# USER
+# VERSION
+# LIBSODIUM_VERSION
+# PYTHON_BIN
+
 if [ -z "$PREFIX" ]; then
     PREFIX="/usr/local/shadowsocksr";
 fi
@@ -41,6 +49,13 @@ if [ ! -e "$PREFIX/libsodium-$LIBSODIUM_VERSION" ]; then
     $(cd libsodium-$LIBSODIUM_VERSION && ./autogen.sh && ./configure --prefix=$PREFIX/libsodium-$LIBSODIUM_VERSION && make install -j4);
     echo "$PREFIX/libsodium-$LIBSODIUM_VERSION/lib" > /etc/ld.so.conf.d/libsodium.conf;
     ldconfig;
+fi
+
+
+PYTHON_BIN=$(which python);
+if [ -z "$PYTHON_BIN" ]; then
+    echo ""python not found;
+    exit 1;
 fi
 
 # backup configure files
@@ -111,7 +126,7 @@ Type=simple
 User=$USER
 Group=$USER
 LimitNOFILE=$MAXFD
-ExecStart=/usr/bin/python $PREFIX/$SSR_HOME_DIR/server.py m > /dev/null 2>&1
+ExecStart=$PYTHON_BIN $PREFIX/$SSR_HOME_DIR/server.py m > /dev/null 2>&1
 ExecStop=/bin/kill -s QUIT
 PrivateTmp=true
 Restart=on-failure
@@ -161,7 +176,7 @@ if [ -e "/usr/lib/systemd/system/shadowsocksr.service" ]; then
     echo "systemd configured at /usr/lib/systemd/system/shadowsocksr.service, please run systemctl daemon-reload or systemctl disable/enable/restart shadowsocksr after edit it";
 fi
 echo "Example:";
-echo "  python mujson_mgr.py -a -m chacha20 -O auth_sha1_v4 -o tls1.2_ticket_auth -p 8351 -k YOURPASSWORD";
+echo "  $PYTHON_BIN mujson_mgr.py -a -m chacha20 -O auth_sha1_v4 -o tls1.2_ticket_auth -p 8351 -k YOURPASSWORD";
 if [ -e "$FIREWALLD_CONF_FILE_PATH" ]; then
     echo '  sed -i "/<\\/service>/i <port protocol=\"tcp\" port=\"8351\"/>' $FIREWALLD_CONF_FILE_PATH;
 fi
