@@ -92,17 +92,17 @@ CentOS 7 & CentOS 6.2
 
 #### 编译的依赖库
 + gmp 6.1.2
-+ mpfr 3.1.6
-+ mpc 1.0.3
-+ isl 0.16.1
-+ libatomic_ops 7.4.6
-+ bdw-gc 7.6.0
++ mpfr 4.0.0
++ mpc 1.1.0
++ isl 0.18
++ libatomic_ops 7.6.2
++ bdw-gc 7.6.4
 
 #### 编译目标
-+ gcc 7.2.0
-+ binutils 2.29
++ gcc 7.3.0
++ binutils 2.30
 + python 2.7.14 *[按需]*
-+ gdb 7.12.1 (如果存在ncurses-devel包)
++ gdb 8.1 (如果存在ncurses-devel包)
 
 #### 注
 + (所有的库都会被安装在**$PREFEX_DIR**里)
@@ -130,3 +130,4 @@ end
 + 2017-05-05    Created
 + 2017-09-14    增加仅下载模式，更新mpfr到的3.1.6，libatomic_ops到7.4.6，gcc到7.2.0，binutils 2.29，python到2.7.14，gdb到7.12.1
 + 2017-10-14    增加一些低版本环境的适配支持，支持通过CC和CXX指定编译器
++ 2018-01-31    更新gcc到7.3.0，更新mpfr到4.0.0，更新mpc到1.1.0，更新isl到0.18，更新libatomic_ops到7.6.2，更新bdw-gc到7.6.4，更新binutils到2.30，更新gdb到8.1
