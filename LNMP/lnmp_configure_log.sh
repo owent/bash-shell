@@ -115,38 +115,41 @@ sed -i "/server_tokens/d" "$NGINX_CONF";
 sed -i "/fastcgi_hide_header/d" "$NGINX_CONF";
 sed -i "/ssl_/d" "$NGINX_CONF";
 sed -i "/add_header/d" "$NGINX_CONF";
-NGINX_COMMON_CONFIGURES="\\
-    gzip on; \\
-    gzip_min_length  1k; \\
-    gzip_buffers     16 64k;\\
-    gzip_http_version 1.0;\\
-    gzip_comp_level 5;\\
-    gzip_types       text/plain text/css application/x-javascript text/xml application/xml application/xml+rss text/javascript application/javascript;\\
-    gzip_vary on; \\
-\\
-    # remove nginx version\\
-    server_tokens off;\\
-\\
-    # remove nginx header: X-Powered-By header\\
-    fastcgi_hide_header X-Powered-By;\\
-\\
-    ssl_protocols TLSv1 TLSv1.1 TLSv1.2; # omit SSLv3 because of POODLE (CVE-2014-3566)\\
-    ssl_session_cache   shared:SSL:10m;\\
-    ssl_session_timeout 10m;\\
-    ssl_session_tickets off;\\
-    # add_header Strict-Transport-Security \"max-age=15768000; includeSubdomains; preload\"; # HSTS, 180days\\
-    add_header X-Content-Type-Options nosniff;\\
-\\
-    # @see https://mozilla.github.io/server-side-tls/ssl-config-generator/ \\ 
-    # We use intermediate mode \\
-    ssl_ciphers 'ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA:ECDHE-RSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-RSA-AES256-SHA256:DHE-RSA-AES256-SHA:ECDHE-ECDSA-DES-CBC3-SHA:ECDHE-RSA-DES-CBC3-SHA:EDH-RSA-DES-CBC3-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:AES128-SHA256:AES256-SHA256:AES128-SHA:AES256-SHA:DES-CBC3-SHA:!DSS';\\
-    ssl_prefer_server_ciphers on;\\
-    ssl_dhparam $SSL_CERT_DIR/dhparam.pem;\\
-    ssl_stapling on;\\
-    ssl_stapling_verify on;";
-INSERT_NUM=($(grep "include\\s*[^\\*]*\\*[^;]*;" /etc/nginx/nginx.conf -n | cut -d: -f1));
-INSERT_NUM=${INSERT_NUM[((${#INSERT_NUM}-1))]};
-sed -i "${INSERT_NUM}/i\\ $NGINX_COMMON_CONFIGURES" "$NGINX_CONF";
+NGINX_COMMON_CONFIGURES="gzip on;
+    gzip_min_length  1k;
+    gzip_buffers     16 64k;
+    gzip_http_version 1.0;
+    gzip_comp_level 5;
+    gzip_types       text/plain text/css application/x-javascript text/xml application/xml application/xml+rss text/javascript application/javascript;
+    gzip_vary on;
+
+    # remove nginx version
+    server_tokens off;
+
+    # remove nginx header: X-Powered-By header
+    fastcgi_hide_header X-Powered-By;
+
+    ssl_protocols TLSv1 TLSv1.1 TLSv1.2; # omit SSLv3 because of POODLE (CVE-2014-3566)
+    ssl_session_cache   shared:SSL:10m;
+    ssl_session_timeout 10m;
+    ssl_session_tickets off;
+    # add_header Strict-Transport-Security \"max-age=15768000; includeSubdomains; preload\"; # HSTS, 180days
+    add_header X-Content-Type-Options nosniff;
+
+    # @see https://mozilla.github.io/server-side-tls/ssl-config-generator/ 
+    # We use intermediate mode
+    ssl_ciphers 'ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA:ECDHE-RSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-RSA-AES256-SHA256:DHE-RSA-AES256-SHA:ECDHE-ECDSA-DES-CBC3-SHA:ECDHE-RSA-DES-CBC3-SHA:EDH-RSA-DES-CBC3-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:AES128-SHA256:AES256-SHA256:AES128-SHA:AES256-SHA:DES-CBC3-SHA:!DSS';
+    ssl_prefer_server_ciphers on;
+    ssl_dhparam $SSL_CERT_DIR/dhparam.pem;
+    ssl_stapling on;
+    ssl_stapling_verify on;
+";
+
+INSERT_NUM=$(grep "include\\s*[^\\*]*\\*[^;]*;" /etc/nginx/nginx.conf -n | cut -d: -f1 | awk '{print $(NF-1)}');
+let INSERT_NUM=INSERT_NUM-1;
+
+echo "$NGINX_COMMON_CONFIGURES" > nginx-append.conf ;
+sed -i "${INSERT_NUM}r nginx-append.conf" "$NGINX_CONF";
 
 if [ ! -e "$SSL_CERT_DIR/dhparam.pem" ]; then
     openssl dhparam -out "$SSL_CERT_DIR/dhparam.pem" 2048 ;

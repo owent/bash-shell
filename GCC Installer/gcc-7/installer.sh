@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # ======================================= 配置 =======================================
-PREFIX_DIR=/usr/local/gcc-7.2.0
+PREFIX_DIR=/usr/local/gcc-7.3.0
 BUILD_TARGET_COMPOMENTS="";
 
 # ======================= 非交叉编译 =======================
@@ -208,7 +208,7 @@ fi
 
 # install mpfr
 if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list mpfr $BUILD_TARGET_COMPOMENTS) ]; then
-    MPFR_PKG=$(check_and_download "mpfr" "mpfr-*.tar.xz" "https://ftp.gnu.org/gnu/mpfr/mpfr-3.1.6.tar.xz" );
+    MPFR_PKG=$(check_and_download "mpfr" "mpfr-*.tar.xz" "https://ftp.gnu.org/gnu/mpfr/mpfr-4.0.0.tar.xz" );
     if [ $? -ne 0 ]; then
         echo -e "$MPFR_PKG";
         exit -1;
@@ -229,7 +229,7 @@ fi
 
 # install mpc
 if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list mpc $BUILD_TARGET_COMPOMENTS) ]; then
-    MPC_PKG=$(check_and_download "mpc" "mpc-*.tar.gz" "ftp://ftp.gnu.org/gnu/mpc/mpc-1.0.3.tar.gz" );
+    MPC_PKG=$(check_and_download "mpc" "mpc-*.tar.gz" "ftp://ftp.gnu.org/gnu/mpc/mpc-1.1.0.tar.gz" );
     if [ $? -ne 0 ]; then
         echo -e "$MPC_PKG";
         exit -1;
@@ -250,7 +250,7 @@ fi
 
 # install isl
 if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list isl $BUILD_TARGET_COMPOMENTS) ]; then
-    ISL_PKG=$(check_and_download "isl-0.16.1" "isl-*.tar.bz2" "http://gcc.gnu.org/pub/gcc/infrastructure/isl-0.16.1.tar.bz2" );
+    ISL_PKG=$(check_and_download "isl" "isl-*.tar.bz2" "https://gcc.gnu.org/pub/gcc/infrastructure/isl-0.18.tar.bz2" );
     if [ $? -ne 0 ]; then
         echo -e "$ISL_PKG";
         exit -1;
@@ -272,7 +272,7 @@ fi
 
 # install libatomic_ops
 if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list libatomic_ops $BUILD_TARGET_COMPOMENTS) ]; then
-    LIBATOMIC_OPS_PKG=$(check_and_download "libatomic_ops-7.4.6" "libatomic_ops-*.tar.gz" "https://github.com/ivmai/libatomic_ops/releases/download/v7.4.6/libatomic_ops-7.4.6.tar.gz" "libatomic_ops-7.4.6.tar.gz" );
+    LIBATOMIC_OPS_PKG=$(check_and_download "libatomic_ops" "libatomic_ops-*.tar.gz" "https://github.com/ivmai/libatomic_ops/releases/download/v7.6.2/libatomic_ops-7.6.2.tar.gz" "libatomic_ops-7.6.2.tar.gz" );
     if [ $? -ne 0 ]; then
         echo -e "$LIBATOMIC_OPS_PKG";
         exit -1;
@@ -294,14 +294,14 @@ fi
 
 # install bdw-gc
 if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list bdw-gc $BUILD_TARGET_COMPOMENTS) ]; then
-    BDWGC_PKG=$(check_and_download "bdw-gc-7.4.4" "gc7_4_4.tar.gz" "https://github.com/ivmai/bdwgc/archive/gc7_4_4.tar.gz" "gc7_4_4.tar.gz" );
+    BDWGC_PKG=$(check_and_download "bdw-gc" "gc-*.tar.gz" "https://github.com/ivmai/bdwgc/releases/download/v7.6.4/gc-7.6.4.tar.gz" "gc-7.6.4.tar.gz" );
     if [ $? -ne 0 ]; then
         echo -e "$BDWGC_PKG";
         exit -1;
     fi
     if [ $BUILD_DOWNLOAD_ONLY -eq 0 ]; then
         tar -zxvf $BDWGC_PKG;
-        BDWGC_DIR=$(ls -d bdwgc-gc* | grep -v \.tar\.gz);
+        BDWGC_DIR=$(ls -d gc-* | grep -v \.tar\.gz);
         cd $BDWGC_DIR;
         if [ ! -z "$LIBATOMIC_OPS_DIR" ]; then
             if [ -e libatomic_ops ]; then
@@ -341,7 +341,7 @@ fi
 # ======================= install gcc =======================
 if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list gcc $BUILD_TARGET_COMPOMENTS) ]; then
     # ======================= gcc包 =======================
-    GCC_PKG=$(check_and_download "gcc" "gcc-*.tar.xz" "http://gcc.gnu.org/pub/gcc/releases/gcc-7.2.0/gcc-7.2.0.tar.xz" );
+    GCC_PKG=$(check_and_download "gcc" "gcc-*.tar.xz" "http://gcc.gnu.org/pub/gcc/releases/gcc-7.3.0/gcc-7.3.0.tar.xz" );
     if [ $? -ne 0 ]; then
         echo -e "$GCC_PKG";
         exit -1;
@@ -377,14 +377,14 @@ export CXX=$PREFIX_DIR/bin/g++ ;
 
 # ======================= install binutils(链接器,汇编器 等) =======================
 if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list binutils $BUILD_TARGET_COMPOMENTS) ]; then
-    BINUTILS_PKG=$(check_and_download "binutils" "binutils-*.tar.bz2" "http://ftp.gnu.org/gnu/binutils/binutils-2.29.tar.bz2" );
+    BINUTILS_PKG=$(check_and_download "binutils" "binutils-*.tar.xz" "http://ftp.gnu.org/gnu/binutils/binutils-2.30.tar.xz" );
     if [ $? -ne 0 ]; then
         echo -e "$BINUTILS_PKG";
         exit -1;
     fi
     if [ $BUILD_DOWNLOAD_ONLY -eq 0 ]; then
         tar -jxvf $BINUTILS_PKG;
-        BINUTILS_DIR=$(ls -d binutils-* | grep -v \.tar\.bz2);
+        BINUTILS_DIR=$(ls -d binutils-* | grep -v \.tar\.xz);
         cd $BINUTILS_DIR;
         ./configure --prefix=$PREFIX_DIR --with-gmp=$PREFIX_DIR --with-mpc=$PREFIX_DIR --with-mpfr=$PREFIX_DIR --with-isl=$PREFIX_DIR --enable-build-with-cxx --enable-gold --enable-libada --enable-libssp --enable-lto --enable-objc-gc --disable-werror $BUILD_TARGET_CONF_OPTION;
         make $BUILD_THREAD_OPT && make install;
@@ -431,7 +431,7 @@ if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list gdb $BUILD_TARGET_
         fi
 
 	    # ======================= 正式安装GDB =======================
-	    GDB_PKG=$(check_and_download "gdb" "gdb-*.tar.xz" "http://ftp.gnu.org/gnu/gdb/gdb-8.0.1.tar.xz" );
+	    GDB_PKG=$(check_and_download "gdb" "gdb-*.tar.xz" "http://ftp.gnu.org/gnu/gdb/gdb-8.1.tar.xz" );
 	    if [ $? -ne 0 ]; then
 		    echo -e "$GDB_PKG";
 		    exit -1;

@@ -1,33 +1,74 @@
 #!/bin/bash
 
-which yum;
+# All available environments
+# PREFIX
+# MAXFD
+# USER
+# VERSION
+# LIBSODIUM_VERSION
+# PYTHON_BIN
 
-PREFIX="/usr/local/shadowsocksr";
-MAXFD=32768;
-USER=shadowsocksr;
-VERSION="3.1.2";
-DOWN_URL="https://github.com/shadowsocksr/shadowsocksr/archive/$VERSION.tar.gz"
+if [ -z "$PREFIX" ]; then
+    PREFIX="/usr/local/shadowsocksr";
+fi
+if [ -z "$MAXFD" ]; then
+    MAXFD=$(ulimit -n);
+fi
+if [ -z "$MAXFD" ]; then
+    MAXFD=32768;
+fi
+if [ -z "$USER" ]; then
+    USER="shadowsocksr";
+fi
+if [ -z "$VERSION" ]; then
+    VERSION="3.2.1";
+fi
+if [ -z "$LIBSODIUM_VERSION" ]; then
+    LIBSODIUM_VERSION="1.0.15";
+fi
+DOWN_URL="https://github.com/shadowsocksrr/shadowsocksr/archive/$VERSION.tar.gz"
+LIBSODIUM_URL="https://download.libsodium.org/libsodium/releases/libsodium-$LIBSODIUM_VERSION.tar.gz";
+SSR_HOME_DIR=ssr;
 
+which yum > /dev/null 2>&1;
 if [ 0 -eq $? ]; then
     sudo yum install -y gcc autoconf libtool automake make zlib-devel openssl-devel python wget;
 else
     which apt;
+    which apt > /dev/null 2>&1;
     if [ 0 -eq $? ]; then
         sudo apt install -y --no-install-recommends build-essential autoconf libtool libssl-dev libpcre3-dev python wget;
     fi
 fi
 
+if [ ! -e "$PREFIX/libsodium-$LIBSODIUM_VERSION" ]; then
+    if [ ! -e "libsodium-$LIBSODIUM_VERSION.tar.gz" ]; then
+        wget -c "$LIBSODIUM_URL";
+    fi
+    tar -axvf libsodium-$LIBSODIUM_VERSION.tar.gz;
+    $(cd libsodium-$LIBSODIUM_VERSION && ./autogen.sh && ./configure --prefix=$PREFIX/libsodium-$LIBSODIUM_VERSION && make install -j4);
+    echo "$PREFIX/libsodium-$LIBSODIUM_VERSION/lib" > /etc/ld.so.conf.d/libsodium.conf;
+    ldconfig;
+fi
+
+
+PYTHON_BIN=$(which python);
+if [ -z "$PYTHON_BIN" ]; then
+    echo ""python not found;
+    exit 1;
+fi
+
 # backup configure files
-if [ -e "$PREFIX/src/userapiconfig.py" ]; then
+if [ -e "$PREFIX/$SSR_HOME_DIR/userapiconfig.py" ]; then
     cp -f "$PREFIX/userapiconfig.py" userapiconfig.py;
 fi
 
-if [ -e "$PREFIX/src/mudb.json" ]; then
+if [ -e "$PREFIX/$SSR_HOME_DIR/mudb.json" ]; then
     cp -f "$PREFIX/mudb.json" mudb.json;
 fi
 
-if [ -e "$PREFIX/src/user-config.json" ]; then
-    cp -f "$PREFIX/src/user-config.json" user-config.json;
+if [ -e "$PREFIX/$SSR_HOME_DIR/user-config.json" ]; then
+    cp -f "$PREFIX/$SSR_HOME_DIR/user-config.json" user-config.json;
 fi
 
 if [ -e "shadowsocksr-$VERSION" ]; then
@@ -42,10 +83,10 @@ tar -xvf "shadowsocksr-$VERSION.tar.gz";
 
 mkdir -p "$PREFIX/log";
 
-if [ -e "$PREFIX/src" ]; then
-    rm -rf "$PREFIX/src";
+if [ -e "$PREFIX/$SSR_HOME_DIR" ]; then
+    rm -rf "$PREFIX/$SSR_HOME_DIR";
 fi
-cp -rf "shadowsocksr-$VERSION" "$PREFIX/src";
+cp -rf "shadowsocksr-$VERSION" "$PREFIX/$SSR_HOME_DIR";
 cd "shadowsocksr-$VERSION";
 
 chmod +x *;
@@ -53,15 +94,15 @@ chmod +x *;
 
 # restore configure
 if [ -e userapiconfig.py ]; then
-    mv -f userapiconfig.py "$PREFIX/src/userapiconfig.py";
+    mv -f userapiconfig.py "$PREFIX/$SSR_HOME_DIR/userapiconfig.py";
 fi
 
 if [ -e mudb.json ]; then
-    mv -f mudb.json "$PREFIX/src/mudb.json";
+    mv -f mudb.json "$PREFIX/$SSR_HOME_DIR/mudb.json";
 fi
 
 if [ -e user-config.json ]; then
-    mv -f user-config.json "$PREFIX/src/user-config.json";
+    mv -f user-config.json "$PREFIX/$SSR_HOME_DIR/user-config.json";
 fi
 
 # add systemd
@@ -85,7 +126,7 @@ Type=simple
 User=$USER
 Group=$USER
 LimitNOFILE=$MAXFD
-ExecStart=/usr/bin/python $PREFIX/src/server.py m > /dev/null 2>&1
+ExecStart=$PYTHON_BIN $PREFIX/$SSR_HOME_DIR/server.py m > /dev/null 2>&1
 ExecStop=/bin/kill -s QUIT
 PrivateTmp=true
 Restart=on-failure
@@ -110,7 +151,8 @@ if [ -e "/usr/lib/systemd/system" ] && [ ! -e "/usr/lib/systemd/system/shadowsoc
     sudo systemctl restart shadowsocksr ;
 fi
 
-if [ -e "/etc/firewalld/services" ] && [ ! -e "/etc/firewalld/services/shadowsocksr.xml" ]; then
+FIREWALLD_CONF_FILE_PATH=/etc/firewalld/services/shadowsocksr.xml;
+if [ -e "/etc/firewalld/services" ] && [ ! -e "$FIREWALLD_CONF_FILE_PATH" ]; then
     echo "setup firewalld";
     sudo echo '<?xml version="1.0" encoding="utf-8"?>
 <service>
@@ -118,20 +160,23 @@ if [ -e "/etc/firewalld/services" ] && [ ! -e "/etc/firewalld/services/shadowsoc
   <description>shadowsocksr</description>
   <port protocol="tcp" port="8388"/>
   <port protocol="udp" port="8388"/>
-</service>' > "/etc/firewalld/services/shadowsocksr.xml" ;
+</service>' > "$FIREWALLD_CONF_FILE_PATH" ;
     sudo firewall-cmd --reload ;
     sudo firewall-cmd --permanent --add-service shadowsocksr ;
     sudo firewall-cmd --reload ;
 fi
 
 echo "All configure done.";
-echo "Please edit $PREFIX/userapiconfig.py and set API_INTERFACE = 'mudbjson', SERVER_PUB_ADDR = 'your ip address'";
-echo "You can edit $PREFIX/mudb.json to set multi-user configure or using mujson_mgr.py";
-if [ -e "/etc/firewalld/services/shadowsocksr.xml" ]; then
-    echo "firewalld configured at /etc/firewalld/services/shadowsocksr.xml, please run firewall-cmd --reload after edit it";
+echo "Please edit $PREFIX/$SSR_HOME_DIR/userapiconfig.py and set API_INTERFACE = 'mudbjson', SERVER_PUB_ADDR = 'your ip address'";
+echo "You can edit $PREFIX/$SSR_HOME_DIR/mudb.json to set multi-user configure or using mujson_mgr.py";
+if [ -e "$FIREWALLD_CONF_FILE_PATH" ]; then
+    echo "firewalld configured at $FIREWALLD_CONF_FILE_PATH, please run firewall-cmd --reload after edit it";
 fi
 if [ -e "/usr/lib/systemd/system/shadowsocksr.service" ]; then
     echo "systemd configured at /usr/lib/systemd/system/shadowsocksr.service, please run systemctl daemon-reload or systemctl disable/enable/restart shadowsocksr after edit it";
 fi
 echo "Example:";
-echo "  python mujson_mgr.py -a -m chacha20 -O auth_sha1_v4 -o tls1.2_ticket_auth -p 8351 -k YOURPASSWORD";
+echo "  $PYTHON_BIN mujson_mgr.py -a -m chacha20 -O auth_sha1_v4 -o tls1.2_ticket_auth -p 8351 -k YOURPASSWORD";
+if [ -e "$FIREWALLD_CONF_FILE_PATH" ]; then
+    echo '  sed -i "/<\\/service>/i <port protocol=\"tcp\" port=\"8351\"/>' $FIREWALLD_CONF_FILE_PATH;
+fi
