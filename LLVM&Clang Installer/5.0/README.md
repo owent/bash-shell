@@ -1,9 +1,9 @@
 Linux 编译安装 LLVM + Clang 5.0
 ======
 
-LLVM + Clang 5.0 发布啦，本脚本在之前LLVM + Clang 4.0 的基础上做了稍许更新
+LLVM + Clang 5.0 发布啦，本脚本在之前LLVM + Clang 4.0 的基础上做了稍许更新并增加了仅下载模式
 
-增加了仅下载模式
+如果在一些比较老的系统上，自带的gcc版本过低（比如CentOS 6）.可以先用 https://github.com/owent-utils/bash-shell/tree/master/GCC%20Installer/gcc-7 编译出新版gcc，再用这个gcc来编译llvm+clang工具链。
 
 ### NOTICE
 
@@ -31,16 +31,16 @@ LLVM + Clang 5.0 发布啦，本脚本在之前LLVM + Clang 4.0 的基础上做�
 * 建议使用**llvm-config --cflags**,**llvm-config --cxxflags**和**llvm-config --ldflags**来查看需要附加的编译选项
 
 ### 发行注记
-+ llvm : http://llvm.org/releases/5.0.0/docs/ReleaseNotes.html
-+ clang : http://llvm.org/releases/5.0.0/tools/clang/docs/ReleaseNotes.html
-+ clang Extra : http://llvm.org/releases/5.0.0/tools/clang/tools/extra/docs/ReleaseNotes.html
-+ lld: http://llvm.org/releases/5.0.0/tools/lld/docs/ReleaseNotes.html
++ llvm : http://llvm.org/releases/5.0.1/docs/ReleaseNotes.html
++ clang : http://llvm.org/releases/5.0.1/tools/clang/docs/ReleaseNotes.html
++ clang Extra : http://llvm.org/releases/5.0.1/tools/clang/tools/extra/docs/ReleaseNotes.html
++ lld: http://llvm.org/releases/5.0.1/tools/lld/docs/ReleaseNotes.html
 
 ## 编译安装 LLVM + Clang 5.0
 ### 准备环境及依赖项
 
 1. cmake
-2. Python
+2. Python 2.7 or higher
 3. **python-devel/python-dev(lldb依赖项)**
 4. **swig(lldb依赖项)**
 5. **libedit/libedit-devel/libedit-dev(lldb依赖项)**
@@ -56,17 +56,17 @@ CentOS 7.3 & CentOS 6.2
 详情参见 [llvm官网](http://llvm.org/)
 
 #### 编译的依赖库：
-+ libc++ 5.0.0
-+ libc++abi 5.0.0
-+ libunwind 5.0.0(这个库不会install)
++ libc++ 5.0.1
++ libc++abi 5.0.1
++ libunwind 5.0.1(这个库不会install)
 
 #### 默认编译目标：
-+ llvm 5.0.0
-+ clang 5.0.0
-+ compiler_rt 5.0.0
-+ clang_tools_extra 5.0.0
-+ lldb 5.0.0
-+ lld 5.0.0
++ llvm 5.0.1
++ clang 5.0.1
++ compiler_rt 5.0.1
++ clang_tools_extra 5.0.1
++ lldb 5.0.1
++ lld 5.0.1
 
 #### 注：
 + (所有的库都会被安装在**$PREFEX_DIR**里)
@@ -77,6 +77,7 @@ CentOS 7.3 & CentOS 6.2
 #### History:
 + 2017-09-13     Created
 + 2017-10-14     增加一些低版本环境的适配支持，支持通过CC和CXX指定编译器
++ 2018-02-01     升级到5.0.1，使用HTTPS下载，修复cmake失败流程没有正确提示的问题
 
 
 #### 参考文献

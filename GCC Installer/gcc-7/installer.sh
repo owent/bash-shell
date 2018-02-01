@@ -1,9 +1,19 @@
 #!/bin/bash
 
 # ======================================= 配置 =======================================
-PREFIX_DIR=/usr/local/gcc-7.3.0
 BUILD_TARGET_COMPOMENTS="";
+COMPOMENTS_GMP_VERSION=6.1.2;
+COMPOMENTS_MPFR_VERSION=4.0.0;
+COMPOMENTS_MPC_VERSION=1.1.0;
+COMPOMENTS_ISL_VERSION=0.18;
+COMPOMENTS_LIBATOMIC_OPS_VERSION=7.6.2;
+COMPOMENTS_BDWGC_VERSION=7.6.4;
+COMPOMENTS_GCC_VERSION=7.3.0;
+COMPOMENTS_BINUTILS_VERSION=2.30;
+COMPOMENTS_PYTHON_VERSION=2.7.14;
+COMPOMENTS_GDB_VERSION=8.1;
 
+PREFIX_DIR=/usr/local/gcc-$COMPOMENTS_GCC_VERSION;
 # ======================= 非交叉编译 =======================
 BUILD_TARGET_CONF_OPTION=""
 BUILD_OTHER_CONF_OPTION=""
@@ -187,7 +197,7 @@ swapoff -a
 
 # install gmp
 if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list gmp $BUILD_TARGET_COMPOMENTS) ]; then
-    GMP_PKG=$(check_and_download "gmp" "gmp-*.tar.xz" "ftp://ftp.gmplib.org/pub/gmp/gmp-6.1.2.tar.xz" );
+    GMP_PKG=$(check_and_download "gmp" "gmp-*.tar.xz" "https://ftp.gnu.org/gnu/gmp/gmp-$COMPOMENTS_GMP_VERSION.tar.xz" );
     if [ $? -ne 0 ]; then
         echo -e "$GMP_PKG";
         exit -1;
@@ -208,7 +218,7 @@ fi
 
 # install mpfr
 if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list mpfr $BUILD_TARGET_COMPOMENTS) ]; then
-    MPFR_PKG=$(check_and_download "mpfr" "mpfr-*.tar.xz" "https://ftp.gnu.org/gnu/mpfr/mpfr-4.0.0.tar.xz" );
+    MPFR_PKG=$(check_and_download "mpfr" "mpfr-*.tar.xz" "https://ftp.gnu.org/gnu/mpfr/mpfr-$COMPOMENTS_MPFR_VERSION.tar.xz" );
     if [ $? -ne 0 ]; then
         echo -e "$MPFR_PKG";
         exit -1;
@@ -229,7 +239,7 @@ fi
 
 # install mpc
 if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list mpc $BUILD_TARGET_COMPOMENTS) ]; then
-    MPC_PKG=$(check_and_download "mpc" "mpc-*.tar.gz" "ftp://ftp.gnu.org/gnu/mpc/mpc-1.1.0.tar.gz" );
+    MPC_PKG=$(check_and_download "mpc" "mpc-*.tar.gz" "https://ftp.gnu.org/gnu/mpc/mpc-$COMPOMENTS_MPC_VERSION.tar.gz" );
     if [ $? -ne 0 ]; then
         echo -e "$MPC_PKG";
         exit -1;
@@ -250,7 +260,7 @@ fi
 
 # install isl
 if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list isl $BUILD_TARGET_COMPOMENTS) ]; then
-    ISL_PKG=$(check_and_download "isl" "isl-*.tar.bz2" "https://gcc.gnu.org/pub/gcc/infrastructure/isl-0.18.tar.bz2" );
+    ISL_PKG=$(check_and_download "isl" "isl-*.tar.bz2" "https://gcc.gnu.org/pub/gcc/infrastructure/isl-$COMPOMENTS_ISL_VERSION.tar.bz2" );
     if [ $? -ne 0 ]; then
         echo -e "$ISL_PKG";
         exit -1;
@@ -272,7 +282,7 @@ fi
 
 # install libatomic_ops
 if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list libatomic_ops $BUILD_TARGET_COMPOMENTS) ]; then
-    LIBATOMIC_OPS_PKG=$(check_and_download "libatomic_ops" "libatomic_ops-*.tar.gz" "https://github.com/ivmai/libatomic_ops/releases/download/v7.6.2/libatomic_ops-7.6.2.tar.gz" "libatomic_ops-7.6.2.tar.gz" );
+    LIBATOMIC_OPS_PKG=$(check_and_download "libatomic_ops" "libatomic_ops-*.tar.gz" "https://github.com/ivmai/libatomic_ops/releases/download/v$COMPOMENTS_LIBATOMIC_OPS_VERSION/libatomic_ops-$COMPOMENTS_LIBATOMIC_OPS_VERSION.tar.gz" "libatomic_ops-$COMPOMENTS_LIBATOMIC_OPS_VERSION.tar.gz" );
     if [ $? -ne 0 ]; then
         echo -e "$LIBATOMIC_OPS_PKG";
         exit -1;
@@ -294,7 +304,7 @@ fi
 
 # install bdw-gc
 if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list bdw-gc $BUILD_TARGET_COMPOMENTS) ]; then
-    BDWGC_PKG=$(check_and_download "bdw-gc" "gc-*.tar.gz" "https://github.com/ivmai/bdwgc/releases/download/v7.6.4/gc-7.6.4.tar.gz" "gc-7.6.4.tar.gz" );
+    BDWGC_PKG=$(check_and_download "bdw-gc" "gc-*.tar.gz" "https://github.com/ivmai/bdwgc/releases/download/v$COMPOMENTS_BDWGC_VERSION/gc-$COMPOMENTS_BDWGC_VERSION.tar.gz" "gc-$COMPOMENTS_BDWGC_VERSION.tar.gz" );
     if [ $? -ne 0 ]; then
         echo -e "$BDWGC_PKG";
         exit -1;
@@ -314,6 +324,10 @@ if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list bdw-gc $BUILD_TARG
         else
             BDWGC_LIBATOMIC_OPS=check ;
         fi
+        # patch configure synax error for 7.6.4
+        if [ "$COMPOMENTS_BDWGC_VERSION" == "7.6.4" ]; then
+            sed -i "19732c echo 'patch synax error';" configure;
+        fi
         ./configure --prefix=$PREFIX_DIR/multilib/$SYS_LONG_BIT --enable-cplusplus --with-pic=yes --enable-shared=no --enable-static=yes --with-libatomic-ops=$BDWGC_LIBATOMIC_OPS ;
         make $BUILD_THREAD_OPT && make install;
         if [ $? -ne 0 ]; then
@@ -322,6 +336,7 @@ if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list bdw-gc $BUILD_TARG
         fi
 
         if [ $SYS_LONG_BIT == "64" ] && [ "$GCC_OPT_DISABLE_MULTILIB" == "--enable-multilib" ] ; then
+            make clean;
             make distclean;
             env CFLAGS=-m32 CPPFLAGS=-m32 ./configure --prefix=$PREFIX_DIR/multilib/32 --enable-cplusplus --with-pic=yes --enable-shared=no --enable-static=yes --with-libatomic-ops=$BDWGC_LIBATOMIC_OPS ;
 
@@ -341,7 +356,7 @@ fi
 # ======================= install gcc =======================
 if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list gcc $BUILD_TARGET_COMPOMENTS) ]; then
     # ======================= gcc包 =======================
-    GCC_PKG=$(check_and_download "gcc" "gcc-*.tar.xz" "http://gcc.gnu.org/pub/gcc/releases/gcc-7.3.0/gcc-7.3.0.tar.xz" );
+    GCC_PKG=$(check_and_download "gcc" "gcc-*.tar.xz" "https://gcc.gnu.org/pub/gcc/releases/gcc-$COMPOMENTS_GCC_VERSION/gcc-$COMPOMENTS_GCC_VERSION.tar.xz" );
     if [ $? -ne 0 ]; then
         echo -e "$GCC_PKG";
         exit -1;
@@ -377,7 +392,7 @@ export CXX=$PREFIX_DIR/bin/g++ ;
 
 # ======================= install binutils(链接器,汇编器 等) =======================
 if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list binutils $BUILD_TARGET_COMPOMENTS) ]; then
-    BINUTILS_PKG=$(check_and_download "binutils" "binutils-*.tar.xz" "http://ftp.gnu.org/gnu/binutils/binutils-2.30.tar.xz" );
+    BINUTILS_PKG=$(check_and_download "binutils" "binutils-*.tar.xz" "https://ftp.gnu.org/gnu/binutils/binutils-$COMPOMENTS_BINUTILS_VERSION.tar.xz" );
     if [ $? -ne 0 ]; then
         echo -e "$BINUTILS_PKG";
         exit -1;
@@ -407,7 +422,7 @@ if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list gdb $BUILD_TARGET_
     else
 	    # ======================= 检查Python开发包，如果存在，则增加 --with-pyton 选项 =======================
         if [ $BUILD_DOWNLOAD_ONLY -ne 0 ]; then
-            PYTHON_PKG=$(check_and_download "python" "Python-*.tar.xz" "https://www.python.org/ftp/python/2.7.14/Python-2.7.14.tar.xz" );
+            PYTHON_PKG=$(check_and_download "python" "Python-*.tar.xz" "https://www.python.org/ftp/python/$COMPOMENTS_PYTHON_VERSION/Python-$COMPOMENTS_PYTHON_VERSION.tar.xz" );
         else
             if [ ! -z "$(find /usr/include -name Python.h)" ]; then
                 GDB_PYTHON_OPT="--with-python";
@@ -415,7 +430,7 @@ if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list gdb $BUILD_TARGET_
                 GDB_PYTHON_OPT="--with-python=$PREFIX_DIR";
             else
                 # =======================  尝试编译安装python  =======================
-                PYTHON_PKG=$(check_and_download "python" "Python-*.tar.xz" "https://www.python.org/ftp/python/2.7.14/Python-2.7.14.tar.xz" );
+                PYTHON_PKG=$(check_and_download "python" "Python-*.tar.xz" "https://www.python.org/ftp/python/$COMPOMENTS_PYTHON_VERSION/Python-$COMPOMENTS_PYTHON_VERSION.tar.xz" );
                 if [ $? -ne 0 ]; then
                     return;
                 fi
@@ -431,7 +446,7 @@ if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list gdb $BUILD_TARGET_
         fi
 
 	    # ======================= 正式安装GDB =======================
-	    GDB_PKG=$(check_and_download "gdb" "gdb-*.tar.xz" "http://ftp.gnu.org/gnu/gdb/gdb-8.1.tar.xz" );
+	    GDB_PKG=$(check_and_download "gdb" "gdb-*.tar.xz" "https://ftp.gnu.org/gnu/gdb/gdb-$COMPOMENTS_GDB_VERSION.tar.xz" );
 	    if [ $? -ne 0 ]; then
 		    echo -e "$GDB_PKG";
 		    exit -1;

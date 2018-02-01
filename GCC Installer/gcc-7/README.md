@@ -131,3 +131,4 @@ end
 + 2017-09-14    增加仅下载模式，更新mpfr到的3.1.6，libatomic_ops到7.4.6，gcc到7.2.0，binutils 2.29，python到2.7.14，gdb到7.12.1
 + 2017-10-14    增加一些低版本环境的适配支持，支持通过CC和CXX指定编译器
 + 2018-01-31    更新gcc到7.3.0，更新mpfr到4.0.0，更新mpc到1.1.0，更新isl到0.18，更新libatomic_ops到7.6.2，更新bdw-gc到7.6.4，更新binutils到2.30，更新gdb到8.1
++ 2018-02-01    优化脚本，库版本号前置，不再使用ftp协议下载。patch修改bdw-gc的configure脚本，修复语法错误问题
