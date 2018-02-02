@@ -12,6 +12,9 @@ COMPOMENTS_GCC_VERSION=7.3.0;
 COMPOMENTS_BINUTILS_VERSION=2.30;
 COMPOMENTS_PYTHON_VERSION=2.7.14;
 COMPOMENTS_GDB_VERSION=8.1;
+if [ "owent$COMPOMENTS_GDB_STATIC_BUILD" == "owent" ]; then
+    COMPOMENTS_GDB_STATIC_BUILD=0;
+fi
 
 PREFIX_DIR=/usr/local/gcc-$COMPOMENTS_GCC_VERSION;
 # ======================= 非交叉编译 =======================
@@ -455,8 +458,15 @@ if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list gdb $BUILD_TARGET_
             tar -Jxvf $GDB_PKG;
             GDB_DIR=$(ls -d gdb-* | grep -v \.tar\.xz);
             cd $GDB_DIR;
-            ./configure --prefix=$PREFIX_DIR --with-gmp=$PREFIX_DIR --with-mpc=$PREFIX_DIR --with-mpfr=$PREFIX_DIR --with-isl=$PREFIX_DIR --enable-build-with-cxx --enable-gold --enable-libada --enable-objc-gc --enable-libssp --enable-lto $GDB_PYTHON_OPT $BUILD_TARGET_CONF_OPTION;
-            make $BUILD_THREAD_OPT && make install;
+            if [ $COMPOMENTS_GDB_STATIC_BUILD -ne 0 ]; then
+                COMPOMENTS_GDB_STATIC_BUILD_FLAGS='LDFLAGS="-static"';
+                COMPOMENTS_GDB_STATIC_BUILD_PREFIX='env LDFLAGS="-static"';
+            else
+                COMPOMENTS_GDB_STATIC_BUILD_FLAGS='';
+                COMPOMENTS_GDB_STATIC_BUILD_PREFIX='';
+            fi
+            $COMPOMENTS_GDB_STATIC_BUILD_PREFIX ./configure --prefix=$PREFIX_DIR --with-gmp=$PREFIX_DIR --with-mpc=$PREFIX_DIR --with-mpfr=$PREFIX_DIR --with-isl=$PREFIX_DIR --with-target-bdw-gc=$PREFIX_DIR --enable-build-with-cxx --enable-gold --enable-libada --enable-objc-gc --enable-libssp --enable-lto $COMPOMENTS_GDB_STATIC_BUILD_FLAGS $GDB_PYTHON_OPT $BUILD_TARGET_CONF_OPTION;
+            $COMPOMENTS_GDB_STATIC_BUILD_PREFIX make $BUILD_THREAD_OPT && make install;
             cd "$WORKING_DIR";
 
             ls $PREFIX_DIR/bin/gdb;
