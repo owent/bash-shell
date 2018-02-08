@@ -401,10 +401,10 @@ if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list binutils $BUILD_TA
         exit -1;
     fi
     if [ $BUILD_DOWNLOAD_ONLY -eq 0 ]; then
-        tar -jxvf $BINUTILS_PKG;
+        tar -Jxvf $BINUTILS_PKG;
         BINUTILS_DIR=$(ls -d binutils-* | grep -v \.tar\.xz);
         cd $BINUTILS_DIR;
-        ./configure --prefix=$PREFIX_DIR --with-gmp=$PREFIX_DIR --with-mpc=$PREFIX_DIR --with-mpfr=$PREFIX_DIR --with-isl=$PREFIX_DIR --enable-build-with-cxx --enable-gold --enable-libada --enable-libssp --enable-lto --enable-objc-gc --disable-werror $BUILD_TARGET_CONF_OPTION;
+        ./configure --prefix=$PREFIX_DIR --with-gmp=$PREFIX_DIR --with-mpc=$PREFIX_DIR --with-mpfr=$PREFIX_DIR --with-isl=$PREFIX_DIR $BDWGC_PREBIUILT --enable-build-with-cxx --enable-gold --enable-libada --enable-libssp --enable-lto --enable-objc-gc --enable-vtable-verify --disable-werror $BUILD_TARGET_CONF_OPTION;
         make $BUILD_THREAD_OPT && make install;
         # ---- 新版本的GCC编译器会激发binutils内某些组件的werror而导致编译失败 ----
         # ---- 另外某个版本的make check有failed用例就被发布了,应该gnu的自动化测试有遗漏 ----
@@ -465,7 +465,7 @@ if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list gdb $BUILD_TARGET_
                 COMPOMENTS_GDB_STATIC_BUILD_FLAGS='';
                 COMPOMENTS_GDB_STATIC_BUILD_PREFIX='';
             fi
-            $COMPOMENTS_GDB_STATIC_BUILD_PREFIX ./configure --prefix=$PREFIX_DIR --with-gmp=$PREFIX_DIR --with-mpc=$PREFIX_DIR --with-mpfr=$PREFIX_DIR --with-isl=$PREFIX_DIR --with-target-bdw-gc=$PREFIX_DIR --enable-build-with-cxx --enable-gold --enable-libada --enable-objc-gc --enable-libssp --enable-lto $COMPOMENTS_GDB_STATIC_BUILD_FLAGS $GDB_PYTHON_OPT $BUILD_TARGET_CONF_OPTION;
+            $COMPOMENTS_GDB_STATIC_BUILD_PREFIX ./configure --prefix=$PREFIX_DIR --with-gmp=$PREFIX_DIR --with-mpc=$PREFIX_DIR --with-mpfr=$PREFIX_DIR --with-isl=$PREFIX_DIR $BDWGC_PREBIUILT --enable-build-with-cxx --enable-gold --enable-libada --enable-objc-gc --enable-libssp --enable-lto $COMPOMENTS_GDB_STATIC_BUILD_FLAGS $GDB_PYTHON_OPT $BUILD_TARGET_CONF_OPTION;
             $COMPOMENTS_GDB_STATIC_BUILD_PREFIX make $BUILD_THREAD_OPT && make install;
             cd "$WORKING_DIR";
 
