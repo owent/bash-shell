@@ -2,9 +2,12 @@
 
 # @see https://github.com/xtaci/kcptun ;
 
+if [ -z "$KCPTUN_VERSION" ]; then
+      KCPTUN_VERSION=20171201;
+fi
 KCPTUN_HOME=/home/kcptun ;
 KCPTUN_SYSTEMD=/usr/lib/systemd/system/kcptun.service ;
-KCPTUN_URL=https://github.com/xtaci/kcptun/releases/download/v20171129/kcptun-linux-amd64-20171129.tar.gz ;
+KCPTUN_URL=https://github.com/xtaci/kcptun/releases/download/v$KCPTUN_VERSION/kcptun-linux-amd64-$KCPTUN_VERSION.tar.gz ;
 KCPTUN_PORTS=($@) ;
 KCPTUN_PORT_OFF=200 ;
 KCPTUN_OPTIONS="--crypt none --mtu 1350 --nocomp --mode fast --dscp 46";
