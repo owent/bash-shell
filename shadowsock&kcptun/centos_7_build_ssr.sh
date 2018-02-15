@@ -24,7 +24,7 @@ if [ -z "$VERSION" ]; then
     VERSION="3.2.1";
 fi
 if [ -z "$LIBSODIUM_VERSION" ]; then
-    LIBSODIUM_VERSION="1.0.15";
+    LIBSODIUM_VERSION="1.0.16";
 fi
 DOWN_URL="https://github.com/shadowsocksrr/shadowsocksr/archive/$VERSION.tar.gz"
 LIBSODIUM_URL="https://download.libsodium.org/libsodium/releases/libsodium-$LIBSODIUM_VERSION.tar.gz";
@@ -176,7 +176,7 @@ if [ -e "/usr/lib/systemd/system/shadowsocksr.service" ]; then
     echo "systemd configured at /usr/lib/systemd/system/shadowsocksr.service, please run systemctl daemon-reload or systemctl disable/enable/restart shadowsocksr after edit it";
 fi
 echo "Example:";
-echo "  $PYTHON_BIN mujson_mgr.py -a -m chacha20 -O auth_sha1_v4 -o tls1.2_ticket_auth -p 8351 -k YOURPASSWORD";
+echo "  $PYTHON_BIN mujson_mgr.py -a -m chacha20-ietf-poly1305 -O auth_sha1_v4 -o tls1.2_ticket_auth -p 8351 -k YOURPASSWORD";
 if [ -e "$FIREWALLD_CONF_FILE_PATH" ]; then
     echo '  sed -i "/<\\/service>/i <port protocol=\"tcp\" port=\"8351\"/>' $FIREWALLD_CONF_FILE_PATH;
 fi
