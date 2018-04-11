@@ -53,29 +53,44 @@ Server = http://mirrors.zju.edu.cn/msys2/msys2/REPOS/MINGW/x86_64
 Server = http://repo.msys2.org/mingw/x86_64" > /etc/pacman.d/mirrorlist.mingw64 ;
 ```
 ## Ubuntu & WSL
+
+### 16.04
 ```
 mv /etc/apt/sources.list /etc/apt/sources.list.bak
 
 echo "
 deb https://mirrors.aliyun.com/ubuntu/ xenial main restricted universe multiverse
-
 deb https://mirrors.aliyun.com/ubuntu/ xenial-security main restricted universe multiverse
-
 deb https://mirrors.aliyun.com/ubuntu/ xenial-updates main restricted universe multiverse
-
-deb https://mirrors.aliyun.com/ubuntu/ xenial-proposed main restricted universe multiverse
-
 deb https://mirrors.aliyun.com/ubuntu/ xenial-backports main restricted universe multiverse
-
 deb-src https://mirrors.aliyun.com/ubuntu/ xenial main restricted universe multiverse
-
 deb-src https://mirrors.aliyun.com/ubuntu/ xenial-security main restricted universe multiverse
-
 deb-src https://mirrors.aliyun.com/ubuntu/ xenial-updates main restricted universe multiverse
-
-deb-src https://mirrors.aliyun.com/ubuntu/ xenial-proposed main restricted universe multiverse
-
 deb-src https://mirrors.aliyun.com/ubuntu/ xenial-backports main restricted universe multiverse
+# deb https://mirrors.aliyun.com/ubuntu/ xenial-proposed main restricted universe multiverse
+# deb-src https://mirrors.aliyun.com/ubuntu/ xenial-proposed main restricted universe multiverse
+" > /etc/apt/sources.list ;
+
+# apt-add-repository -y "ppa:ubuntu-toolchain-r/test" ;
+
+apt-get update -y ;
+```
+
+```
+mv /etc/apt/sources.list /etc/apt/sources.list.bak
+echo "
+deb https://mirrors.ustc.edu.cn/ubuntu/ xenial main restricted universe multiverse
+deb-src https://mirrors.ustc.edu.cn/ubuntu/ xenial main main restricted universe multiverse
+deb https://mirrors.ustc.edu.cn/ubuntu/ xenial-updates main restricted universe multiverse
+deb-src https://mirrors.ustc.edu.cn/ubuntu/ xenial-updates main restricted universe multiverse
+deb https://mirrors.ustc.edu.cn/ubuntu/ xenial-backports main restricted universe multiverse
+deb-src https://mirrors.ustc.edu.cn/ubuntu/ xenial-backports main restricted universe multiverse
+deb https://mirrors.ustc.edu.cn/ubuntu/ xenial-security main restricted universe multiverse
+deb-src https://mirrors.ustc.edu.cn/ubuntu/ xenial-security main restricted universe multiverse
+ 
+# 预发布软件源，不建议启用
+# deb https://mirrors.ustc.edu.cn/ubuntu/ xenial-proposed main restricted universe multiverse
+# deb-src https://mirrors.ustc.edu.cn/ubuntu/ xenial-proposed main restricted universe multiverse
 " > /etc/apt/sources.list ;
 
 # apt-add-repository -y "ppa:ubuntu-toolchain-r/test" ;
