@@ -327,9 +327,9 @@ if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list bdw-gc $BUILD_TARG
         else
             BDWGC_LIBATOMIC_OPS=check ;
         fi
-        # patch configure synax error for 7.6.4
-        if [ "$COMPOMENTS_BDWGC_VERSION" == "7.6.4" ]; then
-            sed -i "19732c echo 'patch synax error';" configure;
+        # patch configure synax error for 7.6.6
+        if [ "$COMPOMENTS_BDWGC_VERSION" == "7.6.6" ]; then
+            sed -i "19748c echo 'patch synax error';" configure;
         fi
         ./configure --prefix=$PREFIX_DIR/multilib/$SYS_LONG_BIT --enable-cplusplus --with-pic=yes --enable-shared=no --enable-static=yes --with-libatomic-ops=$BDWGC_LIBATOMIC_OPS ;
         make $BUILD_THREAD_OPT && make install;
