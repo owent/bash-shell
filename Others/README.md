@@ -162,15 +162,15 @@ pacman -S ruby;
 ## Ubuntu & WSL
 ```
 ## basic
-apt-get install -y vim curl wget uuid-dev libuuid1 libcurl4-openssl-dev libssl-dev python3-setuptools python3-pip python3-mako perl automake gdb valgrind libncurses5-dev git unzip lunzip p7zip-full gcc cpp autoconf colorgcc telnet iotop htop g++ make libtool build-essential pkg-config
+apt install -y vim curl wget uuid-dev libssl-dev python3-setuptools python3-pip python3-mako perl automake gdb valgrind git unzip lunzip p7zip-full autoconf telnet iotop htop libtool build-essential pkg-config
 
 ## clang-llvm
 
-# LLVM_VER=-4.0;
-apt-get install -y llvm$LLVM_VER lldb$LLVM_VER  libc++abi1 libc++abi-dev libc++-dev clang$LLVM_VER ;
+# LLVM_VER=-6.0;
+apt install -y llvm$LLVM_VER lldb$LLVM_VER  libc++abi1 libc++abi-dev libc++-dev libc++1 clang$LLVM_VER ;
 
 ## clang-llvm-可选
-apt-get install -y lld$LLVM_VER ;
+apt install -y lld$LLVM_VER ;
 ```
 
 下载离线包和离线安装
