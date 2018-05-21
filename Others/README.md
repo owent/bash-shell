@@ -238,16 +238,16 @@ choco upgrade chocolatey
 ```
 
 ```
-choco install --yes 7zip vim-tux pandoc foobar2000 Graphviz ConEmu
+choco install --yes 7zip vim-tux pandoc foobar2000 Graphviz
 
 # dev (anaconda3 also can be used instead of python3)
-choco install --yes MobaXterm git git-lfs TortoiseGit python3
+choco install --yes MobaXterm git git-lfs TortoiseGit python3 ConEmu
 
 # dev - network
 choco install --yes wireshark WinPcap
 
 # c & c++
-choco install --yes cmake doxygen.install
+choco install --yes cmake doxygen.install llvm
 
 # nodejs
 choco install --yes nodejs npm
