@@ -253,7 +253,7 @@ choco install --yes cmake doxygen.install llvm
 choco install --yes nodejs npm
 
 # java
-choco install --yes jdk8
+choco install --yes jdk8 jdk10
 ```
 
 ## Atom Editor
