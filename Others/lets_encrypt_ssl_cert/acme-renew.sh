@@ -20,7 +20,7 @@ INSTALL_CERT_DIR=/home/website/ssl;
 
 ~/.acme.sh/acme.sh --renew-all --ecc ;
 
-cp ~/.acme.sh/${DOMAIN_NAME}_*/* $INSTALL_CERT_DIR;
+cp -f ~/.acme.sh/${DOMAIN_NAME}_*/* $INSTALL_CERT_DIR;
 chown nginx:users -R $INSTALL_CERT_DIR;
 
 systemctl reload nginx;

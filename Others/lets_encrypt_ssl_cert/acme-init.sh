@@ -5,15 +5,18 @@
 
 # curl https://get.acme.sh | sh
 
+export CF_Key="GOT TOKEN FROM https://dash.cloudflare.com/profile"
+export CF_Email="admin@owent.net"
+
 DOMAIN_NAME=owent.net;
-ADMIN_EMAIL=admin@owent.net;
+ADMIN_EMAIL=$CF_Email;
 INSTALL_CERT_DIR=/home/website/ssl;
 
 ~/.acme.sh/acme.sh --issue \
-  -d owent.net -w /home/website/owent_blog \
-  -d www.owent.net -w /home/website/owent_blog \
-  -d angel.owent.net -w /home/website/angel_blog \
-  --keylength ec-256 ; # 2048, 3072, 4096, 8192 or ec-256, ec-384
+  -d $DOMAIN_NAME          \
+  -d "*.$DOMAIN_NAME"      \
+  --dns dns_cf             \
+  --keylength ec-256   ; # 2048, 3072, 4096, 8192 or ec-256, ec-384
 
 # using a custom port
 # ACME_SH_HTTP_PROT=88;
@@ -42,7 +45,7 @@ INSTALL_CERT_DIR=/home/website/ssl;
 # firewall-cmd --add-port=$ACME_SH_TLS_PROT/tcp;
 # firewall-cmd --reload;
 
-cp ~/.acme.sh/${DOMAIN_NAME}_*/* $INSTALL_CERT_DIR;
+cp -f ~/.acme.sh/${DOMAIN_NAME}_*/* $INSTALL_CERT_DIR;
 chown nginx:users -R $INSTALL_CERT_DIR;
 
 
