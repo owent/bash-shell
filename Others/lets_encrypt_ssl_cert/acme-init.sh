@@ -15,6 +15,7 @@ INSTALL_CERT_DIR=/home/website/ssl;
 ~/.acme.sh/acme.sh --issue \
   -d $DOMAIN_NAME          \
   -d "*.$DOMAIN_NAME"      \
+  -d "*.api.$DOMAIN_NAME"  \
   --dns dns_cf             \
   --keylength ec-256   ; # 2048, 3072, 4096, 8192 or ec-256, ec-384
 
