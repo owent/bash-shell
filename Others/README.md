@@ -54,6 +54,50 @@ Server = http://repo.msys2.org/mingw/x86_64" > /etc/pacman.d/mirrorlist.mingw64 
 ```
 ## Ubuntu & WSL
 
+### 18.04
+```
+mv /etc/apt/sources.list /etc/apt/sources.list.bak
+
+echo "
+deb https://mirrors.aliyun.com/ubuntu/ bionic main restricted universe multiverse
+deb https://mirrors.aliyun.com/ubuntu/ bionic-security main restricted universe multiverse
+deb https://mirrors.aliyun.com/ubuntu/ bionic-updates main restricted universe multiverse
+deb https://mirrors.aliyun.com/ubuntu/ bionic-backports main restricted universe multiverse
+deb-src https://mirrors.aliyun.com/ubuntu/ bionic main restricted universe multiverse
+deb-src https://mirrors.aliyun.com/ubuntu/ bionic-security main restricted universe multiverse
+deb-src https://mirrors.aliyun.com/ubuntu/ bionic-updates main restricted universe multiverse
+deb-src https://mirrors.aliyun.com/ubuntu/ bionic-backports main restricted universe multiverse
+# deb https://mirrors.aliyun.com/ubuntu/ bionic-proposed main restricted universe multiverse
+# deb-src https://mirrors.aliyun.com/ubuntu/ bionic-proposed main restricted universe multiverse
+" > /etc/apt/sources.list ;
+
+# apt-add-repository -y "ppa:ubuntu-toolchain-r/test" ;
+
+apt-get update -y ;
+```
+
+```
+mv /etc/apt/sources.list /etc/apt/sources.list.bak
+echo "
+deb https://mirrors.ustc.edu.cn/ubuntu/ bionic main restricted universe multiverse
+deb-src https://mirrors.ustc.edu.cn/ubuntu/ bionic main main restricted universe multiverse
+deb https://mirrors.ustc.edu.cn/ubuntu/ bionic-updates main restricted universe multiverse
+deb-src https://mirrors.ustc.edu.cn/ubuntu/ bionic-updates main restricted universe multiverse
+deb https://mirrors.ustc.edu.cn/ubuntu/ bionic-backports main restricted universe multiverse
+deb-src https://mirrors.ustc.edu.cn/ubuntu/ bionic-backports main restricted universe multiverse
+deb https://mirrors.ustc.edu.cn/ubuntu/ bionic-security main restricted universe multiverse
+deb-src https://mirrors.ustc.edu.cn/ubuntu/ bionic-security main restricted universe multiverse
+ 
+# 预发布软件源，不建议启用
+# deb https://mirrors.ustc.edu.cn/ubuntu/ bionic-proposed main restricted universe multiverse
+# deb-src https://mirrors.ustc.edu.cn/ubuntu/ bionic-proposed main restricted universe multiverse
+" > /etc/apt/sources.list ;
+
+# apt-add-repository -y "ppa:ubuntu-toolchain-r/test" ;
+
+apt-get update -y ;
+```
+
 ### 16.04
 ```
 mv /etc/apt/sources.list /etc/apt/sources.list.bak
