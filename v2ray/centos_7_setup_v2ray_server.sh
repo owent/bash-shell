@@ -17,7 +17,7 @@ if [ -z "$V2RAY_USER" ]; then
     V2RAY_USER="v2ray";
 fi
 if [ -z "$VERSION" ]; then
-    VERSION="3.25.1";
+    VERSION="3.31";
 fi
 if [ -z "$ARCH" ]; then
     ARCH="linux-64";
@@ -91,6 +91,10 @@ if [ -e "/usr/lib/systemd/system" ] && [ ! -e "$SYSTEMD_CONFIG_PATH" ]; then
     sudo systemctl daemon-reload ;
     sudo systemctl enable v2ray ;
     sudo systemctl start v2ray ;
+elif [ -e "$SYSTEMD_CONFIG_PATH" ]; then
+    sudo perl -p -i -e "s;.*ExecStart\\s*\\=.*;ExecStart=$PREFIX/$HOME_DIR/v2ray -config $PREFIX/etc/config.json;" "$SYSTEMD_CONFIG_PATH";
+    sudo systemctl daemon-reload ;
+    sudo systemctl restart v2ray ;
 fi
 
 FIREWALLD_CONF_FILE_PATH=/etc/firewalld/services/v2ray.xml;

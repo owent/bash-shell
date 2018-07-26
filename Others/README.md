@@ -54,7 +54,6 @@ Server = http://repo.msys2.org/mingw/x86_64" > /etc/pacman.d/mirrorlist.mingw64 
 ```
 ## Ubuntu & WSL
 
-
 ### 18.04
 ```
 mv /etc/apt/sources.list /etc/apt/sources.list.bak
