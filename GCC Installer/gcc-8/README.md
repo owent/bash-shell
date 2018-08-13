@@ -99,3 +99,4 @@ end
 
 #### History
 + 2018-05-01    Created
++ 2018-08-13    更新GCC到8.2.0,更新libatomic_ops到7.6.6,更新bdwgc到7.6.8,更新binutils到2.31

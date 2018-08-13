@@ -6,10 +6,10 @@ COMPOMENTS_GMP_VERSION=6.1.2;
 COMPOMENTS_MPFR_VERSION=4.0.1;
 COMPOMENTS_MPC_VERSION=1.1.0;
 COMPOMENTS_ISL_VERSION=0.18;
-COMPOMENTS_LIBATOMIC_OPS_VERSION=7.6.4;
-COMPOMENTS_BDWGC_VERSION=7.6.6;
-COMPOMENTS_GCC_VERSION=8.1.0;
-COMPOMENTS_BINUTILS_VERSION=2.30;
+COMPOMENTS_LIBATOMIC_OPS_VERSION=7.6.6;
+COMPOMENTS_BDWGC_VERSION=7.6.8;
+COMPOMENTS_GCC_VERSION=8.2.0;
+COMPOMENTS_BINUTILS_VERSION=2.31;
 COMPOMENTS_PYTHON_VERSION=2.7.15;
 COMPOMENTS_GDB_VERSION=8.1;
 if [ "owent$COMPOMENTS_GDB_STATIC_BUILD" == "owent" ]; then
@@ -81,6 +81,10 @@ fi
 
 # ======================= 转到脚本目录 =======================
 WORKING_DIR="$PWD";
+if [ -z "$CC" ]; then
+    export CC=gcc;
+    export CXX=g++;
+fi
 
 # ======================= 如果是64位系统且没安装32位的开发包，则编译要gcc加上 --disable-multilib 参数, 不生成32位库 =======================
 SYS_LONG_BIT=$(getconf LONG_BIT);
@@ -88,7 +92,7 @@ GCC_OPT_DISABLE_MULTILIB="";
 if [ $SYS_LONG_BIT == "64" ]; then
     GCC_OPT_DISABLE_MULTILIB="--disable-multilib";
     echo "int main() { return 0; }" > conftest.c;
-    gcc -m32 -o conftest ${CFLAGS} ${CPPFLAGS} ${LDFLAGS} conftest.c > /dev/null 2>&1;
+    $CC -m32 -o conftest ${CFLAGS} ${CPPFLAGS} ${LDFLAGS} conftest.c > /dev/null 2>&1;
     if test $? = 0 ; then
         echo -e "\\033[32;1mnotice: check 32 bit build test success, multilib enabled.\\033[39;49;0m";
         GCC_OPT_DISABLE_MULTILIB="--enable-multilib";
@@ -327,9 +331,9 @@ if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list bdw-gc $BUILD_TARG
         else
             BDWGC_LIBATOMIC_OPS=check ;
         fi
-        # patch configure synax error for 7.6.6
-        if [ "$COMPOMENTS_BDWGC_VERSION" == "7.6.6" ]; then
-            sed -i "19748c echo 'patch synax error';" configure;
+        # patch configure synax error for 7.6.8
+        if [ "$COMPOMENTS_BDWGC_VERSION" == "7.6.8" ]; then
+            sed -i "19732c echo 'patch synax error';" configure;
         fi
         ./configure --prefix=$PREFIX_DIR/multilib/$SYS_LONG_BIT --enable-cplusplus --with-pic=yes --enable-shared=no --enable-static=yes --with-libatomic-ops=$BDWGC_LIBATOMIC_OPS ;
         make $BUILD_THREAD_OPT && make install;
