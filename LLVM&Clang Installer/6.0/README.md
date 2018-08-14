@@ -31,10 +31,10 @@ LLVM + Clang 6.0 发布啦，本脚本在之前LLVM + Clang 5.0 的基础上做�
 * 建议使用**llvm-config --cflags**,**llvm-config --cxxflags**和**llvm-config --ldflags**来查看需要附加的编译选项
 
 ### 发行注记
-+ llvm : http://llvm.org/releases/6.0.0/docs/ReleaseNotes.html
-+ clang : http://llvm.org/releases/6.0.0/tools/clang/docs/ReleaseNotes.html
-+ clang Extra : http://llvm.org/releases/6.0.0/tools/clang/tools/extra/docs/ReleaseNotes.html
-+ lld: http://llvm.org/releases/6.0.0/tools/lld/docs/ReleaseNotes.html
++ llvm : http://llvm.org/releases/6.0.1/docs/ReleaseNotes.html
++ clang : http://llvm.org/releases/6.0.1/tools/clang/docs/ReleaseNotes.html
++ clang Extra : http://llvm.org/releases/6.0.1/tools/clang/tools/extra/docs/ReleaseNotes.html
++ lld: http://llvm.org/releases/6.0.1/tools/lld/docs/ReleaseNotes.html
 
 ## 编译安装 LLVM + Clang 6.0
 ### 准备环境及依赖项
@@ -56,17 +56,17 @@ CentOS 7.3 & CentOS 6.2
 详情参见 [llvm官网](http://llvm.org/)
 
 #### 编译的依赖库：
-+ libc++ 6.0.0
-+ libc++abi 6.0.0
-+ libunwind 6.0.0(这个库不会install)
++ libc++ 6.0.1
++ libc++abi 6.0.1
++ libunwind 6.0.1(这个库不会install)
 
 #### 默认编译目标：
-+ llvm 6.0.0
-+ clang 6.0.0
-+ compiler_rt 6.0.0
-+ clang_tools_extra 6.0.0
-+ lldb 6.0.0
-+ lld 6.0.0
++ llvm 6.0.1
++ clang 6.0.1
++ compiler_rt 6.0.1
++ clang_tools_extra 6.0.1
++ lldb 6.0.1
++ lld 6.0.1
 
 #### 注：
 + (所有的库都会被安装在**$PREFEX_DIR**里)
@@ -76,6 +76,7 @@ CentOS 7.3 & CentOS 6.2
 
 #### History:
 + 2018-03-19     Created
++ 2018-08-14     Update to 6.0.1
 
 
 #### 参考文献

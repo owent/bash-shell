@@ -3,7 +3,7 @@
 # Dependency: libedit-devel libxml2-devel ncurses-devel python-devel swig
 
 # ======================================= 配置 =======================================
-LLVM_VERSION=6.0.0;
+LLVM_VERSION=6.0.1;
 PREFIX_DIR=/usr/local/llvm-$LLVM_VERSION;
 BUILD_TARGET_COMPOMENTS="llvm clang compiler_rt libcxx libcxxabi clang_tools_extra lldb lld libunwind";
 
@@ -164,7 +164,9 @@ echo -e "\\033[32;1mnotice: now, sleep for $CHECK_INFO_SLEEP seconds.\\033[39;49
 sleep $CHECK_INFO_SLEEP
   
 # ======================= 关闭交换分区，否则就爽死了 ======================= 
-swapoff -a
+if [ $BUILD_DOWNLOAD_ONLY -eq 0 ]; then
+    swapoff -a ;
+fi
 
 export STAGE_BUILD_PREFIX_DIR="$PREFIX_DIR";
 export STAGE_BUILD_CMAKE_OPTION="";
