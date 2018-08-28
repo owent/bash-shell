@@ -83,19 +83,25 @@ CentOS 7 & CentOS 6.2
 给特定用户安装 gdb的pretty-printer 用以友好打印stdc++的stl容器
 
 1. 在执行 install.sh 脚本前安装 ncurses-devel 和 python-devel， 用于编译gdb和开启python功能
-2. 安装完成后，把[GCC源码目录]/libstdc++-v3/python 复制到[用户目录]/.gdb
+2. 添加libstdcxx加载脚本到 ```~/.gdb-load-libstdcxx.py```
+  ```python
+  import sys
+  import os
+  import glob
+  
+  for stdcxx_path in glob.glob('安装目录/share/gcc-*/python'):
+    p = os.path.expanduser(stdcxx_path)
+    print p
+    if os.path.exists(p):
+      sys.path.insert(0, p)
+      from libstdcxx.v6.printers import register_libstdcxx_printers
+      register_libstdcxx_printers(None)
+  ```
+
 3. 编辑[用户目录]/.gdbinit,添加
-```python
-import sys
-import os
-p = os.path.expanduser('~/.gdb/python')
-print p
-if os.path.exists(p):
-    sys.path.insert(0, p)
-    from libstdcxx.v6.printers import register_libstdcxx_printers
-    register_libstdcxx_printers(None)
-end
-```
+  ```bash
+  so ~/.gdb-load-libstdcxx.py
+  ```
 
 #### History
 + 2018-05-01    Created
