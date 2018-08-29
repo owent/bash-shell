@@ -175,31 +175,36 @@ bundle config mirror.https://rubygems.org https://gems.ruby-china.org
 下载地址： http://mirrors.ustc.edu.cn/msys2/distrib/
 
 ### utils
-pacman -S curl wget tar vim zip unzip rsync openssh;
+pacman -Syy --noconfirm curl wget tar vim zip unzip rsync openssh;
 
 ### utils optional
-pacman -S p7zip texinfo lzip m4;
+pacman -Syy --noconfirm p7zip texinfo lzip m4;
 
 ### dev
-pacman -S cmake m4 autoconf automake python git make tig;
+pacman -Syy --noconfirm cmake m4 autoconf automake python git make tig;
 
 ### gcc
-pacman -S gcc gdb;
+pacman -Syy --noconfirm gcc gdb;
 
 ### mingw x86_64
-pacman -S mingw-w64-x86_64-toolchain mingw-w64-x86_64-libtool mingw-w64-x86_64-cmake mingw-w64-x86_64-extra-cmake-modules;
+pacman -Syy --noconfirm mingw-w64-x86_64-toolchain mingw-w64-x86_64-libtool mingw-w64-x86_64-cmake mingw-w64-x86_64-extra-cmake-modules;
 
 ### mingw i686
-pacman -S mingw-w64-i686-toolchain  mingw-w64-i686-libtool mingw-w64-i686-cmake  mingw-w64-i686-extra-cmake-modules;
+pacman -Syy --noconfirm mingw-w64-i686-toolchain  mingw-w64-i686-libtool mingw-w64-i686-cmake  mingw-w64-i686-extra-cmake-modules;
 
 ### clang x86_64
-pacman -S mingw64/mingw-w64-x86_64-compiler-rt mingw64/mingw-w64-x86_64-clang mingw64/mingw-w64-x86_64-clang-analyzer mingw64/mingw-w64-x86_64-clang-tools-extra mingw64/mingw-w64-x86_64-libc++ mingw64/mingw-w64-x86_64-libc++abi ; 
+pacman -Syy --noconfirm mingw64/mingw-w64-x86_64-compiler-rt mingw64/mingw-w64-x86_64-clang mingw64/mingw-w64-x86_64-clang-analyzer mingw64/mingw-w64-x86_64-clang-tools-extra mingw64/mingw-w64-x86_64-libc++ mingw64/mingw-w64-x86_64-libc++abi ; 
 
 ### clang i686
-pacman -S mingw32/mingw-w64-i686-clang mingw32/mingw-w64-i686-clang-analyzer mingw32/mingw-w64-i686-clang-tools-extra mingw32/mingw-w64-i686-compiler-rt mingw32/mingw-w64-i686-libc++ mingw32/mingw-w64-i686-libc++abi;
+pacman -Syy --noconfirm mingw32/mingw-w64-i686-clang mingw32/mingw-w64-i686-clang-analyzer mingw32/mingw-w64-i686-clang-tools-extra mingw32/mingw-w64-i686-compiler-rt mingw32/mingw-w64-i686-libc++ mingw32/mingw-w64-i686-libc++abi;
 
 ### ruby
-pacman -S ruby;
+pacman -S --noconfirm ruby;
+
+## Arch/Manjaro
+pacman -Syy --noconfirm yaourt;
+pacman -Syy --noconfirm yaourt-gui-manjaro;
+yaourt -Syy --noconfirm code vscode-css-languageserver-bin vscode-html-languageserver-bin vscode-json-languageserver-bin
 
 ## CentOS
 
