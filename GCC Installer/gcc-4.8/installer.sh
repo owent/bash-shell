@@ -192,7 +192,7 @@ fi
 
 # install mpfr
 if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list mpfr $BUILD_TARGET_COMPOMENTS) ]; then
-    MPFR_PKG=$(check_and_download "mpfr" "mpfr-*.tar.bz2" "http://www.mpfr.org/mpfr-current/mpfr-3.1.2.tar.bz2" );
+    MPFR_PKG=$(check_and_download "mpfr" "mpfr-*.tar.bz2" "https://ftp.gnu.org/gnu/mpfr/mpfr-3.1.2.tar.bz2" );
     if [ $? -ne 0 ]; then
         echo -e "$MPFR_PKG";
         exit -1;
