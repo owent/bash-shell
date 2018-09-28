@@ -7,6 +7,16 @@ LLVM + Clang 7.0 发布啦，本脚本在之前LLVM + Clang 6.0 的基础上做�
 
 如果在一些比较老的系统上，自带的gcc版本过低（比如CentOS 6）.可以先用 https://github.com/owent-utils/bash-shell/tree/master/GCC%20Installer/gcc-8 编译出新版gcc，再用这个gcc来编译llvm+clang工具链。
 
+### 编译脚本使用示例
+```bash
+sudo -b env CC=/usr/local/gcc-8.2.0/gcc CXX=/usr/local/gcc-8.2.0/g++ nohup ./install.sh
+sudo chmod 777 nohup.out && tail -f nohup.out;
+
+# 或者不需要root权限
+env CC=/usr/local/gcc-8.2.0/gcc CXX=/usr/local/gcc-8.2.0/g++ nohup ./install.sh -p $HOME/prebuilt/llvm-7.0 &
+tail -f nohup.out;
+```
+
 ### NOTICE
 
 1. 第二次自举编译完成后，不再依赖libstdc++，转而依赖编译出来的libc++和libc++abi,但是仍然会依赖libgcc_s.so
