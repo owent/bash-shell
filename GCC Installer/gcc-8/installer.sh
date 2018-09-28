@@ -186,15 +186,17 @@ export PATH=$PREFIX_DIR/bin:$PATH
 echo -e "\\033[32;1mnotice: reset env LD_LIBRARY_PATH=$LD_LIBRARY_PATH\\033[39;49;0m";
 echo -e "\\033[32;1mnotice: reset env PATH=$PATH\\033[39;49;0m";
 
-echo "WORKING_DIR = $WORKING_DIR"
-echo "PREFIX_DIR = $PREFIX_DIR"
-echo "BUILD_TARGET_CONF_OPTION = $BUILD_TARGET_CONF_OPTION"
-echo "BUILD_OTHER_CONF_OPTION = $BUILD_OTHER_CONF_OPTION"
-echo "CHECK_INFO_SLEEP = $CHECK_INFO_SLEEP"
-echo "BUILD_CPU_NUMBER = $BUILD_CPU_NUMBER"
-echo "BUILD_THREAD_OPT = $BUILD_THREAD_OPT"
-echo "GCC_OPT_DISABLE_MULTILIB = $GCC_OPT_DISABLE_MULTILIB"
-echo "SYS_LONG_BIT = $SYS_LONG_BIT"
+echo "WORKING_DIR               = $WORKING_DIR"
+echo "PREFIX_DIR                = $PREFIX_DIR"
+echo "BUILD_TARGET_CONF_OPTION  = $BUILD_TARGET_CONF_OPTION"
+echo "BUILD_OTHER_CONF_OPTION   = $BUILD_OTHER_CONF_OPTION"
+echo "CHECK_INFO_SLEEP          = $CHECK_INFO_SLEEP"
+echo "BUILD_CPU_NUMBER          = $BUILD_CPU_NUMBER"
+echo "BUILD_THREAD_OPT          = $BUILD_THREAD_OPT"
+echo "GCC_OPT_DISABLE_MULTILIB  = $GCC_OPT_DISABLE_MULTILIB"
+echo "SYS_LONG_BIT              = $SYS_LONG_BIT"
+echo "CC                        = $CC";
+echo "CXX                       = $CXX";
 
 echo -e "\\033[32;1mnotice: now, sleep for $CHECK_INFO_SLEEP seconds.\\033[39;49;0m";
 sleep $CHECK_INFO_SLEEP
@@ -408,7 +410,7 @@ if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list binutils $BUILD_TA
         tar -Jxvf $BINUTILS_PKG;
         BINUTILS_DIR=$(ls -d binutils-* | grep -v \.tar\.xz);
         cd $BINUTILS_DIR;
-        ./configure --prefix=$PREFIX_DIR --with-gmp=$PREFIX_DIR --with-mpc=$PREFIX_DIR --with-mpfr=$PREFIX_DIR --with-isl=$PREFIX_DIR $BDWGC_PREBIUILT --enable-build-with-cxx --enable-gold --enable-libada --enable-libssp --enable-lto --enable-objc-gc --enable-vtable-verify --disable-werror $BUILD_TARGET_CONF_OPTION;
+        ./configure --prefix=$PREFIX_DIR --with-gmp=$PREFIX_DIR --with-mpc=$PREFIX_DIR --with-mpfr=$PREFIX_DIR --with-isl=$PREFIX_DIR $BDWGC_PREBIUILT --enable-build-with-cxx --enable-gold --enable-libada --enable-libssp --enable-lto --enable-objc-gc --enable-vtable-verify --enable-plugins --disable-werror $BUILD_TARGET_CONF_OPTION;
         make $BUILD_THREAD_OPT && make install;
         # ---- 新版本的GCC编译器会激发binutils内某些组件的werror而导致编译失败 ----
         # ---- 另外某个版本的make check有failed用例就被发布了,应该gnu的自动化测试有遗漏 ----
