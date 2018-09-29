@@ -506,7 +506,7 @@ fi
 LLDB_DIR="$LLVM_DIR/tools/lldb";
 
 # unpack libunwind
-if [ "0" == $(is_in_list libunwind $BUILD_TARGET_COMPOMENTS) ]; then
+if [ 0 -eq 1 ] && [ "0" == $(is_in_list libunwind $BUILD_TARGET_COMPOMENTS) ]; then
     LIBUNWIND_PKG=$(check_and_download "libunwind" "libunwind-*.tar.xz" "https://llvm.org/releases/$LLVM_VERSION/libunwind-$LLVM_VERSION.src.tar.xz" );
     if [ $? -ne 0 ]; then
         echo -e "$LLDB_PKG";
@@ -520,7 +520,9 @@ if [ "0" == $(is_in_list libunwind $BUILD_TARGET_COMPOMENTS) ]; then
             LIBUNWIND_DIR=$(ls -d libunwind-* | grep -v \.tar\.xz);
         fi
         if [ ! -z "$LIBUNWIND_DIR" ]; then
-            export STAGE_BUILD_CMAKE_OPTION="$STAGE_BUILD_CMAKE_OPTION -DLLVM_EXTERNAL_LIBUNWIND_SOURCE_DIR=$PWD/$LIBUNWIND_DIR";
+            # export STAGE_BUILD_CMAKE_OPTION="$STAGE_BUILD_CMAKE_OPTION -DLIBCXXABI_USE_LLVM_UNWINDER=YES -DLLVM_EXTERNAL_LIBUNWIND_SOURCE_DIR=$PWD/$LIBUNWIND_DIR";
+            export STAGE_BUILD_CMAKE_OPTION="$STAGE_BUILD_CMAKE_OPTION -DLIBCXXABI_USE_LLVM_UNWINDER=YES";
+            mv "$LIBUNWIND_DIR" "$LLVM_DIR/projects/libunwind";
         fi
     fi
 fi

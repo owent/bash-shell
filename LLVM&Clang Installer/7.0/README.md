@@ -3,7 +3,7 @@ Linux 编译安装 LLVM + Clang 7.0
 
 LLVM + Clang 7.0 发布啦，本脚本在之前LLVM + Clang 6.0 的基础上做了稍许更新。
 
-不知道哪个版本开始，使用开了gold链接器的gcc需要用 -fuse-ld=gold 才能链接通过。所以本次脚本主要增加检测是否支持 ```-fuse-ld=gold``` 选项，如果支持则链接选项增加 ```-fuse-ld=gold``` 。
+不知道哪个版本开始，使用开了gold链接器的gcc需要用 -fuse-ld=gold 才能链接通过。所以本次脚本主要增加检测是否支持 ```-fuse-ld=gold``` 选项，如果支持则链接选项增加 ```-fuse-ld=gold``` 。另外调整了 libunwind 的编译过程。
 
 如果在一些比较老的系统上，自带的gcc版本过低（比如CentOS 6）.可以先用 https://github.com/owent-utils/bash-shell/tree/master/GCC%20Installer/gcc-8 编译出新版gcc，再用这个gcc来编译llvm+clang工具链。
 
@@ -70,7 +70,7 @@ CentOS 7.3 & CentOS 6.2
 #### 编译的依赖库：
 + libc++ 7.0.0
 + libc++abi 7.0.0
-+ libunwind 7.0.0(这个库不会install)
++ libunwind 7.0.0
 
 #### 默认编译目标：
 + llvm 7.0.0
