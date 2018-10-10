@@ -21,7 +21,7 @@ if [ -z "$USER" ]; then
     USER="shadowsocksr";
 fi
 if [ -z "$VERSION" ]; then
-    VERSION="3.2.1";
+    VERSION="3.2.2";
 fi
 if [ -z "$LIBSODIUM_VERSION" ]; then
     LIBSODIUM_VERSION="1.0.16";
