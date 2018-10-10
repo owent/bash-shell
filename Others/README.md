@@ -3,6 +3,16 @@
 #### 按行替换文件
 perl -p -i -e "s;匹配项(正则表达式);目标值;g" "文件路径";
 
+#### 删除过老的文件/目录
+
+find 查找目录 -name "通配符表达式" -mtime +天数 -type f -delete;
+find 查找目录 -empty -type d -delete;
+
+```bash
+find $(readlink -f -n $HOME/logs) -name "*" -mtime +30 -type f -delete;
+find $(readlink -f -n $HOME/logs) -empty -type d -delete;
+```
+
 #### 同步开源镜像
 rsync -arh --progress 源地址 目标地址 ; # 比如：rsync -arh --progress rsync://mirrors.tuna.tsinghua.edu.cn/msys2 .
 
