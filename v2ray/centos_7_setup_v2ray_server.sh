@@ -56,6 +56,8 @@ if [ ! -e "$PREFIX/$HOME_DIR" ]; then
         echo "Can not find $HOME_DIR";
         exit 1;
     fi
+    
+    chmod +x $PREFIX/$HOME_DIR/v2* ;
 fi
 
 mkdir -p log;
