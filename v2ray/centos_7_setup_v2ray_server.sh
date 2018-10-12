@@ -43,20 +43,21 @@ mkdir -p "$PREFIX";
 cd "$PREFIX";
 
 # download pkg
-if [ ! -e "$V2RAY_PKG_NAME" ]; then
+if [ ! -e "$PREFIX/$HOME_DIR" ]; then
     curl -k -L "$DOWN_URL" -o "$V2RAY_PKG_NAME";
     if [ 0 -ne $? ]; then
         rm -f "$V2RAY_PKG_NAME";
         exit 1;
     fi
+    
+    # unzip
+    unzip -uo "$V2RAY_PKG_NAME" -d "$PREFIX/$HOME_DIR";
+    if [ ! -e "$HOME_DIR" ]; then
+        echo "Can not find $HOME_DIR";
+        exit 1;
+    fi
 fi
 
-# unzip
-unzip -uo "$V2RAY_PKG_NAME";
-if [ ! -e "$HOME_DIR" ]; then
-    echo "Can not find $HOME_DIR";
-    exit 1;
-fi
 mkdir -p log;
 mkdir -p etc;
 mkdir -p run;
