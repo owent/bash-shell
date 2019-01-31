@@ -12,7 +12,15 @@ ssh-add "$CI_SSH_KEY";
 # 设置忽略未知Host
 export GIT_SSH_COMMAND="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no" ;
 
-if [ -e repo]; then
+
+# echo "Host github.com
+#     HostName github.com
+#     IdentityFile $CI_SSH_KEY
+#     User owent
+#     Port 22
+#     AddKeysToAgent yes" > $HOME/.ssh/config;
+
+if [ -e repo ]; then
     cd repo;
     git reset --hard;
     git clean -dfx;
