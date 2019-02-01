@@ -3,7 +3,7 @@
 # Dependency: libedit-devel libxml2-devel ncurses-devel python-devel swig
 
 # ======================================= 配置 =======================================
-LLVM_VERSION=7.0.0;
+LLVM_VERSION=7.0.1;
 PREFIX_DIR=/usr/local/llvm-$LLVM_VERSION;
 BUILD_TARGET_COMPOMENTS="llvm clang compiler_rt libcxx libcxxabi clang_tools_extra lldb lld libunwind";
 
@@ -44,7 +44,7 @@ if [ -z "$CC" ]; then
         fi
     fi
 fi
-export CC ="$CC";
+export CC="$CC";
 export CXX="$CXX";
 
 echo '
@@ -222,19 +222,19 @@ function build_llvm_toolchain() {
         if [ "${CMAKE_CXX_FLAGS:0:1}" == " " ]; then
             CMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS:1}";
         fi
-        STAGE_BUILD_EXT_COMPILER_FLAGS="$STAGE_BUILD_EXT_COMPILER_FLAGS -DCMAKE_CXX_FLAGS=\"$CMAKE_CXX_FLAGS\"";
+        STAGE_BUILD_EXT_COMPILER_FLAGS="$STAGE_BUILD_EXT_COMPILER_FLAGS -DCMAKE_CXX_FLAGS='$CMAKE_CXX_FLAGS'";
     fi
     if [ ! -z "$CMAKE_C_FLAGS" ]; then
         if [ "${CMAKE_C_FLAGS:0:1}" == " " ]; then
             CMAKE_C_FLAGS="${CMAKE_C_FLAGS:1}";
         fi
-        STAGE_BUILD_EXT_COMPILER_FLAGS="$STAGE_BUILD_EXT_COMPILER_FLAGS -DCMAKE_C_FLAGS=\"$CMAKE_C_FLAGS\"";
+        STAGE_BUILD_EXT_COMPILER_FLAGS="$STAGE_BUILD_EXT_COMPILER_FLAGS -DCMAKE_C_FLAGS='$CMAKE_C_FLAGS'";
     fi
     if [ ! -z "$CMAKE_RUNTIME_LINKER_FLAGS" ]; then
         if [ "${CMAKE_RUNTIME_LINKER_FLAGS:0:1}" == " " ]; then
             CMAKE_RUNTIME_LINKER_FLAGS="${CMAKE_RUNTIME_LINKER_FLAGS:1}";
         fi
-        STAGE_BUILD_EXT_COMPILER_FLAGS="$STAGE_BUILD_EXT_COMPILER_FLAGS -DCMAKE_EXE_LINKER_FLAGS=\"$CMAKE_RUNTIME_LINKER_FLAGS\" -DCMAKE_MODULE_LINKER_FLAGS=\"$CMAKE_RUNTIME_LINKER_FLAGS\" -DCMAKE_SHARED_LINKER_FLAGS=\"$CMAKE_RUNTIME_LINKER_FLAGS\"";
+        STAGE_BUILD_EXT_COMPILER_FLAGS="$STAGE_BUILD_EXT_COMPILER_FLAGS -DCMAKE_EXE_LINKER_FLAGS='$CMAKE_RUNTIME_LINKER_FLAGS' -DCMAKE_MODULE_LINKER_FLAGS='$CMAKE_RUNTIME_LINKER_FLAGS' -DCMAKE_SHARED_LINKER_FLAGS='$CMAKE_RUNTIME_LINKER_FLAGS'";
     fi
 
     # unpack llvm
@@ -318,6 +318,8 @@ function build_llvm_toolchain() {
                 echo -e "\\033[31;1mcompiler-rt src not found but compiler-rt enabled.\\033[39;49;0m";
                 exit -1;
             fi
+
+            STAGE_BUILD_EXT_COMPILER_FLAGS="$STAGE_BUILD_EXT_COMPILER_FLAGS -DLIBCXX_USE_COMPILER_RT=YES -DLIBCXXABI_USE_COMPILER_RT=YES";
         fi
     fi
     COMPILER_RT_DIR="$LLVM_DIR/projects/compiler-rt";

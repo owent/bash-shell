@@ -106,3 +106,4 @@ CentOS 7 & CentOS 6.2
 #### History
 + 2018-05-01    Created
 + 2018-08-13    更新GCC到8.2.0,更新libatomic_ops到7.6.6,更新bdwgc到7.6.8,更新binutils到2.31
++ 2019-02-01    更新libatomic_ops到7.6.8，更新bdwgc到8.0.2，移除bdwgc的编译脚本patch，还原binutils到2.30(2.31的golden组件有兼容问题)，更新gdb到8.2.1，修订开启multilib切重复运行脚本时libatomic_ops部分内容使用了32位的问题。
