@@ -319,7 +319,9 @@ function build_llvm_toolchain() {
                 exit -1;
             fi
 
-            STAGE_BUILD_EXT_COMPILER_FLAGS="$STAGE_BUILD_EXT_COMPILER_FLAGS -DLIBCXX_USE_COMPILER_RT=YES -DLIBCXXABI_USE_COMPILER_RT=YES";
+            if [ $STAGE_BUILD_STEP -gt 1 ]; then
+                STAGE_BUILD_EXT_COMPILER_FLAGS="$STAGE_BUILD_EXT_COMPILER_FLAGS -DLIBCXX_USE_COMPILER_RT=YES -DLIBCXXABI_USE_COMPILER_RT=YES";
+            fi
         fi
     fi
     COMPILER_RT_DIR="$LLVM_DIR/projects/compiler-rt";
@@ -380,6 +382,10 @@ function build_llvm_toolchain() {
                 exit -1;
             fi
         fi
+
+        if [ $STAGE_BUILD_STEP -gt 1 ]; then
+            STAGE_BUILD_EXT_COMPILER_FLAGS="$STAGE_BUILD_EXT_COMPILER_FLAGS -DLLVM_ENABLE_LLD=YES";
+        fi
     fi
     LLD_DIR="$LLVM_DIR/tools/lld";
 
@@ -411,6 +417,21 @@ function build_llvm_toolchain() {
         return 0;
     fi
 
+    which ninja > /dev/null 2>&1;
+    if [ $? -eq 0 ]; then
+        BUILD_WITH_NINJA="-G Ninja";
+        BUILD_COMMAND="$(which ninja)";
+    else
+        which ninja-build > /dev/null 2>&1;
+        if [ $? -eq 0 ]; then
+            BUILD_WITH_NINJA="-G Ninja";
+            BUILD_COMMAND="$(which ninja-build)";
+        else
+            BUILD_WITH_NINJA="";
+            BUILD_COMMAND=make ;
+        fi
+    fi
+
     # ready to build 
     # if [ ! -e "$STAGE_BUILD_PREFIX_DIR/bin/llvm-config" ]; then
         cd "$LLVM_DIR";
@@ -420,17 +441,17 @@ function build_llvm_toolchain() {
         fi
         mkdir -p build ;
         cd build ;
-        echo "cmake .. -DCMAKE_INSTALL_PREFIX=$STAGE_BUILD_PREFIX_DIR -DCMAKE_BUILD_TYPE=Release $BUILD_LLVM_LLVM_OPTION $STAGE_BUILD_CMAKE_OPTION $STAGE_BUILD_EXT_CMAKE_OPTION $STAGE_BUILD_EXT_COMPILER_FLAGS";
-        cmake .. -DCMAKE_INSTALL_PREFIX=$STAGE_BUILD_PREFIX_DIR -DCMAKE_BUILD_TYPE=Release $BUILD_LLVM_LLVM_OPTION $STAGE_BUILD_CMAKE_OPTION $STAGE_BUILD_EXT_CMAKE_OPTION $STAGE_BUILD_EXT_COMPILER_FLAGS;
+        echo "cmake .. $BUILD_WITH_NINJA -DCMAKE_INSTALL_PREFIX=$STAGE_BUILD_PREFIX_DIR -DCMAKE_BUILD_TYPE=RelWithDebInfo $BUILD_LLVM_LLVM_OPTION $STAGE_BUILD_CMAKE_OPTION $STAGE_BUILD_EXT_CMAKE_OPTION $STAGE_BUILD_EXT_COMPILER_FLAGS";
+        cmake .. $BUILD_WITH_NINJA -DCMAKE_INSTALL_PREFIX=$STAGE_BUILD_PREFIX_DIR -DCMAKE_BUILD_TYPE=RelWithDebInfo $BUILD_LLVM_LLVM_OPTION $STAGE_BUILD_CMAKE_OPTION $STAGE_BUILD_EXT_CMAKE_OPTION $STAGE_BUILD_EXT_COMPILER_FLAGS;
         if [ 0 -ne $? ]; then
             echo -e "\\033[31;1mError: build llvm $STAGE_BUILD_PREFIX_DIR failed when run cmake.\\033[39;49;0m";
             return 1;
         fi
 
         # 这里会消耗茫茫多内存，所以尝试先开启多进程编译，失败之后降级到单进程
-        make -j4;
-        make -j2;
-        make;
+        $BUILD_COMMAND -j4;
+        $BUILD_COMMAND -j2;
+        $BUILD_COMMAND;
         if [ 0 -ne $? ]; then
             echo -e "\\033[31;1mError: build llvm $STAGE_BUILD_PREFIX_DIR failed when run make.\\033[39;49;0m";
             return 1;
@@ -440,7 +461,7 @@ function build_llvm_toolchain() {
         if [ ! -e "lib/python2.7" ]; then
             mkdir -p lib/python2.7 ;
         fi
-        make install;
+        $BUILD_COMMAND install;
         if [ 0 -ne $? ]; then
             echo -e "\\033[31;1mError: build llvm $STAGE_BUILD_PREFIX_DIR failed when install.\\033[39;49;0m";
             return 1;
@@ -452,16 +473,17 @@ function build_llvm_toolchain() {
     return 0 ;
 }
 
+export STAGE_BUILD_STEP=1;
 build_llvm_toolchain ;
 
 if [ 0 -ne $? ] ; then
     if [ $BUILD_DOWNLOAD_ONLY -eq 0 ]; then
-        echo -e "\\033[31;1mError: build llvm $STAGE_BUILD_PREFIX_DIR failed on step 1.\\033[39;49;0m";
+        echo -e "\\033[31;1mError: build llvm $STAGE_BUILD_PREFIX_DIR failed on stage 1.\\033[39;49;0m";
         exit 1;
     fi
 fi
 
-echo -e "\\033[32;1mbuild llvm $STAGE_BUILD_PREFIX_DIR success on step 1.\\033[39;49;0m";
+echo -e "\\033[32;1mbuild llvm $STAGE_BUILD_PREFIX_DIR success on stage 1.\\033[39;49;0m";
 
 cd "$WORKING_DIR";
 
@@ -508,7 +530,7 @@ fi
 LLDB_DIR="$LLVM_DIR/tools/lldb";
 
 # unpack libunwind
-if [ 0 -eq 1 ] && [ "0" == $(is_in_list libunwind $BUILD_TARGET_COMPOMENTS) ]; then
+if [ "0" == $(is_in_list libunwind $BUILD_TARGET_COMPOMENTS) ]; then
     LIBUNWIND_PKG=$(check_and_download "libunwind" "libunwind-*.tar.xz" "https://llvm.org/releases/$LLVM_VERSION/libunwind-$LLVM_VERSION.src.tar.xz" );
     if [ $? -ne 0 ]; then
         echo -e "$LLDB_PKG";
@@ -545,11 +567,12 @@ BUILD_USE_LD="";
 
 # 自举编译， 脱离对gcc的依赖
 # export STAGE_BUILD_PREFIX_DIR="$PREFIX_DIR";
+export STAGE_BUILD_STEP=2;
 build_llvm_toolchain ;
 
 if [ ! -e "$PREFIX_DIR/bin/clang" ] ; then
     if [ $BUILD_DOWNLOAD_ONLY -eq 0 ]; then
-        echo -e "\\033[31;1mError: build llvm $STAGE_BUILD_PREFIX_DIR failed on step 2.\\033[39;49;0m";
+        echo -e "\\033[31;1mError: build llvm $STAGE_BUILD_PREFIX_DIR failed on stage 2.\\033[39;49;0m";
         exit 1;
     fi
 fi

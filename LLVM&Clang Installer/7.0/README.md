@@ -88,6 +88,7 @@ CentOS 7.3 & CentOS 6.2
 
 #### History:
 + 2018-09-28     Created
++ 2019-02-05     更新版本到7.0.1，修订编译流程中的libunwind流程，在第二遍自举中，libc++abi比许依赖Libunwind，优先使用ninja来构建
 
 
 #### 参考文献
