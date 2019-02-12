@@ -116,16 +116,16 @@ if [ ! -z "$GCC_OPT_DISABLE_MULTILIB" ] && [ "$GCC_OPT_DISABLE_MULTILIB"=="--dis
     done
 fi
 
-# ======================= 检测CPU数量，编译线程数不能大于CPU数量的2倍，否则可能出问题 =======================
-BUILD_THREAD_OPT=8;
+# ======================= 检测CPU数量，编译线程数按CPU核心数来 =======================
+BUILD_THREAD_OPT=6;
 BUILD_CPU_NUMBER=$(cat /proc/cpuinfo | grep -c "^processor[[:space:]]*:[[:space:]]*[0-9]*");
-BUILD_THREAD_OPT=$(($BUILD_CPU_NUMBER*2));
-if [ $BUILD_THREAD_OPT -gt 8 ]; then
-    BUILD_THREAD_OPT=8;
+BUILD_THREAD_OPT=$BUILD_CPU_NUMBER;
+if [ $BUILD_THREAD_OPT -gt 6 ]; then
+    BUILD_THREAD_OPT=$(($BUILD_CPU_NUMBER-1));
 fi
 BUILD_THREAD_OPT="-j$BUILD_THREAD_OPT";
 # BUILD_THREAD_OPT="";
-echo -e "\\033[32;1mnotice: $BUILD_CPU_NUMBER cpu(s) detected. use $BUILD_THREAD_OPT for multi-thread compile.";
+echo -e "\\033[32;1mnotice: $BUILD_CPU_NUMBER cpu(s) detected. use $BUILD_THREAD_OPT for multi-process compile.";
 
 # ======================= 统一的包检查和下载函数 =======================
 function check_and_download(){

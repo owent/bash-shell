@@ -125,6 +125,17 @@ BUILD_LLVM_CONF_OPTION="$BUILD_LLVM_CONF_OPTION -DLLVM_PREFIX=$PREFIX_DIR";
 # ======================= 转到脚本目录 ======================= 
 WORKING_DIR="$PWD";
 
+# ======================= 检测CPU数量，编译线程数按CPU核心数来 =======================
+BUILD_THREAD_OPT=6;
+BUILD_CPU_NUMBER=$(cat /proc/cpuinfo | grep -c "^processor[[:space:]]*:[[:space:]]*[0-9]*");
+BUILD_THREAD_OPT=$BUILD_CPU_NUMBER;
+if [ $BUILD_THREAD_OPT -gt 6 ]; then
+    BUILD_THREAD_OPT=$(($BUILD_CPU_NUMBER-1));
+fi
+BUILD_THREAD_OPT="-j$BUILD_THREAD_OPT";
+# BUILD_THREAD_OPT="";
+echo -e "\\033[32;1mnotice: $BUILD_CPU_NUMBER cpu(s) detected. use $BUILD_THREAD_OPT for multi-process compile.";
+
 # ======================= 如果是64位系统且没安装32位的开发包，则编译要gcc加上 --disable-multilib 参数, 不生成32位库 ======================= 
 SYS_LONG_BIT=$(getconf LONG_BIT);
  
@@ -449,7 +460,7 @@ function build_llvm_toolchain() {
         fi
 
         # 这里会消耗茫茫多内存，所以尝试先开启多进程编译，失败之后降级到单进程
-        $BUILD_COMMAND -j4;
+        $BUILD_COMMAND $BUILD_THREAD_OPT;
         $BUILD_COMMAND -j2;
         $BUILD_COMMAND;
         if [ 0 -ne $? ]; then
