@@ -11,7 +11,7 @@ BUILD_TARGET_COMPOMENTS="llvm clang compiler_rt libcxx libcxxabi clang_tools_ext
 CHECK_TOTAL_MEMORY=$(cat /proc/meminfo | grep MemTotal | awk '{print $2}');
 CHECK_AVAILABLE_MEMORY=$(cat /proc/meminfo | grep MemAvailable | awk '{print $2}');
 BUILD_LLVM_LLVM_OPTION="-DLLVM_ENABLE_CXX1Y=ON -DLLVM_ENABLE_EH=ON -DLLVM_ENABLE_RTTI=ON -DLLVM_ENABLE_PIC=ON -DLLVM_USE_INTEL_JITEVENTS=ON"; # -DLLVM_ENABLE_LTO=ON ,this may failed in llvm 3.9 
-BUILD_LLVM_CMAKE_OPTION_STAGE_3=""; #  -DBUILD_SHARED_LIBS=ON";
+BUILD_LLVM_CMAKE_OPTION_STAGE_2="-DLLVM_BUILD_LLVM_DYLIB=ON -DLLVM_LINK_LLVM_DYLIB=ON"; # 这两个选项和 -DBUILD_SHARED_LIBS=ON" 冲突;
 BUILD_OTHER_CONF_OPTION="";
 BUILD_DOWNLOAD_ONLY=0;
 BUILD_USE_LD="";
@@ -213,7 +213,6 @@ if [ $BUILD_DOWNLOAD_ONLY -eq 0 ]; then
     swapoff -a ;
 fi
 
-export STAGE_BUILD_PREFIX_DIR="$PREFIX_DIR";
 export STAGE_BUILD_CMAKE_OPTION="";
 
 function build_llvm_toolchain() {
@@ -400,6 +399,10 @@ function build_llvm_toolchain() {
     fi
     LLD_DIR="$LLVM_DIR/tools/lld";
 
+    if [ $STAGE_BUILD_STEP -gt 1 ]; then
+        STAGE_BUILD_EXT_COMPILER_FLAGS="$STAGE_BUILD_EXT_COMPILER_FLAGS $BUILD_LLVM_CMAKE_OPTION_STAGE_2";
+    fi
+
     # unpack polly (require gmp,cloog-isl)
     if [ "0" == $(is_in_list polly $BUILD_TARGET_COMPOMENTS) ]; then
         POLLY_PKG=$(check_and_download "polly" "polly-*.tar.xz" "https://llvm.org/releases/$LLVM_VERSION/polly-$LLVM_VERSION.src.tar.xz" );
@@ -485,6 +488,8 @@ function build_llvm_toolchain() {
 }
 
 export STAGE_BUILD_STEP=1;
+STAGE_BUILD_PREFIX_DIR_1="$PREFIX_DIR-stage-1";
+export STAGE_BUILD_PREFIX_DIR="$STAGE_BUILD_PREFIX_DIR_1";
 build_llvm_toolchain ;
 
 if [ 0 -ne $? ] ; then
@@ -579,6 +584,7 @@ BUILD_USE_LD="";
 # 自举编译， 脱离对gcc的依赖
 # export STAGE_BUILD_PREFIX_DIR="$PREFIX_DIR";
 export STAGE_BUILD_STEP=2;
+export STAGE_BUILD_PREFIX_DIR="$PREFIX_DIR";
 build_llvm_toolchain ;
 
 if [ ! -e "$PREFIX_DIR/bin/clang" ] ; then
@@ -587,6 +593,8 @@ if [ ! -e "$PREFIX_DIR/bin/clang" ] ; then
         exit 1;
     fi
 fi
+
+rm -rf "$STAGE_BUILD_PREFIX_DIR_1";
 
 if [ $BUILD_DOWNLOAD_ONLY -eq 0 ]; then
     LLVM_CONFIG_PATH="$PREFIX_DIR/bin/llvm-config";
