@@ -15,6 +15,7 @@ BUILD_LLVM_CMAKE_OPTION_STAGE_2="-DLLVM_BUILD_LLVM_DYLIB=ON -DLLVM_LINK_LLVM_DYL
 BUILD_OTHER_CONF_OPTION="";
 BUILD_DOWNLOAD_ONLY=0;
 BUILD_USE_LD="";
+BUILD_TYPE="Release";
  
 # ======================= 内存大于13GB，使用动态链接库（linking libLLVM-XXX.so的时候会消耗巨量内存） =======================
 if [ -z "$CHECK_AVAILABLE_MEMORY" ]; then
@@ -64,10 +65,13 @@ rm -f contest.tmp.exe contest.tmp.c;
 CHECK_INFO_SLEEP=3
  
 # ======================= 安装目录初始化/工作目录清理 ======================= 
-while getopts "dp:cht:l:g:m:" OPTION; do
+while getopts "dp:b:cht:l:g:m:" OPTION; do
     case $OPTION in
         p)
             PREFIX_DIR="$OPTARG";
+        ;;
+        b)
+            BUILD_TYPE="$OPTARG";
         ;;
         c)
             rm -rf $(ls -A -d -p * | grep -E "(.*)/$" | grep -v "addition/");
@@ -82,6 +86,7 @@ while getopts "dp:cht:l:g:m:" OPTION; do
             echo "usage: $0 [options] -p=prefix_dir -c -h";
             echo "options:";
             echo "-p [prefix_dir]             set prefix directory.";
+            echo "-b [build type]             Release (default), RelWithDebInfo, MinSizeRel, Debug";
             echo "-c                          clean build cache.";
             echo "-d                          download only.";
             echo "-h                          help message.";
@@ -455,8 +460,8 @@ function build_llvm_toolchain() {
         fi
         mkdir -p build ;
         cd build ;
-        echo "cmake .. $BUILD_WITH_NINJA -DCMAKE_INSTALL_PREFIX=$STAGE_BUILD_PREFIX_DIR -DCMAKE_BUILD_TYPE=RelWithDebInfo $BUILD_LLVM_LLVM_OPTION $STAGE_BUILD_CMAKE_OPTION $STAGE_BUILD_EXT_CMAKE_OPTION $STAGE_BUILD_EXT_COMPILER_FLAGS";
-        cmake .. $BUILD_WITH_NINJA -DCMAKE_INSTALL_PREFIX=$STAGE_BUILD_PREFIX_DIR -DCMAKE_BUILD_TYPE=RelWithDebInfo $BUILD_LLVM_LLVM_OPTION $STAGE_BUILD_CMAKE_OPTION $STAGE_BUILD_EXT_CMAKE_OPTION $STAGE_BUILD_EXT_COMPILER_FLAGS;
+        echo "cmake .. $BUILD_WITH_NINJA -DCMAKE_INSTALL_PREFIX=$STAGE_BUILD_PREFIX_DIR -DCMAKE_BUILD_TYPE=$BUILD_TYPE $BUILD_LLVM_LLVM_OPTION $STAGE_BUILD_CMAKE_OPTION $STAGE_BUILD_EXT_CMAKE_OPTION $STAGE_BUILD_EXT_COMPILER_FLAGS";
+        cmake .. $BUILD_WITH_NINJA -DCMAKE_INSTALL_PREFIX=$STAGE_BUILD_PREFIX_DIR -DCMAKE_BUILD_TYPE=$BUILD_TYPE $BUILD_LLVM_LLVM_OPTION $STAGE_BUILD_CMAKE_OPTION $STAGE_BUILD_EXT_CMAKE_OPTION $STAGE_BUILD_EXT_COMPILER_FLAGS;
         if [ 0 -ne $? ]; then
             echo -e "\\033[31;1mError: build llvm $STAGE_BUILD_PREFIX_DIR failed when run cmake.\\033[39;49;0m";
             return 1;

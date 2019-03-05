@@ -1,0 +1,17 @@
+[Unit]
+Description=Distcc Service
+After=network.target
+Wants=network.target
+
+[Service]
+User=distcc
+Group=distcc
+Type=forking
+PIDFile=%DISTCCD_PIDFILE%
+ExecStart=%DISTCCD_PREFIX%/bin/distccd -p %DISTCCD_PORT% %DISTCCD_HOST_STR% -P %DISTCCD_PIDFILE% %DISTCCD_USER% --log-level=info --daemon --enable-tcp-insecure
+Restart=on-failure
+# Don't restart in the case of configuration error
+RestartPreventExitStatus=23
+
+[Install]
+WantedBy=multi-user.target
