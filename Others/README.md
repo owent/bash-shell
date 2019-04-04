@@ -353,7 +353,7 @@ choco install --yes MobaXterm git git-lfs TortoiseGit python3 ConEmu
 choco install --yes wireshark WinPcap
 
 # c & c++
-choco install --yes cmake doxygen.install llvm
+choco install --yes cmake doxygen.install llvm ninja
 
 # nodejs
 choco install --yes nodejs npm
