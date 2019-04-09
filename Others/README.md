@@ -254,7 +254,10 @@ yaourt -Syy --noconfirm code vscode-css-languageserver-bin vscode-html-languages
 sudo yum install -y vim curl wget libuuid-devel perl unzip lzip lunzip p7zipn p7zip-plugins autoconf telnet iotop htop libtool pkgconfig texinfo m4 net-tools python python-setuptools python-pip python-requests python-devel python3-rpm-macros python34 python34-setuptools python34-pip python34-devel
 
 ## GCC
-sudo yum install -y gcc gdb valgrind automake make libcurl-devel expat-devel expat-static re2c
+sudo yum install -y gcc gdb valgrind automake make libcurl-devel expat-devel expat-static re2c gettext glibc glibc-devel glibc-static
+
+# External development tools
+sudo yum install -y zlib-devel zlib-static;
 
 # git 
 wget https://mirrors.edge.kernel.org/pub/software/scm/git/git-2.21.0.tar.xz;
@@ -274,7 +277,7 @@ sudo rpm -ivh https://packagecloud.io/github/git-lfs/packages/el/7/git-lfs-2.7.1
 
 ```bash
 ## basic
-apt install -y vim curl wget uuid-dev libssl-dev python3-setuptools python3-pip python3-mako perl automake gdb valgrind git unzip lunzip p7zip-full autoconf telnet iotop htop libtool build-essential pkg-config
+apt install -y vim curl wget uuid-dev libssl-dev python3-setuptools python3-pip python3-mako perl automake gdb valgrind git unzip lunzip p7zip-full autoconf telnet iotop htop libtool build-essential pkg-config gettext
 
 ## clang-llvm
 
@@ -359,7 +362,7 @@ choco install --yes MobaXterm git git-lfs TortoiseGit python3 ConEmu
 choco install --yes wireshark WinPcap
 
 # c & c++
-choco install --yes cmake doxygen.install llvm
+choco install --yes cmake doxygen.install llvm ninja
 
 # nodejs
 choco install --yes nodejs npm
