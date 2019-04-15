@@ -353,7 +353,7 @@ choco upgrade chocolatey
 ```
 
 ```
-choco install --yes 7zip vim-tux pandoc foobar2000 Graphviz
+choco install --yes 7zip vim-tux pandoc foobar2000 Graphviz powershell-core
 
 # dev (anaconda3 also can be used instead of python3)
 choco install --yes MobaXterm git git-lfs TortoiseGit python3 ConEmu
