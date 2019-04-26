@@ -246,6 +246,19 @@ pacman -S --noconfirm ruby;
 pacman -Syy --noconfirm manjaro-aur-support yay;
 yay -Syy --noconfirm visual-studio-code-bin
 
+### Chinese Input
+pacman -Syy --noconfirm ibus ibus-qt ibus-googlepinyin ibus-pinyin
+./ibus-setup
+echo "
+export GTK_IM_MODULE=ibus
+export XMODIFIERS=@im=ibus
+export QT_IM_MODULE=ibus
+" >> ~/.bash_profile ;
+
+### CrossOver 
+
+sudo pacman -Syy --noconfirm libxcomposite lib32-libxcomposite libxslt lib32-libxslt lib32-libxinerama libxinerama sane cups lib32-libcups
+
 ## CentOS
 
 ```bash
