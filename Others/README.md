@@ -244,7 +244,7 @@ pacman -S --noconfirm ruby;
 
 ## Arch/Manjaro
 pacman -Syy --noconfirm manjaro-aur-support yay;
-yay -Syy --noconfirm code vscode-css-languageserver-bin vscode-html-languageserver-bin vscode-json-languageserver-bin
+yay -Syy --noconfirm visual-studio-code-bin
 
 ## CentOS
 
