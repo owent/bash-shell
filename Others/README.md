@@ -243,9 +243,8 @@ pacman -Syy --noconfirm mingw32/mingw-w64-i686-clang mingw32/mingw-w64-i686-clan
 pacman -S --noconfirm ruby;
 
 ## Arch/Manjaro
-pacman -Syy --noconfirm yaourt;
-pacman -Syy --noconfirm yaourt-gui-manjaro;
-yaourt -Syy --noconfirm code vscode-css-languageserver-bin vscode-html-languageserver-bin vscode-json-languageserver-bin
+pacman -Syy --noconfirm manjaro-aur-support yay;
+yay -Syy --noconfirm code vscode-css-languageserver-bin vscode-html-languageserver-bin vscode-json-languageserver-bin
 
 ## CentOS
 
