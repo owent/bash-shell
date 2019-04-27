@@ -259,15 +259,20 @@ ibus-daemon --xim -d
 " >> ~/.xprofile ;
 
 ### 虚拟机
+
+```bash
 pacman -Syy --noconfirm qemu qemu-arch-extra qemu-block-iscsi qemu-guest-agent qemu-block-rbd libvirt virt-install virt-manager
+```
 
 Client端下载 https://www.spice-space.org/download.html 以支持剪切板共享等高级功能
 
 ### CrossOver / wine
 
+```bash
 sudo pacman -Syy --noconfirm libxcomposite lib32-libxcomposite libxslt lib32-libxslt lib32-libxinerama libxinerama sane cups lib32-libcups
 yay -Syy --noconfirm libgphoto2 lib32-libgphoto2 gsm lib32-gsm 
 yay -Syy --noconfirm vulkan-headers lib32-vulkan-validation-layers vulkan-tools vulkan-validation-layers vulkan-trace vulkan-icd-loader lib32-vulkan-icd-loader lib32-vkd3d vkd3d vulkan-extra-layers
+```
 
 ## CentOS
 
