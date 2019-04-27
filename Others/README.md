@@ -246,18 +246,26 @@ pacman -S --noconfirm ruby;
 pacman -Syy --noconfirm manjaro-aur-support yay;
 yay -Syy --noconfirm visual-studio-code-bin
 
-### Chinese Input
-pacman -Syy --noconfirm ibus ibus-qt ibus-googlepinyin ibus-pinyin
+### 中文输入
+pacman -Syy --noconfirm ibus ibus-qt ibus-googlepinyin ibus-pinyin kimtoy ibus-rime
 ./ibus-setup
 echo "
 export GTK_IM_MODULE=ibus
 export XMODIFIERS=@im=ibus
 export QT_IM_MODULE=ibus
-" >> ~/.bash_profile ;
 
-### CrossOver 
+ibus-daemon --xim -d
+#ibus-daemon --panel=/usr/lib/kimpanel-ibus-panel --xim -d
+" >> ~/.xprofile ;
+
+### 虚拟机
+pacman -Syy --noconfirm qemu qemu-arch-extra qemu-block-iscsi qemu-guest-agent qemu-block-rbd libvirt virt-install virt-manager
+
+### CrossOver / wine
 
 sudo pacman -Syy --noconfirm libxcomposite lib32-libxcomposite libxslt lib32-libxslt lib32-libxinerama libxinerama sane cups lib32-libcups
+yay -Syy --noconfirm libgphoto2 lib32-libgphoto2 gsm lib32-gsm 
+yay -Syy --noconfirm vulkan-headers lib32-vulkan-validation-layers vulkan-tools vulkan-validation-layers vulkan-trace vulkan-icd-loader lib32-vulkan-icd-loader lib32-vkd3d vkd3d vulkan-extra-layers
 
 ## CentOS
 
