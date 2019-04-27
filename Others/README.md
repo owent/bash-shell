@@ -261,6 +261,8 @@ ibus-daemon --xim -d
 ### 虚拟机
 pacman -Syy --noconfirm qemu qemu-arch-extra qemu-block-iscsi qemu-guest-agent qemu-block-rbd libvirt virt-install virt-manager
 
+Client端下载 https://www.spice-space.org/download.html 以支持剪切板共享等高级功能
+
 ### CrossOver / wine
 
 sudo pacman -Syy --noconfirm libxcomposite lib32-libxcomposite libxslt lib32-libxslt lib32-libxinerama libxinerama sane cups lib32-libcups
