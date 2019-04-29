@@ -224,6 +224,10 @@ sudo pacman -Syy --noconfirm manjaro-aur-support yay;
 yay -Syy --noconfirm visual-studio-code-bin
 yay -Syy --noconfirm global
 
+### 通过Proxy更新GPG密钥
+
+dirmngr 增加启动参数 ```--honor-http-proxy``` 或 ```pacman/yay --nopgpfetch```
+
 ### 中文输入
 sudo pacman -Syy --noconfirm ibus ibus-qt ibus-googlepinyin ibus-pinyin # kimtoy ibus-rime
 ./ibus-setup
@@ -249,13 +253,18 @@ Client端下载 https://www.spice-space.org/download.html 以支持剪切板共�
 VrtualBox 需要额外安装 ```sudo pacman -Syy --noconfirm linux当前内核版本号-virtualbox-host-modules```
 
 VMWare 需要额外安装 
+
 ```bash
-sudo pacman -Syy --noconfirm open-vm-tools linux当前内核版本号-headers linux当前内核版本号-rt-headers
+sudo pacman -Syy --noconfirm linux当前内核版本号-headers linux当前内核版本号-rt-headers
 yay -Syy --noconfirm vmware-systemd-services # vmware-modules-dkms
+
+# Guest package open-vm-tools
 
 # patch 
 sudo ln -s /usr/lib/modules/$(uname -r)/build/include/generated/uapi/linux/version.h /usr/lib/modules/$(uname -r)/build/include/linux/version.h
 ```
+
+一些log和配置文件的位置 ```/var/log/vmware-installer``` ```/etc/vmware/config```
 
 ### CrossOver / wine
 
