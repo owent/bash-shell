@@ -225,13 +225,13 @@ pacman -Syy --noconfirm p7zip texinfo lzip m4;
 pacman -Syy --noconfirm cmake m4 autoconf automake python git make tig;
 
 ### gcc
-pacman -Syy --noconfirm gcc gdb;
+pacman -Syy --noconfirm gcc gdb global;
 
 ### mingw x86_64
-pacman -Syy --noconfirm mingw-w64-x86_64-toolchain mingw-w64-x86_64-libtool mingw-w64-x86_64-cmake mingw-w64-x86_64-extra-cmake-modules;
+pacman -Syy --noconfirm mingw-w64-x86_64-toolchain mingw-w64-x86_64-libtool mingw-w64-x86_64-cmake mingw-w64-x86_64-extra-cmake-modules mingw-w64-x86_64-global;
 
 ### mingw i686
-pacman -Syy --noconfirm mingw-w64-i686-toolchain  mingw-w64-i686-libtool mingw-w64-i686-cmake  mingw-w64-i686-extra-cmake-modules;
+pacman -Syy --noconfirm mingw-w64-i686-toolchain  mingw-w64-i686-libtool mingw-w64-i686-cmake  mingw-w64-i686-extra-cmake-modules mingw-w64-i686-global;
 
 ### clang x86_64
 pacman -Syy --noconfirm mingw64/mingw-w64-x86_64-compiler-rt mingw64/mingw-w64-x86_64-clang mingw64/mingw-w64-x86_64-clang-analyzer mingw64/mingw-w64-x86_64-clang-tools-extra mingw64/mingw-w64-x86_64-libc++ mingw64/mingw-w64-x86_64-libc++abi ; 
@@ -243,11 +243,12 @@ pacman -Syy --noconfirm mingw32/mingw-w64-i686-clang mingw32/mingw-w64-i686-clan
 pacman -S --noconfirm ruby;
 
 ## Arch/Manjaro
-pacman -Syy --noconfirm manjaro-aur-support yay;
+sudo pacman -Syy --noconfirm manjaro-aur-support yay;
 yay -Syy --noconfirm visual-studio-code-bin
+yay -Syy --noconfirm global
 
 ### 中文输入
-pacman -Syy --noconfirm ibus ibus-qt ibus-googlepinyin ibus-pinyin kimtoy ibus-rime
+sudo pacman -Syy --noconfirm ibus ibus-qt ibus-googlepinyin ibus-pinyin # kimtoy ibus-rime
 ./ibus-setup
 echo "
 export GTK_IM_MODULE=ibus
@@ -265,6 +266,8 @@ pacman -Syy --noconfirm qemu qemu-arch-extra qemu-block-iscsi qemu-guest-agent q
 ```
 
 Client端下载 https://www.spice-space.org/download.html 以支持剪切板共享等高级功能
+
+图形化还是建议用 VrtualBox 或者 VMWare Workstation Player, qemu的驱动性能很差
 
 ### CrossOver / wine
 
