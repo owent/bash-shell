@@ -31,7 +31,7 @@ echo "##
 
 ## Primary
 ## msys2.org
-Server = http://mirrors.ustc.edu.cn/msys2/msys/\$arch
+Server = http://.ustc.edu.cn/msys2/msys/\$arch
 Server = https://mirrors.tuna.tsinghua.edu.cn/msys2/msys/\$arch
 Server = http://mirror.bit.edu.cn/msys2/REPOS/MSYS2/\$arch
 Server = http://mirrors.zju.edu.cn/msys2/msys2/REPOS/MSYS2/\$arch
@@ -60,29 +60,6 @@ Server = http://mirrors.ustc.edu.cn/msys2/mingw/x86_64
 Server = https://mirrors.tuna.tsinghua.edu.cn/msys2/mingw/x86_64
 Server = http://mirror.bit.edu.cn/msys2/REPOS/MINGW/x86_64
 Server = http://mirrors.zju.edu.cn/msys2/msys2/REPOS/MINGW/x86_64
-Server = http://repo.msys2.org/mingw/x86_64" > /etc/pacman.d/mirrorlist.mingw64 ;
-```
-## Ubuntu & WSL
-
-### 18.04
-```
-mv /etc/apt/sources.list /etc/apt/sources.list.bak
-echo "
-deb https://mirrors.cloud.tencent.com/ubuntu/ bionic main restricted universe multiverse
-deb-src https://mirrors.cloud.tencent.com/ubuntu/ bionic main main restricted universe multiverse
-deb https://mirrors.cloud.tencent.com/ubuntu/ bionic-updates main restricted universe multiverse
-deb-src https://mirrors.cloud.tencent.com/ubuntu/ bionic-updates main restricted universe multiverse
-deb https://mirrors.cloud.tencent.com/ubuntu/ bionic-backports main restricted universe multiverse
-deb-src https://mirrors.cloud.tencent.com/ubuntu/ bionic-backports main restricted universe multiverse
-deb https://mirrors.cloud.tencent.com/ubuntu/ bionic-security main restricted universe multiverse
-deb-src https://mirrors.cloud.tencent.com/ubuntu/ bionic-security main restricted universe multiverse
- 
-# 预发布软件源，不建议启用
-# deb https://mirrors.cloud.tencent.com/ubuntu/ bionic-proposed main restricted universe multiverse
-# deb-src https://mirrors.cloud.tencent.com/ubuntu/ bionic-proposed main restricted universe multiverse
-" > /etc/apt/sources.list ;
-
-# apt-add-repository -y "ppa:ubuntu-toolchain-r/test" ;
 
 apt-get update -y ;
 ```
@@ -267,7 +244,18 @@ pacman -Syy --noconfirm qemu qemu-arch-extra qemu-block-iscsi qemu-guest-agent q
 
 Client端下载 https://www.spice-space.org/download.html 以支持剪切板共享等高级功能
 
-图形化还是建议用 VrtualBox 或者 VMWare Workstation Player, qemu的驱动性能很差
+图形化还是建议用 VrtualBox 或者 VMWare Workstation Player, qemu的驱动性能很差.
+
+VrtualBox 需要额外安装 ```sudo pacman -Syy --noconfirm linux当前内核版本号-virtualbox-host-modules```
+
+VMWare 需要额外安装 
+```bash
+sudo pacman -Syy --noconfirm open-vm-tools linux当前内核版本号-headers linux当前内核版本号-rt-headers
+yay -Syy --noconfirm vmware-systemd-services # vmware-modules-dkms
+
+# patch 
+sudo ln -s /usr/lib/modules/$(uname -r)/build/include/generated/uapi/linux/version.h /usr/lib/modules/$(uname -r)/build/include/linux/version.h
+```
 
 ### CrossOver / wine
 
