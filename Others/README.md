@@ -235,12 +235,12 @@ sudo pacman -Syy --noconfirm ibus ibus-qt ibus-googlepinyin ibus-pinyin # kimtoy
 ./ibus-setup
 echo "
 export GTK_IM_MODULE=ibus
-export XMODIFIERS=@im=ibus
+export XMODIFIERS=\"@im=ibus\"
 export QT_IM_MODULE=ibus
 
 ibus-daemon --xim -d
 #ibus-daemon --panel=/usr/lib/kimpanel-ibus-panel --xim -d
-" >> ~/.xprofile ;
+" >> ~/.xprofile ; # or edit /etc/environment and add these configures for wayland
 ```
 
 ### 中文输入 - fcitx
@@ -249,11 +249,11 @@ ibus-daemon --xim -d
 sudo pacman -Syy --noconfirm kcm-fcitx fcitx-qt5 fcitx-rime fcitx-gtk3 fcitx-gtk2 fcitx
 echo "
 export GTK_IM_MODULE=fcitx
-export XMODIFIERS=@im=fcitx
+export XMODIFIERS=\"@im=fcitx\"
 export QT_IM_MODULE=fcitx
 
 fcitx-autostart
-" >> ~/.xprofile ;
+" >> ~/.xprofile ; # or edit /etc/environment and add these configures for wayland
 ```
 
 ### 虚拟机
