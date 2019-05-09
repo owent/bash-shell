@@ -247,6 +247,13 @@ ibus-daemon --xim -d
 
 ```bash
 sudo pacman -Syy --noconfirm kcm-fcitx fcitx-qt5 fcitx-rime fcitx-gtk3 fcitx-gtk2 fcitx
+echo "
+export GTK_IM_MODULE=fcitx
+export XMODIFIERS=@im=fcitx
+export QT_IM_MODULE=fcitx
+
+fcitx-autostart
+" >> ~/.xprofile ;
 ```
 
 ### 虚拟机
