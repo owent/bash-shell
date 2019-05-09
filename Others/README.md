@@ -228,7 +228,9 @@ yay -Syy --noconfirm global
 
 dirmngr 增加启动参数 ```--honor-http-proxy``` 或 ```pacman/yay --nopgpfetch```
 
-### 中文输入
+### 中文输入 - ibus
+
+```bash
 sudo pacman -Syy --noconfirm ibus ibus-qt ibus-googlepinyin ibus-pinyin # kimtoy ibus-rime
 ./ibus-setup
 echo "
@@ -239,6 +241,13 @@ export QT_IM_MODULE=ibus
 ibus-daemon --xim -d
 #ibus-daemon --panel=/usr/lib/kimpanel-ibus-panel --xim -d
 " >> ~/.xprofile ;
+```
+
+### 中文输入 - fcitx
+
+```bash
+sudo pacman -Syy --noconfirm kcm-fcitx fcitx-qt5 fcitx-rime fcitx-gtk3 fcitx-gtk2 fcitx
+```
 
 ### 虚拟机
 
