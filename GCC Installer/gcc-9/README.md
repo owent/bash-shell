@@ -1,7 +1,7 @@
 Linux 编译安装 GCC 9
 ======
 
-GCC 9发布啦，本脚本在之前GCC 8的基础上做了稍许更新
+GCC 9发布啦，本脚本在之前GCC 8的基础上做了稍许更新。
 
 由于GCC从5开始[对版本号进行重新规范](https://gcc.gnu.org/develop.html#num_scheme)，所以这里的编译脚本以后以主版本号为准。
 
