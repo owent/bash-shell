@@ -70,7 +70,7 @@ echo "##
 
 ## Primary
 ## msys2.org
-Server = http://mirrors.ustc.edu.cn/msys2/msys/\$arch
+Server = http://.ustc.edu.cn/msys2/msys/\$arch
 Server = https://mirrors.tuna.tsinghua.edu.cn/msys2/msys/\$arch
 Server = http://mirror.bit.edu.cn/msys2/REPOS/MSYS2/\$arch
 Server = http://mirrors.zju.edu.cn/msys2/msys2/REPOS/MSYS2/\$arch
@@ -99,6 +99,7 @@ Server = http://mirrors.ustc.edu.cn/msys2/mingw/x86_64
 Server = https://mirrors.tuna.tsinghua.edu.cn/msys2/mingw/x86_64
 Server = http://mirror.bit.edu.cn/msys2/REPOS/MINGW/x86_64
 Server = http://mirrors.zju.edu.cn/msys2/msys2/REPOS/MINGW/x86_64
+<<<<<<< HEAD
 Server = http://repo.msys2.org/mingw/x86_64" > /etc/pacman.d/mirrorlist.mingw64 ;
 ```
 
@@ -124,6 +125,8 @@ deb-src https://mirrors.cloud.tencent.com/ubuntu/ bionic-security main restricte
 " > /etc/apt/sources.list ;
 
 # apt-add-repository -y "ppa:ubuntu-toolchain-r/test" ;
+=======
+>>>>>>> 228c8f4894ef7230380090c757a7c93d963fabd3
 
 apt-get update -y ;
 ```
@@ -322,17 +325,43 @@ yay -Syy --noconfirm global
 
 #### 中文输入
 
+<<<<<<< HEAD
+=======
+### 通过Proxy更新GPG密钥
+
+dirmngr 增加启动参数 ```--honor-http-proxy``` 或 ```pacman/yay --nopgpfetch```
+
+### 中文输入 - ibus
+
+>>>>>>> 228c8f4894ef7230380090c757a7c93d963fabd3
 ```bash
 sudo pacman -Syy --noconfirm ibus ibus-qt ibus-googlepinyin ibus-pinyin # kimtoy ibus-rime
 ./ibus-setup
 echo "
 export GTK_IM_MODULE=ibus
-export XMODIFIERS=@im=ibus
+export XMODIFIERS=\"@im=ibus\"
 export QT_IM_MODULE=ibus
 
 ibus-daemon --xim -d
 #ibus-daemon --panel=/usr/lib/kimpanel-ibus-panel --xim -d
+<<<<<<< HEAD
 " >> ~/.xprofile ;
+=======
+" >> ~/.xprofile ; # or edit /etc/environment and add these configures for wayland
+```
+
+### 中文输入 - fcitx
+
+```bash
+sudo pacman -Syy --noconfirm kcm-fcitx fcitx-qt5 fcitx-rime fcitx-gtk3 fcitx-gtk2 fcitx
+echo "
+export GTK_IM_MODULE=fcitx
+export XMODIFIERS=\"@im=fcitx\"
+export QT_IM_MODULE=fcitx
+
+fcitx-autostart
+" >> ~/.xprofile ; # or edit /etc/environment and add these configures for wayland
+>>>>>>> 228c8f4894ef7230380090c757a7c93d963fabd3
 ```
 
 #### 虚拟机
@@ -343,7 +372,23 @@ pacman -Syy --noconfirm qemu qemu-arch-extra qemu-block-iscsi qemu-guest-agent q
 
 Client端下载 https://www.spice-space.org/download.html 以支持剪切板共享等高级功能
 
-图形化还是建议用 VrtualBox 或者 VMWare Workstation Player, qemu的驱动性能很差
+图形化还是建议用 VrtualBox 或者 VMWare Workstation Player, qemu的驱动性能很差.
+
+VrtualBox 需要额外安装 ```sudo pacman -Syy --noconfirm linux当前内核版本号-virtualbox-host-modules```
+
+VMWare 需要额外安装 
+
+```bash
+sudo pacman -Syy --noconfirm linux当前内核版本号-headers linux当前内核版本号-rt-headers
+yay -Syy --noconfirm vmware-systemd-services # vmware-modules-dkms
+
+# Guest package open-vm-tools
+
+# patch 
+sudo ln -s /usr/lib/modules/$(uname -r)/build/include/generated/uapi/linux/version.h /usr/lib/modules/$(uname -r)/build/include/linux/version.h
+```
+
+一些log和配置文件的位置 ```/var/log/vmware-installer``` ```/etc/vmware/config```
 
 #### CrossOver / wine
 
