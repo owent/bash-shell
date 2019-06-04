@@ -1,5 +1,6 @@
 # 常用命令集
 
+## 通用
 #### 按行替换文件
 perl -p -i -e "s;匹配项(正则表达式);目标值;g" "文件路径";
 
@@ -13,18 +14,56 @@ find $(readlink -f -n $HOME/logs) -name "*" -mtime +30 -type f -delete;
 find $(readlink -f -n $HOME/logs) -empty -type d -delete;
 ```
 
-#### 同步开源镜像
+## 代理
+
+### 代理环境变量设置
+
+```bash
+export http_proxy=http://127.0.0.1:12759
+export https_proxy=$http_proxy
+export ftp_proxy=$http_proxy
+export rsync_proxy=$http_proxy
+export no_proxy="localhost,127.0.0.1,localaddress,.localdomain.com,9.*.*.*,10.*.*.*,::1*,fc00:*,fe80:*,"
+
+# sudo 保留环境变量
+Defaults env_keep += "http_proxy https_proxy ftp_proxy rsync_proxy no_proxy"
+```
+
+### ssh代理
+
+```bash
+# ssh over http-proxy
+## maybe need package connect-proxy/connect/corkscrew
+echo "ProxyCommand connect-proxy/connect -H PROXYSERVER:PROXYPORT  %h %p" >> ~/.ssh/config ;
+## maybe need package corkscrew
+echo "ProxyCommand corkscrew PROXYSERVER PROXYPORT %h %p" >> ~/.ssh/config ;
+## maybe need package nmap-netcat/gnu-netcat/openbsd-netcat/netcat/net-tools
+echo "ProxyCommand /usr/bin/nc -X connect -x PROXYSERVER:PROXYPORT %h %p" >> ~/.ssh/config ;
+
+# ssh over sock5-proxy
+## maybe need package nmap-netcat/gnu-netcat/openbsd-netcat/netcat/net-tools
+echo "ProxyCommand nc -X 5 -x PROXYSERVER:PROXYPORT %h %p" >> ~/.ssh/config ;
+
+# ssh over httptunnel
+## server
+hts -F localhost:22 80
+## client
+htc -P proxy.corp.com:80 -F 8022 server.at.home:80
+```
+
+## 软件源
+
+### 同步开源镜像
+
 rsync -arh --progress 源地址 目标地址 ; # 比如：rsync -arh --progress rsync://mirrors.tuna.tsinghua.edu.cn/msys2 .
 
-注意和说明：
-------
+**注意和说明：**
 
 ssl_cert 里是使用openssl生成服务器证书的脚本和配置文件, 请先阅读 ssl_cert/mk_ssl_cert.sh 内的注释
 
-# 软件源
+### MSYS2 国内源
 
-## MSYS2 国内源
-```
+```bash
 echo "##
 ## MSYS2 repository mirrorlist
 ##
@@ -62,10 +101,12 @@ Server = http://mirror.bit.edu.cn/msys2/REPOS/MINGW/x86_64
 Server = http://mirrors.zju.edu.cn/msys2/msys2/REPOS/MINGW/x86_64
 Server = http://repo.msys2.org/mingw/x86_64" > /etc/pacman.d/mirrorlist.mingw64 ;
 ```
-## Ubuntu & WSL
 
-### 18.04
-```
+### Ubuntu & WSL
+
+#### 18.04
+
+```bash
 mv /etc/apt/sources.list /etc/apt/sources.list.bak
 echo "
 deb https://mirrors.cloud.tencent.com/ubuntu/ bionic main restricted universe multiverse
@@ -76,7 +117,7 @@ deb https://mirrors.cloud.tencent.com/ubuntu/ bionic-backports main restricted u
 deb-src https://mirrors.cloud.tencent.com/ubuntu/ bionic-backports main restricted universe multiverse
 deb https://mirrors.cloud.tencent.com/ubuntu/ bionic-security main restricted universe multiverse
 deb-src https://mirrors.cloud.tencent.com/ubuntu/ bionic-security main restricted universe multiverse
- 
+
 # 预发布软件源，不建议启用
 # deb https://mirrors.cloud.tencent.com/ubuntu/ bionic-proposed main restricted universe multiverse
 # deb-src https://mirrors.cloud.tencent.com/ubuntu/ bionic-proposed main restricted universe multiverse
@@ -87,7 +128,7 @@ deb-src https://mirrors.cloud.tencent.com/ubuntu/ bionic-security main restricte
 apt-get update -y ;
 ```
 
-```
+```bash
 mv /etc/apt/sources.list /etc/apt/sources.list.bak
 
 echo "
@@ -108,7 +149,7 @@ deb-src https://mirrors.aliyun.com/ubuntu/ bionic-backports main restricted univ
 apt-get update -y ;
 ```
 
-```
+```bash
 mv /etc/apt/sources.list /etc/apt/sources.list.bak
 echo "
 deb https://mirrors.ustc.edu.cn/ubuntu/ bionic main restricted universe multiverse
@@ -130,8 +171,9 @@ deb-src https://mirrors.ustc.edu.cn/ubuntu/ bionic-security main restricted univ
 apt-get update -y ;
 ```
 
-### 16.04
-```
+#### 16.04
+
+```bash
 mv /etc/apt/sources.list /etc/apt/sources.list.bak
 
 echo "
@@ -152,7 +194,7 @@ deb-src https://mirrors.aliyun.com/ubuntu/ xenial-backports main restricted univ
 apt-get update -y ;
 ```
 
-```
+```bash
 mv /etc/apt/sources.list /etc/apt/sources.list.bak
 echo "
 deb https://mirrors.ustc.edu.cn/ubuntu/ xenial main restricted universe multiverse
@@ -163,7 +205,7 @@ deb https://mirrors.ustc.edu.cn/ubuntu/ xenial-backports main restricted univers
 deb-src https://mirrors.ustc.edu.cn/ubuntu/ xenial-backports main restricted universe multiverse
 deb https://mirrors.ustc.edu.cn/ubuntu/ xenial-security main restricted universe multiverse
 deb-src https://mirrors.ustc.edu.cn/ubuntu/ xenial-security main restricted universe multiverse
- 
+
 # 预发布软件源，不建议启用
 # deb https://mirrors.ustc.edu.cn/ubuntu/ xenial-proposed main restricted universe multiverse
 # deb-src https://mirrors.ustc.edu.cn/ubuntu/ xenial-proposed main restricted universe multiverse
@@ -174,16 +216,17 @@ deb-src https://mirrors.ustc.edu.cn/ubuntu/ xenial-security main restricted univ
 apt-get update -y ;
 ```
 
-## nodejs 替换淘宝软件源
+### nodejs 替换淘宝软件源
 
-```
+```bash
 npm install -g cnpm --registry=https://registry.npm.taobao.org
 
 npm config set registry https://registry.npm.taobao.org
 ```
 
-## ruby和gem源
-```
+### ruby和gem源
+
+```bash
 # 安装脚本（通过rvm） https://github.com/huacnlee/init.d/blob/master/install_rvm
 command gpg --keyserver hkp://keys.gnupg.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3
 command curl -L https://get.rvm.io | bash -s stable
@@ -209,45 +252,77 @@ bundle config mirror.https://rubygems.org http://mirrors.aliyun.com/rubygems/
 # or in Gemfile, edit source 'https://rubygems.org/' to 'https://gems.ruby-china.org' or 'http://mirrors.aliyun.com/rubygems/'
 ```
 
-# 环境
+## 环境
 
-## MSYS2
+### MSYS2
 
 下载地址： http://mirrors.ustc.edu.cn/msys2/distrib/
 
-### utils
+#### utils
+
+```bash
 pacman -Syy --noconfirm curl wget tar vim zip unzip rsync openssh;
+```
 
-### utils optional
+#### utils optional
+
+```bash
 pacman -Syy --noconfirm p7zip texinfo lzip m4;
+```
 
-### dev
+#### dev
+
+```bash
 pacman -Syy --noconfirm cmake m4 autoconf automake python git make tig;
+```
 
-### gcc
+#### gcc
+
+```bash
 pacman -Syy --noconfirm gcc gdb global;
+```
 
-### mingw x86_64
+#### mingw x86_64
+
+```bash
 pacman -Syy --noconfirm mingw-w64-x86_64-toolchain mingw-w64-x86_64-libtool mingw-w64-x86_64-cmake mingw-w64-x86_64-extra-cmake-modules mingw-w64-x86_64-global;
+```
 
-### mingw i686
+#### mingw i686
+
+```bash
 pacman -Syy --noconfirm mingw-w64-i686-toolchain  mingw-w64-i686-libtool mingw-w64-i686-cmake  mingw-w64-i686-extra-cmake-modules mingw-w64-i686-global;
+```
 
-### clang x86_64
+#### clang x86_64
+
+```bash
 pacman -Syy --noconfirm mingw64/mingw-w64-x86_64-compiler-rt mingw64/mingw-w64-x86_64-clang mingw64/mingw-w64-x86_64-clang-analyzer mingw64/mingw-w64-x86_64-clang-tools-extra mingw64/mingw-w64-x86_64-libc++ mingw64/mingw-w64-x86_64-libc++abi ; 
+```
 
-### clang i686
+#### clang i686
+
+```bash
 pacman -Syy --noconfirm mingw32/mingw-w64-i686-clang mingw32/mingw-w64-i686-clang-analyzer mingw32/mingw-w64-i686-clang-tools-extra mingw32/mingw-w64-i686-compiler-rt mingw32/mingw-w64-i686-libc++ mingw32/mingw-w64-i686-libc++abi;
+```
 
-### ruby
+#### ruby
+
+```bash
 pacman -S --noconfirm ruby;
+```
 
-## Arch/Manjaro
+### Arch/Manjaro
+
+```bash
 sudo pacman -Syy --noconfirm manjaro-aur-support yay;
 yay -Syy --noconfirm visual-studio-code-bin
 yay -Syy --noconfirm global
+```
 
-### 中文输入
+#### 中文输入
+
+```bash
 sudo pacman -Syy --noconfirm ibus ibus-qt ibus-googlepinyin ibus-pinyin # kimtoy ibus-rime
 ./ibus-setup
 echo "
@@ -258,8 +333,9 @@ export QT_IM_MODULE=ibus
 ibus-daemon --xim -d
 #ibus-daemon --panel=/usr/lib/kimpanel-ibus-panel --xim -d
 " >> ~/.xprofile ;
+```
 
-### 虚拟机
+#### 虚拟机
 
 ```bash
 pacman -Syy --noconfirm qemu qemu-arch-extra qemu-block-iscsi qemu-guest-agent qemu-block-rbd libvirt virt-install virt-manager
@@ -269,7 +345,7 @@ Client端下载 https://www.spice-space.org/download.html 以支持剪切板共�
 
 图形化还是建议用 VrtualBox 或者 VMWare Workstation Player, qemu的驱动性能很差
 
-### CrossOver / wine
+#### CrossOver / wine
 
 ```bash
 sudo pacman -Syy --noconfirm libxcomposite lib32-libxcomposite libxslt lib32-libxslt lib32-libxinerama libxinerama sane cups lib32-libcups
@@ -277,7 +353,7 @@ yay -Syy --noconfirm libgphoto2 lib32-libgphoto2 gsm lib32-gsm
 yay -Syy --noconfirm vulkan-headers lib32-vulkan-validation-layers vulkan-tools vulkan-validation-layers vulkan-trace vulkan-icd-loader lib32-vulkan-icd-loader lib32-vkd3d vkd3d vulkan-extra-layers
 ```
 
-## CentOS
+### CentOS
 
 ```bash
 ## basic
@@ -289,7 +365,7 @@ sudo yum install -y gcc gdb valgrind automake make libcurl-devel expat-devel exp
 # External development tools
 sudo yum install -y zlib-devel zlib-static;
 
-# git 
+# git
 wget https://mirrors.edge.kernel.org/pub/software/scm/git/git-2.21.0.tar.xz;
 tar -axvf git-2.21.0.tar.xz ;
 cd git-2.21.0;
@@ -303,7 +379,7 @@ cd ../../../ ;
 sudo rpm -ivh https://packagecloud.io/github/git-lfs/packages/el/7/git-lfs-2.7.1-1.el7.x86_64.rpm/download
 ```
 
-## Ubuntu & WSL
+### Ubuntu \& WSL
 
 ```bash
 ## basic
@@ -367,7 +443,7 @@ function APT_DOWNLOAD() {
 dpkg -i DEB包 ;
 ```
 
-## Windows & Chocolatey
+### Windows & Chocolatey
 
 https://chocolatey.org
 
@@ -401,19 +477,22 @@ choco install --yes nodejs npm
 choco install --yes jdk8 jdk10
 ```
 
-## Atom Editor
+### Atom Editor
+
+```bash
 # my atom config use these binaries:
 ## gcc,clang: msys2/mingw64, C:\msys64\mingw64\\bin\[gcc or clang].exe
 ## lua: C:\Program Files\Lua\luac5.1.exe
 ## pandoc: C:\Program Files (x86)\Pandoc\pandoc.exe
+```
 
 apm config set git "C:\Program Files\Git\bin\git.exe"
 
-# 其他软件记录
+## 其他软件记录
 
 多国语言编辑器: [Poedit](https://poedit.net/)
 
-## SSH/SFTP:
- 
+### SSH/SFTP
+
 + [xshell/xftp](https://www.netsarang.com/download/software.html)
 + [mobaxterm](http://mobaxterm.mobatek.net/)
