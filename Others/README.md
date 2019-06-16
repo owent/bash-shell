@@ -99,7 +99,6 @@ Server = http://mirrors.ustc.edu.cn/msys2/mingw/x86_64
 Server = https://mirrors.tuna.tsinghua.edu.cn/msys2/mingw/x86_64
 Server = http://mirror.bit.edu.cn/msys2/REPOS/MINGW/x86_64
 Server = http://mirrors.zju.edu.cn/msys2/msys2/REPOS/MINGW/x86_64
-<<<<<<< HEAD
 Server = http://repo.msys2.org/mingw/x86_64" > /etc/pacman.d/mirrorlist.mingw64 ;
 ```
 
@@ -125,8 +124,6 @@ deb-src https://mirrors.cloud.tencent.com/ubuntu/ bionic-security main restricte
 " > /etc/apt/sources.list ;
 
 # apt-add-repository -y "ppa:ubuntu-toolchain-r/test" ;
-=======
->>>>>>> 228c8f4894ef7230380090c757a7c93d963fabd3
 
 apt-get update -y ;
 ```
@@ -167,51 +164,6 @@ deb-src https://mirrors.ustc.edu.cn/ubuntu/ bionic-security main restricted univ
 # 预发布软件源，不建议启用
 # deb https://mirrors.ustc.edu.cn/ubuntu/ bionic-proposed main restricted universe multiverse
 # deb-src https://mirrors.ustc.edu.cn/ubuntu/ bionic-proposed main restricted universe multiverse
-" > /etc/apt/sources.list ;
-
-# apt-add-repository -y "ppa:ubuntu-toolchain-r/test" ;
-
-apt-get update -y ;
-```
-
-#### 16.04
-
-```bash
-mv /etc/apt/sources.list /etc/apt/sources.list.bak
-
-echo "
-deb https://mirrors.aliyun.com/ubuntu/ xenial main restricted universe multiverse
-deb https://mirrors.aliyun.com/ubuntu/ xenial-security main restricted universe multiverse
-deb https://mirrors.aliyun.com/ubuntu/ xenial-updates main restricted universe multiverse
-deb https://mirrors.aliyun.com/ubuntu/ xenial-backports main restricted universe multiverse
-deb-src https://mirrors.aliyun.com/ubuntu/ xenial main restricted universe multiverse
-deb-src https://mirrors.aliyun.com/ubuntu/ xenial-security main restricted universe multiverse
-deb-src https://mirrors.aliyun.com/ubuntu/ xenial-updates main restricted universe multiverse
-deb-src https://mirrors.aliyun.com/ubuntu/ xenial-backports main restricted universe multiverse
-# deb https://mirrors.aliyun.com/ubuntu/ xenial-proposed main restricted universe multiverse
-# deb-src https://mirrors.aliyun.com/ubuntu/ xenial-proposed main restricted universe multiverse
-" > /etc/apt/sources.list ;
-
-# apt-add-repository -y "ppa:ubuntu-toolchain-r/test" ;
-
-apt-get update -y ;
-```
-
-```bash
-mv /etc/apt/sources.list /etc/apt/sources.list.bak
-echo "
-deb https://mirrors.ustc.edu.cn/ubuntu/ xenial main restricted universe multiverse
-deb-src https://mirrors.ustc.edu.cn/ubuntu/ xenial main main restricted universe multiverse
-deb https://mirrors.ustc.edu.cn/ubuntu/ xenial-updates main restricted universe multiverse
-deb-src https://mirrors.ustc.edu.cn/ubuntu/ xenial-updates main restricted universe multiverse
-deb https://mirrors.ustc.edu.cn/ubuntu/ xenial-backports main restricted universe multiverse
-deb-src https://mirrors.ustc.edu.cn/ubuntu/ xenial-backports main restricted universe multiverse
-deb https://mirrors.ustc.edu.cn/ubuntu/ xenial-security main restricted universe multiverse
-deb-src https://mirrors.ustc.edu.cn/ubuntu/ xenial-security main restricted universe multiverse
-
-# 预发布软件源，不建议启用
-# deb https://mirrors.ustc.edu.cn/ubuntu/ xenial-proposed main restricted universe multiverse
-# deb-src https://mirrors.ustc.edu.cn/ubuntu/ xenial-proposed main restricted universe multiverse
 " > /etc/apt/sources.list ;
 
 # apt-add-repository -y "ppa:ubuntu-toolchain-r/test" ;
@@ -323,17 +275,15 @@ yay -Syy --noconfirm visual-studio-code-bin
 yay -Syy --noconfirm global
 ```
 
-#### 中文输入
 
-<<<<<<< HEAD
-=======
-### 通过Proxy更新GPG密钥
+#### 通过Proxy更新GPG密钥
 
 dirmngr 增加启动参数 ```--honor-http-proxy``` 或 ```pacman/yay --nopgpfetch```
 
-### 中文输入 - ibus
+#### 中文输入
 
->>>>>>> 228c8f4894ef7230380090c757a7c93d963fabd3
+##### 中文输入 - ibus
+
 ```bash
 sudo pacman -Syy --noconfirm ibus ibus-qt ibus-googlepinyin ibus-pinyin # kimtoy ibus-rime
 ./ibus-setup
@@ -350,7 +300,7 @@ ibus-daemon --xim -d
 " >> ~/.xprofile ; # or edit /etc/environment and add these configures for wayland
 ```
 
-### 中文输入 - fcitx
+##### 中文输入 - fcitx
 
 ```bash
 sudo pacman -Syy --noconfirm kcm-fcitx fcitx-qt5 fcitx-rime fcitx-gtk3 fcitx-gtk2 fcitx
@@ -504,7 +454,7 @@ choco upgrade chocolatey
 ```
 
 ```
-choco install --yes 7zip vim-tux pandoc foobar2000 Graphviz powershell-core
+choco install --yes 7zip pandoc foobar2000 Graphviz powershell-core
 
 # dev (anaconda3 also can be used instead of python3)
 choco install --yes MobaXterm git git-lfs TortoiseGit python3 ConEmu
@@ -513,13 +463,13 @@ choco install --yes MobaXterm git git-lfs TortoiseGit python3 ConEmu
 choco install --yes wireshark WinPcap
 
 # c & c++
-choco install --yes cmake doxygen.install llvm ninja
+choco install --yes cmake doxygen llvm ninja
 
 # nodejs
 choco install --yes nodejs npm
 
 # java
-choco install --yes jdk8 jdk10
+choco install --yes jdk8 openjdk  # jdk11
 ```
 
 ### Atom Editor
