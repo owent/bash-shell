@@ -70,7 +70,7 @@ echo "##
 
 ## Primary
 ## msys2.org
-Server = http://.ustc.edu.cn/msys2/msys/\$arch
+Server = http://mirrors.ustc.edu.cn/msys2/msys/\$arch
 Server = https://mirrors.tuna.tsinghua.edu.cn/msys2/msys/\$arch
 Server = http://mirror.bit.edu.cn/msys2/REPOS/MSYS2/\$arch
 Server = http://mirrors.zju.edu.cn/msys2/msys2/REPOS/MSYS2/\$arch
