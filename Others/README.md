@@ -294,9 +294,6 @@ export QT_IM_MODULE=ibus
 
 ibus-daemon --xim -d
 #ibus-daemon --panel=/usr/lib/kimpanel-ibus-panel --xim -d
-<<<<<<< HEAD
-" >> ~/.xprofile ;
-=======
 " >> ~/.xprofile ; # or edit /etc/environment and add these configures for wayland
 ```
 
@@ -311,7 +308,6 @@ export QT_IM_MODULE=fcitx
 
 fcitx-autostart
 " >> ~/.xprofile ; # or edit /etc/environment and add these configures for wayland
->>>>>>> 228c8f4894ef7230380090c757a7c93d963fabd3
 ```
 
 #### 虚拟机
@@ -463,7 +459,7 @@ choco install --yes MobaXterm git git-lfs TortoiseGit python3 ConEmu
 choco install --yes wireshark WinPcap
 
 # c & c++
-choco install --yes cmake doxygen llvm ninja
+choco install --yes cmake doxygen.install llvm ninja
 
 # nodejs
 choco install --yes nodejs npm
