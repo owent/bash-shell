@@ -2,6 +2,9 @@
 
 CI_SSH_KEY=~/.ssh/id_rsa.ci;
 
+# 清理意外情况导致的长期ssh-agent
+ps --sort start_time -u $USER -o pid,state,etimes,start_time,command | grep "ssh-agent" | grep -v grep | awk '{if($3 > 259200) { print $1;}}' | xargs kill ;
+
 # 启用ssh-agent来控制鉴权
 eval $(ssh-agent);
 
@@ -11,7 +14,6 @@ ssh-add "$CI_SSH_KEY";
 
 # 设置忽略未知Host
 export GIT_SSH_COMMAND="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no" ;
-
 
 # echo "Host github.com
 #     HostName github.com
