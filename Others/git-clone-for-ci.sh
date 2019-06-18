@@ -3,7 +3,9 @@
 CI_SSH_KEY=~/.ssh/id_rsa.ci;
 
 # 清理意外情况导致的长期ssh-agent
-ps --sort start_time -u $USER -o pid,state,etimes,start_time,command | grep "ssh-agent" | grep -v grep | awk '{if($3 > 259200) { print $1;}}' | xargs kill ;
+for PENDING_TO_KILL in $(ps --sort start_time -u $USER -o pid,state,etimes,start_time,command | grep "ssh-agent" | grep -v grep | awk '{if($3 > 259200) { print $1;}}') ; do
+    kill $PENDING_TO_KILL;
+done
 
 # 启用ssh-agent来控制鉴权
 eval $(ssh-agent);
