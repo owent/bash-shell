@@ -24,22 +24,42 @@ if [ -e repo ]; then
     cd repo;
     git reset --hard;
     git clean -dfx;
-	git pull;
+    git fetch origin;
+    if [ $? -ne 0 ]; then
+        echo "Fetch from remote failed";
+        exit $?;
+    fi
+        
+    git reset --hard origin/master;
+    if [ $? -ne 0 ]; then
+        git reset --hard;
+        git clean -dfx;
+        git reset --hard origin/master;
+    fi
+	
     # 替换submodule里的http地址到ssh地址
-    sed -i "s;https\\?://github.com/;git@github.com:;" .gitmodules ;
-    sed -i "s;https\\?://github.com/;git@github.com:;" .git/config ;
-	git submodule foreach "git reset --hard && git clean -dfx";
-    git submodule update --init -f;
+    if [ -e .gitmodules ]; then
+        sed -E -i.bak "s;https\\?://github.com/;git@github.com:;" .gitmodules ;
+        sed -E -i.bak "s;https\\?://github.com/;git@github.com:;" .git/config ;
+        git submodule foreach "git reset --hard && git clean -dfx";
+        git submodule update --init -f;
+    fi
 else
     git clone --depth=1 -b master git@github.com:owent-utils/bash-shell.git repo;
     cd repo;
-	
-	git lfs install;
+    
+    git lfs install;
 
     # 替换submodule里的http地址到ssh地址
-    sed -i "s;https\\?://github.com/;git@github.com:;" .gitmodules ;
-    sed -i "s;https\\?://github.com/;git@github.com:;" .git/config ;
-	git submodule update --init -f;
+    if [ -e .gitmodules ]; then
+        sed -E -i.bak "s;https\\?://github.com/;git@github.com:;" .gitmodules ;
+        sed -E -i.bak "s;https\\?://github.com/;git@github.com:;" .git/config ;
+        git submodule update --init -f;
+    fi
 fi
 
 git lfs pull;
+
+#if [ "x$GIT_SETUP_USE_SSH_AGENT" != "x" ] && [ "x$GIT_SETUP_REUSE_SSH_AGENT" == "x" ]; then
+    ssh-agent -k;
+#fi
