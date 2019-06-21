@@ -17,7 +17,7 @@ if [ -z "$V2RAY_USER" ]; then
     V2RAY_USER="v2ray";
 fi
 if [ -z "$VERSION" ]; then
-    VERSION="4.18.0";
+    VERSION="4.19.1";
 fi
 if [ -z "$ARCH" ]; then
     ARCH="linux-64";
