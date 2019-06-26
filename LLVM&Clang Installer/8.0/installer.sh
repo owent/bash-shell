@@ -602,6 +602,26 @@ fi
 rm -rf "$STAGE_BUILD_PREFIX_DIR_1";
 
 if [ $BUILD_DOWNLOAD_ONLY -eq 0 ]; then
+
+    echo '#!/bin/bash
+
+GCC_HOME_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )/gcc-latest";
+LLVM_HOME_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )/llvm-latest";
+
+if [ "x$LD_LIBRARY_PATH" == "x" ]; then
+    export LD_LIBRARY_PATH="$LLVM_HOME_DIR/lib:$GCC_HOME_DIR/lib:$GCC_HOME_DIR/lib64" ;
+else
+    export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$LLVM_HOME_DIR/lib:$GCC_HOME_DIR/lib:$GCC_HOME_DIR/lib64" ;
+fi
+
+export PATH="$LLVM_HOME_DIR/bin:$LLVM_HOME_DIR/libexec:$GCC_HOME_DIR/bin:$PATH" ;
+export CC="$LLVM_HOME_DIR/bin/clang" ;
+export CXX="$LLVM_HOME_DIR/bin/clang++" ;
+export AR="$LLVM_HOME_DIR/bin/llvm-ar" ;
+export AS="$LLVM_HOME_DIR/bin/llvm-as" ;
+export LD="$(which lld || which ld.lld || which ld.gold || which ld)" ;
+' > "$PREFIX_DIR/load-llvm-envs.sh" ;
+
     LLVM_CONFIG_PATH="$PREFIX_DIR/bin/llvm-config";
     echo -e "\\033[33;1mAddition, run the cmds below to add environment var(s).\\033[39;49;0m";
     echo -e "\\033[31;1mexport PATH=$($LLVM_CONFIG_PATH --bindir):$PATH\\033[39;49;0m";

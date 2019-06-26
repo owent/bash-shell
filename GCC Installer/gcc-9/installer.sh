@@ -498,6 +498,23 @@ fi
 # 再把$PREFIX_DIR/bin放到PATH
 # $PREFIX_DIR/lib （如果是64位机器还有$PREFIX_DIR/lib64）[另外还有$PREFIX_DIR/libexec我也不知道要不要加，反正我加了]放到LD_LIBRARY_PATH或者/etc/ld.so.conf里
 # 再执行ldconfig就可以用新的gcc啦
+echo '#!/bin/bash
+GCC_HOME_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )";
+
+if [ "x$LD_LIBRARY_PATH" == "x" ]; then
+    export LD_LIBRARY_PATH="$GCC_HOME_DIR/lib:$GCC_HOME_DIR/lib64" ;
+else
+    export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$GCC_HOME_DIR/lib:$GCC_HOME_DIR/lib64" ;
+fi
+
+export PATH="$GCC_HOME_DIR/bin:$PATH" ;
+export CC="$GCC_HOME_DIR/bin/gcc" ;
+export CXX="$GCC_HOME_DIR/bin/g++" ;
+export AR="$GCC_HOME_DIR/bin/ar" ;
+export AS="$GCC_HOME_DIR/bin/as" ;
+export LD="$(which ld.gold || which ld)" ;
+' > $PREFIX_DIR/load-gcc-envs.sh ;
+
 if [ $BUILD_DOWNLOAD_ONLY -eq 0 ]; then
     echo -e "\\033[33;1mAddition, run the cmds below to add environment var(s).\\033[39;49;0m" ;
     echo -e "\\033[31;1mexport PATH=$PATH\\033[39;49;0m" ;
