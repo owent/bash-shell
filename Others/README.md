@@ -378,8 +378,8 @@ apt install -y vim curl wget uuid-dev libssl-dev python3-setuptools python3-pip 
 
 ## clang-llvm
 
-# LLVM_VER=-6.0;
-apt install -y llvm$LLVM_VER lldb$LLVM_VER libc++abi1$LLVM_VER libc++abi$LLVM_VER-dev libc++$LLVM_VER-dev libc++1$LLVM_VER clang$LLVM_VER ;
+# LLVM_VER=-9;
+apt install -y llvm$LLVM_VER lldb$LLVM_VER libc++abi1$LLVM_VER libc++abi$LLVM_VER-dev libc++$LLVM_VER-dev libc++1$LLVM_VER clang$LLVM_VER clang-format$LLVM_VER clang-tidy$LLVM_VER clang-tools$LLVM_VER ;
 
 ## clang-llvm-可选
 apt install -y lld$LLVM_VER ;
