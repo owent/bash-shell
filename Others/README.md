@@ -374,7 +374,7 @@ sudo rpm -ivh https://packagecloud.io/github/git-lfs/packages/el/7/git-lfs-2.7.1
 
 ```bash
 ## basic
-apt install -y vim curl wget uuid-dev libssl-dev python3-setuptools python3-pip python3-mako perl automake gdb valgrind git unzip lunzip p7zip-full autoconf telnet iotop htop libtool build-essential pkg-config gettext
+apt install -y vim curl wget uuid-dev libssl-dev python3-setuptools python3-pip python3-mako perl automake gdb valgrind git git-lfs unzip lunzip p7zip-full autoconf telnet iotop htop libtool build-essential pkg-config gettext
 
 ## clang-llvm
 
