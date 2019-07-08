@@ -67,3 +67,18 @@ git lfs pull;
 #if [ "x$GIT_SETUP_USE_SSH_AGENT" != "x" ] && [ "x$GIT_SETUP_REUSE_SSH_AGENT" == "x" ]; then
     ssh-agent -k;
 #fi
+
+
+# ====== 备份http/https方式用户名密码鉴权（明文存储，不推荐） ======
+GIT_CREDENTIAL_FILE=~/.git-credentials       ; # [密码文件存储地址]
+git config --global user.[域名].name [用户名] ; # 也可以不指定域名直接写 user.name ，但不建议写全局
+git config --global user.[域名].email [邮箱]  ; # 也可以不指定域名直接写 user.email ，但不建议写全局
+git config --global credential.[域名].helper "store --file $GIT_CREDENTIAL_FILE" # 也可以不指定域名直接写 credential.helper ，但不建议写全局
+
+### protocol 注意区分http和https
+echo "protocol=http  
+host=[域名]
+username=[用户名]
+password=[密码]" | git credential-store --file $GIT_CREDENTIAL_FILE store ;
+
+chmod 600 [密码文件存储地址] ;
