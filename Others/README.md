@@ -468,6 +468,18 @@ choco install --yes nodejs npm
 choco install --yes jdk8 openjdk  # jdk11
 ```
 
+### Rust & Cargo 国内源
+
+修改 ``` $HOME/.cargo/config``` 为:
+
+```
+[source.crates-io]
+registry = "https://github.com/rust-lang/crates.io-index"
+replace-with = 'ustc'
+[source.ustc]
+registry = "git://mirrors.ustc.edu.cn/crates.io-index"
+```
+
 ### Atom Editor
 
 ```bash
