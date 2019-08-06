@@ -23,7 +23,8 @@ export http_proxy=http://127.0.0.1:12759
 export https_proxy=$http_proxy
 export ftp_proxy=$http_proxy
 export rsync_proxy=$http_proxy
-export no_proxy="localhost,127.0.0.1,localaddress,.localdomain.com,9.*.*.*,10.*.*.*,::1*,fc00:*,fe80:*,"
+# export no_proxy="localhost,127.0.0.1,localaddress,.localdomain.com,10.*.*.*,::1*,fc00:*,fe80:*"
+export no_proxy="localhost,localaddress,.localdomain.com,0.0.0.0/8,10.0.0.0/8,127.0.0.0/8,100.64.0.0/10,172.16.0.0/12,169.254.0.0/16,192.0.0.0/24,192.0.2.0/24,192.168.0.0/16,198.18.0.0/15,198.51.100.0/24,203.0.113.0/24,::1/128,fc00::/7,fe80::/10"
 
 # sudo 保留环境变量
 Defaults env_keep += "http_proxy https_proxy ftp_proxy rsync_proxy no_proxy"
