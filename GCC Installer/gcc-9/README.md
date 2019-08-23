@@ -24,6 +24,7 @@ GCC 9的大致(C/C++)内容如下：
 15. \[C++\] 支持部分TS的网络库
 
 ## 编译安装 GCC 9.X.X
+
 ### 准备环境及依赖项
 
 1. 支持 ISO C++ 98 的编译器（GCC 3.4及以上）
@@ -49,10 +50,13 @@ GCC 9的大致(C/C++)内容如下：
 21. gperf
 
 ### 我编译的环境
+
 #### 系统
+
 CentOS 7 & Manjaro 14
 
 #### 编译的依赖库
+
 + gmp 6.1.2
 + mpfr 4.0.2
 + mpc 1.1.0
@@ -61,15 +65,18 @@ CentOS 7 & Manjaro 14
 + bdw-gc 8.0.4
 
 #### 编译目标
+
 + gcc 9.1.0
 + binutils 2.32
 + python 2.7.16 *[按需]*
 + gdb 8.3 (如果存在ncurses-devel包)
 
 #### 注
+
 + (所有的库都会被安装在**$PREFEX_DIR**里)
 
 #### 额外建议
+
 给特定用户安装 gdb的pretty-printer 用以友好打印stdc++的stl容器
 
 1. 在执行 install.sh 脚本前安装 ncurses-devel 和 python-devel， 用于编译gdb和开启python功能
@@ -94,4 +101,6 @@ CentOS 7 & Manjaro 14
   ```
 
 #### History
+
++ 2019-08-23    Update gcc to 9.2.0
 + 2019-06-03    Created

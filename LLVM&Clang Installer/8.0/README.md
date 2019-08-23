@@ -8,6 +8,7 @@ LLVM + Clang 8.0 发布啦，本脚本在之前LLVM + Clang 7.0 的基础上做�
 如果在一些比较老的系统上，自带的gcc版本过低（比如CentOS 6）.可以先用 https://github.com/owent-utils/bash-shell/tree/master/GCC%20Installer/gcc-9 编译出新版gcc，再用这个gcc来编译llvm+clang工具链。
 
 ### 编译脚本使用示例
+
 ```bash
 sudo -b env CC=/usr/local/gcc-9.1.0/gcc CXX=/usr/local/gcc-9.1.0/g++ nohup ./install.sh
 sudo chmod 777 nohup.out && tail -f nohup.out;
@@ -43,12 +44,14 @@ tail -f nohup.out;
 * 建议使用**llvm-config --cflags**,**llvm-config --cxxflags**和**llvm-config --ldflags**来查看需要附加的编译选项
 
 ### 发行注记
-+ llvm : http://llvm.org/releases/8.0.0/docs/ReleaseNotes.html
-+ clang : http://llvm.org/releases/8.0.0/tools/clang/docs/ReleaseNotes.html
-+ clang Extra : http://llvm.org/releases/8.0.0/tools/clang/tools/extra/docs/ReleaseNotes.html
-+ lld: http://llvm.org/releases/8.0.0/tools/lld/docs/ReleaseNotes.html
+
++ llvm : http://llvm.org/releases/8.0.1/docs/ReleaseNotes.html
++ clang : http://llvm.org/releases/8.0.1/tools/clang/docs/ReleaseNotes.html
++ clang Extra : http://llvm.org/releases/8.0.1/tools/clang/tools/extra/docs/ReleaseNotes.html
++ lld: http://llvm.org/releases/8.0.1/tools/lld/docs/ReleaseNotes.html
 
 ## 编译安装 LLVM + Clang 8.0
+
 ### 准备环境及依赖项
 
 1. cmake
@@ -61,33 +64,41 @@ tail -f nohup.out;
 8. GCC 4.7 or higher
 
 ### 我编译的环境
+
 #### 系统：
 CentOS 7 & Manjaro 14
 
 #### 系统库：
+
 详情参见 [llvm官网](http://llvm.org/)
 
 #### 编译的依赖库：
-+ libc++ 8.0.0
-+ libc++abi 8.0.0
-+ libunwind 8.0.0
+
++ libc++ 8.0.1
++ libc++abi 8.0.1
++ libunwind 8.0.1
 
 #### 默认编译目标：
-+ llvm 8.0.0
-+ clang 8.0.0
-+ compiler_rt 8.0.0
-+ clang_tools_extra 8.0.0
-+ lldb 8.0.0
-+ lld 8.0.0
+
++ llvm 8.0.1
++ clang 8.0.1
++ compiler_rt 8.0.1
++ clang_tools_extra 8.0.1
++ lldb 8.0.1
++ lld 8.0.1
 
 #### 注：
+
 + (所有的库都会被安装在**$PREFEX_DIR**里)
 
 #### 额外建议：
+
 + 如果增加编译组件，比如已装有gtest要编译lld，使用命令 ```./install.sh -t +openmp```
 
 #### History:
++ 2019-08-23     Update to 8.0.1, using github sources
 + 2019-06-03     Created
 
 #### 参考文献
+
 1. [llvm官网](http://llvm.org/)
