@@ -40,6 +40,8 @@ echo "ProxyCommand connect-proxy/connect -H PROXYSERVER:PROXYPORT  %h %p" >> ~/.
 echo "ProxyCommand corkscrew PROXYSERVER PROXYPORT %h %p" >> ~/.ssh/config ;
 ## maybe need package nmap-netcat/gnu-netcat/openbsd-netcat/netcat/net-tools
 echo "ProxyCommand /usr/bin/nc -X connect -x PROXYSERVER:PROXYPORT %h %p" >> ~/.ssh/config ;
+##
+echo "ProxyCommand /usr/bin/socat - PROXY:PROXYSERVER:%h:%p,proxyport=PROXYPORT" >> ~/.ssh/config ;
 
 # ssh over sock5-proxy
 ## maybe need package nmap-netcat/gnu-netcat/openbsd-netcat/netcat/net-tools
@@ -358,7 +360,7 @@ sudo yum install -y gcc gdb valgrind automake make libcurl-devel expat-devel exp
 sudo yum install -y zlib-devel zlib-static;
 
 # git
-wget https://mirrors.edge.kernel.org/pub/software/scm/git/git-2.21.0.tar.xz;
+wget https://mirrors.edge.kernel.org/pub/software/scm/git/git-2.23.0.tar.xz;
 tar -axvf git-2.21.0.tar.xz ;
 cd git-2.21.0;
 env LDFLAGS="-static" ./configure --prefix=/usr --with-curl --with-expat --with-openssl --with-libpcre2 ;
@@ -368,7 +370,11 @@ cd contrib/subtree;
 sudo make install;
 cd ../../../ ;
 # git lfs
-sudo rpm -ivh https://packagecloud.io/github/git-lfs/packages/el/7/git-lfs-2.7.1-1.el7.x86_64.rpm/download
+wget https://github.com/git-lfs/git-lfs/releases/download/v2.8.0/git-lfs-linux-amd64-v2.8.0.tar.gz ;
+mkdir git-lfs;
+cd git-lfs ; 
+tar --axvf ../git-lfs-linux-amd64-v2.8.0.tar.gz ;
+sudo ./install.sh ;
 ```
 
 ### Ubuntu \& WSL
