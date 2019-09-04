@@ -5,8 +5,12 @@
 
 # curl https://get.acme.sh | sh
 
-export CF_Key="GOT TOKEN FROM https://dash.cloudflare.com/profile"
-export CF_Email="admin@owent.net"
+# export CF_Key="GOT TOKEN FROM https://dash.cloudflare.com/profile"
+# export CF_Email="admin@owent.net"
+
+# In order to use the new token, the token currently needs access read access to Zone.Zone, and write access to Zone.DNS, across all Zones.
+export CF_Token="GOT TOKEN FROM https://dash.cloudflare.com/profile"
+export CF_Account_ID="owent"
 
 DOMAIN_NAME=owent.net;
 ADMIN_EMAIL=$CF_Email;
