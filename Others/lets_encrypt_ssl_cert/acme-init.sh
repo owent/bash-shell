@@ -10,8 +10,14 @@
 
 # In order to use the new token, the token currently needs access read access to Zone.Zone, and write access to Zone.DNS, across all Zones.
 export CF_Token="GOT TOKEN FROM https://dash.cloudflare.com/profile"
-export CF_Account_ID="owent"
+export CF_Account_ID="b3b06592e853c937c79388e4bcb03ac7"
 
+# Get CF_Account_ID by 
+#   curl -X GET "https://api.cloudflare.com/client/v4/zones" \
+#     -H "Content-Type:application/json" \
+#     -H "Authorization: Bearer $CF_Token"
+
+     
 DOMAIN_NAME=owent.net;
 ADMIN_EMAIL=$CF_Email;
 INSTALL_CERT_DIR=/home/website/ssl;
