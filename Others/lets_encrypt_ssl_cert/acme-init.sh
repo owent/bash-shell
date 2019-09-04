@@ -9,13 +9,17 @@
 # export CF_Email="admin@owent.net"
 
 # In order to use the new token, the token currently needs access read access to Zone.Zone, and write access to Zone.DNS, across all Zones.
-export CF_Token="GOT TOKEN FROM https://dash.cloudflare.com/profile"
-export CF_Account_ID="b3b06592e853c937c79388e4bcb03ac7"
+export CF_Token="GOT TOKEN FROM https://dash.cloudflare.com/profile" ;
+export CF_Account_ID="6896d432a993ce19d72862cc8450db09" ;
 
-# Get CF_Account_ID by 
+# Get CF_Account_ID using
 #   curl -X GET "https://api.cloudflare.com/client/v4/zones" \
-#     -H "Content-Type:application/json" \
+#     -H "Content-Type:application/json"                     \
 #     -H "Authorization: Bearer $CF_Token"
+# Or add read access to Account.Account Settings and then using 
+#    curl -X GET "https://api.cloudflare.com/client/v4/accounts" \
+#      -H "Content-Type: application/json"                       \
+#      -H "Authorization: Bearer $CF_Token"
 
      
 DOMAIN_NAME=owent.net;
