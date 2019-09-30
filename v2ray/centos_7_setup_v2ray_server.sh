@@ -81,23 +81,33 @@ fi
 chown $V2RAY_USER:$V2RAY_USER -R "$PREFIX";
 
 # setup systemd
-SYSTEMD_CONFIG_PATH="/usr/lib/systemd/system/v2ray.service";
+if [ -e "/usr/lib/systemd/system" ]; then
+    SYSTEMD_CONFIG_PATH="/usr/lib/systemd/system/v2ray.service";
+elif [ -e "/lib/systemd/system" ] ; then
+    SYSTEMD_CONFIG_PATH="/lib/systemd/system/v2ray.service";
+else
+    SYSTEMD_CONFIG_PATH="";
+fi
 
 # systemd and firewall
-if [ -e "/usr/lib/systemd/system" ] && [ ! -e "$SYSTEMD_CONFIG_PATH" ]; then
-    sudo cp -f "$PREFIX/$HOME_DIR/systemd/v2ray.service" "$SYSTEMD_CONFIG_PATH";
-    sudo perl -p -i -e "s;.*User\\s*\\=.*;User=$V2RAY_USER;"  "$SYSTEMD_CONFIG_PATH";
-    sudo perl -p -i -e "s;.*Group\\s*\\=.*;Group=$V2RAY_USER;" "$SYSTEMD_CONFIG_PATH";
-    sudo perl -p -i -e "s;.*PIDFile\\s*\\=.*;PIDFile=$PREFIX/run/v2ray-server.pid;" "$SYSTEMD_CONFIG_PATH";
-    sudo perl -p -i -e "s;.*ExecStart\\s*\\=.*;ExecStart=$PREFIX/$HOME_DIR/v2ray -config $PREFIX/etc/config.json;" "$SYSTEMD_CONFIG_PATH";
+if [ "x" != "x${SYSTEMD_CONFIG_PATH}" ]; then
+    if [ ! -e "$SYSTEMD_CONFIG_PATH" ]; then
+        sudo cp -f "$PREFIX/$HOME_DIR/systemd/v2ray.service" "$SYSTEMD_CONFIG_PATH";
+        sudo perl -p -i -e "s;.*User\\s*\\=.*;User=$V2RAY_USER;"  "$SYSTEMD_CONFIG_PATH";
+        sudo perl -p -i -e "s;.*Group\\s*\\=.*;Group=$V2RAY_USER;" "$SYSTEMD_CONFIG_PATH";
+        sudo perl -p -i -e "s;.*PIDFile\\s*\\=.*;PIDFile=$PREFIX/run/v2ray-server.pid;" "$SYSTEMD_CONFIG_PATH";
+        sudo perl -p -i -e "s;.*ExecStart\\s*\\=.*;ExecStart=$PREFIX/$HOME_DIR/v2ray -config $PREFIX/etc/config.json;" "$SYSTEMD_CONFIG_PATH";
 
-    sudo systemctl daemon-reload ;
-    sudo systemctl enable v2ray ;
-    sudo systemctl start v2ray ;
-elif [ -e "$SYSTEMD_CONFIG_PATH" ]; then
-    sudo perl -p -i -e "s;.*ExecStart\\s*\\=.*;ExecStart=$PREFIX/$HOME_DIR/v2ray -config $PREFIX/etc/config.json;" "$SYSTEMD_CONFIG_PATH";
-    sudo systemctl daemon-reload ;
-    sudo systemctl restart v2ray ;
+        sudo systemctl daemon-reload ;
+        sudo systemctl enable v2ray ;
+        sudo systemctl start v2ray ;
+    else
+        sudo perl -p -i -e "s;.*ExecStart\\s*\\=.*;ExecStart=$PREFIX/$HOME_DIR/v2ray -config $PREFIX/etc/config.json;" "$SYSTEMD_CONFIG_PATH";
+        sudo systemctl daemon-reload ;
+        sudo systemctl restart v2ray ;
+    fi
+else
+    echo "Can not find systemd config dictionary, skip setup for systemd."
 fi
 
 FIREWALLD_CONF_FILE_PATH=/etc/firewalld/services/v2ray.xml;
