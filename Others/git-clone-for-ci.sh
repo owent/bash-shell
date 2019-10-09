@@ -75,7 +75,7 @@ git config --global user.[域名].name [用户名] ; # 也可以不指定域名�
 git config --global user.[域名].email [邮箱]  ; # 也可以不指定域名直接写 user.email ，但不建议写全局
 git config --global credential.[域名].helper "store --file $GIT_CREDENTIAL_FILE" # 也可以不指定域名直接写 credential.helper ，但不建议写全局
 
-### protocol 注意区分http和https
+### protocol 注意区分http和https,注意不能有多余的空格
 echo "protocol=http  
 host=[域名]
 username=[用户名]
