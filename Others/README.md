@@ -361,8 +361,8 @@ sudo yum install -y zlib-devel zlib-static;
 
 # git
 wget https://mirrors.edge.kernel.org/pub/software/scm/git/git-2.23.0.tar.xz;
-tar -axvf git-2.21.0.tar.xz ;
-cd git-2.21.0;
+tar -axvf git-2.23.0.tar.xz ;
+cd git-2.23.0;
 env LDFLAGS="-static" ./configure --prefix=/usr --with-curl --with-expat --with-openssl --with-libpcre2 ;
 make -j8;
 sudo make install;
