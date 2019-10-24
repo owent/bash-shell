@@ -351,7 +351,7 @@ yay -Syy --noconfirm vulkan-headers lib32-vulkan-validation-layers vulkan-tools 
 
 ```bash
 ## basic
-sudo yum install -y vim curl wget libuuid-devel perl unzip lzip lunzip p7zipn p7zip-plugins autoconf telnet iotop htop libtool pkgconfig texinfo m4 net-tools python python-setuptools python-pip python-requests python-devel python3-rpm-macros python34 python34-setuptools python34-pip python34-devel
+sudo yum install -y vim curl wget libuuid-devel perl unzip lzip lunzip p7zip p7zip-plugins autoconf telnet iotop htop libtool pkgconfig texinfo m4 net-tools python python-setuptools python-pip python-requests python-devel python3-rpm-macros python34 python34-setuptools python34-pip python34-devel
 
 ## GCC
 sudo yum install -y gcc gdb valgrind automake make libcurl-devel expat-devel expat-static re2c gettext glibc glibc-devel glibc-static
@@ -373,7 +373,7 @@ cd ../../../ ;
 wget https://github.com/git-lfs/git-lfs/releases/download/v2.8.0/git-lfs-linux-amd64-v2.8.0.tar.gz ;
 mkdir git-lfs;
 cd git-lfs ; 
-tar --axvf ../git-lfs-linux-amd64-v2.8.0.tar.gz ;
+tar -axvf ../git-lfs-linux-amd64-v2.8.0.tar.gz ;
 sudo ./install.sh ;
 ```
 
