@@ -48,8 +48,8 @@ fi
 export CC="$CC";
 export CXX="$CXX";
 
-ORIGIN_COMPILER_CC="$(readlink -f \"$CC\")";
-ORIGIN_COMPILER_CXX="$(readlink -f \"$CXX\")";
+ORIGIN_COMPILER_CC="$(readlink -f "$CC")";
+ORIGIN_COMPILER_CXX="$(readlink -f "$CXX")";
 
 echo '
 #include <stdio.h>
@@ -623,11 +623,11 @@ fi" > "$PREFIX_DIR/load-llvm-envs.sh" ;
     echo '
 LLVM_HOME_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )";
 
-if [ "x/" == "x$GCC_HOME_DIR" ] || [ "x/usr" == "x$GCC_HOME_DIR" ] || [ "x/usr/local" == "x$GCC_HOME_DIR" ]; then
+if [ "x/" == "x$GCC_HOME_DIR" ] || [ "x/usr" == "x$GCC_HOME_DIR" ] || [ "x/usr/local" == "x$GCC_HOME_DIR" ] || [ "x$LLVM_HOME_DIR" == "x$GCC_HOME_DIR" ]; then
     if [ "x$LD_LIBRARY_PATH" == "x" ]; then
         export LD_LIBRARY_PATH="$LLVM_HOME_DIR/lib" ;
     else
-        export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$LLVM_HOME_DIR/lib:" ;
+        export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$LLVM_HOME_DIR/lib:$LLVM_HOME_DIR/lib64" ;
     fi
     
     export PATH="$LLVM_HOME_DIR/bin:$LLVM_HOME_DIR/libexec:$PATH" ;
