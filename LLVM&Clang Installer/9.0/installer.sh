@@ -587,6 +587,13 @@ echo "add $STAGE_BUILD_PREFIX_DIR/lib to LD_LIBRARY_PATH";
 
 export CC=$STAGE_BUILD_PREFIX_DIR/bin/clang ;
 export CXX=$STAGE_BUILD_PREFIX_DIR/bin/clang++ ;
+export AR="$STAGE_BUILD_PREFIX_DIR/bin/llvm-ar" ;
+export AS="$STAGE_BUILD_PREFIX_DIR/bin/llvm-as" ;
+if [ -e "$STAGE_BUILD_PREFIX_DIR/bin/lld" ]; then
+    export LD="$STAGE_BUILD_PREFIX_DIR/bin/lld" ;
+elif [ -e "$STAGE_BUILD_PREFIX_DIR/bin/ld.lld" ]; then
+    export LD="$STAGE_BUILD_PREFIX_DIR/bin/ld.lld" ;
+fi
 BUILD_USE_LD="";
 
 # 自举编译， 脱离对gcc的依赖
@@ -606,10 +613,13 @@ rm -rf "$STAGE_BUILD_PREFIX_DIR_1";
 
 if [ $BUILD_DOWNLOAD_ONLY -eq 0 ]; then
 
-    DEP_COMPILER_HOME="$(dirname "$(dirname "$(which "$ORIGIN_COMPILER_CXX")")")";
+    DEP_COMPILER_HOME="$(dirname "$(dirname "$ORIGIN_COMPILER_CXX")")";
     echo "#!/bin/bash
 
-GCC_HOME_DIR=\"$DEP_COMPILER_HOME\";" > "$PREFIX_DIR/load-llvm-envs.sh" ;
+if [ \"x\$GCC_HOME_DIR\" == \"x\" ]; then
+    GCC_HOME_DIR=\"$DEP_COMPILER_HOME\";
+fi" > "$PREFIX_DIR/load-llvm-envs.sh" ;
+
     echo '
 LLVM_HOME_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )";
 
