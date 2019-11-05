@@ -351,7 +351,7 @@ yay -Syy --noconfirm vulkan-headers lib32-vulkan-validation-layers vulkan-tools 
 
 ```bash
 ## basic
-sudo yum install -y vim curl wget libuuid-devel perl unzip lzip lunzip p7zip p7zip-plugins autoconf telnet iotop htop libtool pkgconfig texinfo m4 net-tools python python-setuptools python-pip python-requests python-devel python3-rpm-macros python34 python34-setuptools python34-pip python34-devel
+sudo yum install -y vim curl wget libuuid-devel perl unzip lzip lunzip p7zip p7zip-plugins autoconf telnet iotop htop libtool pkgconfig m4 net-tools python python-setuptools python-pip python-requests python-devel python3-rpm-macros python34 python34-setuptools python34-pip python34-devel texinfo asciidoc xmlto
 
 ## GCC
 sudo yum install -y gcc gdb valgrind automake make libcurl-devel expat-devel expat-static re2c gettext glibc glibc-devel glibc-static
@@ -360,21 +360,29 @@ sudo yum install -y gcc gdb valgrind automake make libcurl-devel expat-devel exp
 sudo yum install -y zlib-devel zlib-static;
 
 # git
-wget https://mirrors.edge.kernel.org/pub/software/scm/git/git-2.23.0.tar.xz;
-tar -axvf git-2.23.0.tar.xz ;
-cd git-2.23.0;
-env LDFLAGS="-static" ./configure --prefix=/usr --with-curl --with-expat --with-openssl --with-libpcre2 ;
-make -j8;
-sudo make install;
+GIT_VERSION=2.23.0 ;
+GIT_LFS_VERSION=2.9.0 ;
+GIT_INSTALL_PREFIX=/opt ;
+wget https://mirrors.edge.kernel.org/pub/software/scm/git/git-$GIT_VERSION.tar.xz;
+tar -axvf git-$GIT_VERSION.tar.xz ;
+cd git-$GIT_VERSION;
+./configure --prefix=$GIT_INSTALL_PREFIX/git/$GIT_VERSION --with-curl --with-expat --with-openssl --with-libpcre2 --with-editor=vim ;
+make -j8 all doc;
+sudo make install install-doc install-html;
 cd contrib/subtree;
-sudo make install;
+sudo make install install-doc install-html;
+sudo ln -s $GIT_INSTALL_PREFIX/git/$GIT_VERSION $GIT_INSTALL_PREFIX/git/latest ;
 cd ../../../ ;
+mkdir -p git-lfs;
+cd git-lfs;
 # git lfs
-wget https://github.com/git-lfs/git-lfs/releases/download/v2.8.0/git-lfs-linux-amd64-v2.8.0.tar.gz ;
-mkdir git-lfs;
-cd git-lfs ; 
-tar -axvf ../git-lfs-linux-amd64-v2.8.0.tar.gz ;
-sudo ./install.sh ;
+wget https://github.com/git-lfs/git-lfs/releases/download/v$GIT_LFS_VERSION/git-lfs-linux-amd64-v$GIT_LFS_VERSION.tar.gz ;
+mkdir git-lfs-v$GIT_LFS_VERSION;
+cd git-lfs-v$GIT_LFS_VERSION ; 
+tar -axvf ../git-lfs-linux-amd64-v$GIT_LFS_VERSION.tar.gz ;
+sudo env PREFIX=$GIT_INSTALL_PREFIX/git-lfs/v$GIT_LFS_VERSION ./install.sh ;
+sudo ln -s $GIT_INSTALL_PREFIX/git-lfs/v$GIT_LFS_VERSION $GIT_INSTALL_PREFIX/git-lfs/latest ;
+cd ../../ ;
 ```
 
 ### Ubuntu \& WSL
