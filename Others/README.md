@@ -33,25 +33,48 @@ Defaults env_keep += "http_proxy https_proxy ftp_proxy rsync_proxy no_proxy"
 ### ssh代理
 
 ```bash
-# ssh over http-proxy
-## maybe need package connect-proxy/connect/corkscrew
-echo "ProxyCommand connect-proxy/connect -H PROXYSERVER:PROXYPORT  %h %p" >> ~/.ssh/config ;
-## maybe need package corkscrew
-echo "ProxyCommand corkscrew PROXYSERVER PROXYPORT %h %p" >> ~/.ssh/config ;
-## maybe need package nmap-netcat/gnu-netcat/openbsd-netcat/netcat/net-tools
-echo "ProxyCommand /usr/bin/nc -X connect -x PROXYSERVER:PROXYPORT %h %p" >> ~/.ssh/config ;
-##
-echo "ProxyCommand /usr/bin/socat - PROXY:PROXYSERVER:%h:%p,proxyport=PROXYPORT" >> ~/.ssh/config ;
+# SSH over http-proxy
+## 下面提供的使用方式和安装命令请根据自己的环境选择，都是任选一个即可
+## + Windows: choco install
+## + Arch/Manjaro/MSYS2: pacman -S
+## + Debian/Ubuntu: apt install
+## + CentOS/Redhat: yum install
+## + macOS: brew install
+## + 其他环境请参照各自的包管理工具，如: dnf/snap/pkg_add等
 
-# ssh over sock5-proxy
-## maybe need package nmap-netcat/gnu-netcat/openbsd-netcat/netcat/net-tools
-echo "ProxyCommand nc -X 5 -x PROXYSERVER:PROXYPORT %h %p" >> ~/.ssh/config ;
+## 1. (推荐) 使用 socat => pacman -S/yum|apt|brew install socat后使用下面的配置(认证选项: proxyauth=<username>:<password> , 其他选项见)
+echo "ProxyCommand socat - PROXY:$PROXYSERVER:%h:%p,proxyport=$PROXYPORT" >> ~/.ssh/config ;
+## 2. (推荐) 使用 nmap/ncat => pacman -S/yum|apt|brew|choco install nmap-ncat/ncat/nmap 后使用下面的配置(认证选项: --proxy-auth)
+### Windows版域编译包: https://nmap.org/book/inst-windows.html
+echo "ProxyCommand ncat --proxy $PROXYSERVER:$PROXYPORT --proxy-type http %h %p" >> ~/.ssh/config ;
+## 3. 使用 connect/connect-proxy => pacman -S/yum|apt|brew install connect-proxy/connect (Windows版本的git自带)
+echo "ProxyCommand connect-proxy/connect -H $PROXYSERVER:$PROXYPORT  %h %p" >> ~/.ssh/config ;
+## 4. 使用 corkscrew => pacman -S/yum|apt|brew install corkscrew
+echo "ProxyCommand corkscrew $PROXYSERVER $PROXYPORT %h %p" >> ~/.ssh/config ;
+## 5. 使用 nc => pacman -S/yum|apt|brew|choco install nmap-netcat/gnu-netcat/openbsd-netcat/netcat/net-tools
+### 不建议使用nc，因为不同平台版本、功能和使用参数不完全一样，建议使用下一代的nmap/ncat为替代品
+echo "ProxyCommand /usr/bin/nc -X connect -x $PROXYSERVER:$PROXYPORT %h %p" >> ~/.ssh/config ;
 
-# ssh over httptunnel
+# SSH over sock5-proxy
+## 1. (推荐) 使用 socat => pacman -S/yum|apt|brew install socat后使用下面的配置(认证选项: socksuser=nobody)
+echo "ProxyCommand SOCKS4A:$PROXYSERVER:%h:%p,socksport=$PROXYPORT" >> ~/.ssh/config ;
+## 2. (推荐) 使用 nmap/ncat => pacman -S/yum|apt|brew|choco install nmap-ncat/ncat/nmap 后使用下面的配置(认证选项: --proxy-auth)
+### Windows版域编译包: https://nmap.org/book/inst-windows.html
+echo "ProxyCommand ncat --proxy $PROXYSERVER:$PROXYPORT --proxy-type socks5 %h %p" >> ~/.ssh/config ;
+## 3. 使用 nc => pacman -S/yum|apt|brew|choco install nmap-netcat/gnu-netcat/openbsd-netcat/netcat/net-tools
+### 不建议使用nc，因为不同平台版本、功能和使用参数不完全一样，建议使用下一代的nmap/ncat为替代品
+echo "ProxyCommand nc -X 5 -x $PROXYSERVER:$PROXYPORT %h %p" >> ~/.ssh/config ;
+
+# SSH over httptunnel
 ## server
 hts -F localhost:22 80
 ## client
 htc -P proxy.corp.com:80 -F 8022 server.at.home:80
+
+## 也可以通过更专用的代理软件
+## + https://github.com/rofl0r/proxychains-ng
+## + https://github.com/haad/proxychains
+## + https://www.torproject.org/
 ```
 
 ## 软件源
