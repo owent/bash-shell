@@ -464,19 +464,36 @@ yay -Syy --noconfirm vulkan-headers lib32-vulkan-validation-layers vulkan-tools 
 ### CentOS
 
 ```bash
-## basic
+## basic - centos 7
 sudo yum install -y vim curl wget libuuid-devel perl unzip lzip lunzip p7zip p7zip-plugins autoconf telnet iotop htop libtool pkgconfig m4 net-tools python python-setuptools python-pip python-requests python-devel python3-rpm-macros python34 python34-setuptools python34-pip python34-devel texinfo asciidoc xmlto
 
-## GCC
-sudo yum install -y gcc gdb valgrind automake make libcurl-devel expat-devel expat-static re2c gettext glibc glibc-devel glibc-static
+## basic centos 8
+sudo dnf install -y vim curl wget perl unzip lzip p7zip p7zip-plugins autoconf telnet iotop htop libtool pkgconfig m4 net-tools python3 python3-setuptools python3-pip python3-devel info asciidoc xmlto
+
+## GCC - centos 7
+sudo yum install -y gcc gcc-c++ gdb valgrind automake make libcurl-devel expat-devel re2c gettext glibc glibc-devel glibc-static
+
+## GCC - centos 8
+sudo dnf install -y gcc gcc-c++ gdb valgrind automake make libcurl-devel expat-devel glibc glibc-devel
 
 # External development tools
-sudo yum install -y zlib-devel zlib-static;
+sudo yum install -y zlib-devel;
 
 # git
+RE2C_VERSION=1.2.1 ;
 GIT_VERSION=2.23.0 ;
 GIT_LFS_VERSION=2.9.0 ;
 GIT_INSTALL_PREFIX=/opt ;
+export PATH="$GIT_INSTALL_PREFIX/re2c/latest/bin/:$GIT_INSTALL_PREFIX/git/latest/bin/:$GIT_INSTALL_PREFIX/git-lfs/latest/bin/:$PATH"
+wget https://github.com/skvadrik/re2c/releases/download/$RE2C_VERSION/re2c-$RE2C_VERSION.tar.xz;
+tar -axvf re2c-$RE2C_VERSION.tar.xz ;
+cd re2c-$RE2C_VERSION ;
+./configure --prefix=$GIT_INSTALL_PREFIX/re2c/$RE2C_VERSION --with-pic=yes;
+make -j8;
+sudo make install;
+sudo ln -s $GIT_INSTALL_PREFIX/re2c/$RE2C_VERSION $GIT_INSTALL_PREFIX/re2c/latest ;
+cd ..;
+
 wget https://mirrors.edge.kernel.org/pub/software/scm/git/git-$GIT_VERSION.tar.xz;
 tar -axvf git-$GIT_VERSION.tar.xz ;
 cd git-$GIT_VERSION;
