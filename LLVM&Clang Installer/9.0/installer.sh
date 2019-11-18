@@ -68,7 +68,7 @@ rm -f contest.tmp.exe contest.tmp.c;
 CHECK_INFO_SLEEP=3
  
 # ======================= 安装目录初始化/工作目录清理 ======================= 
-while getopts "dp:b:cht:l:g:m:" OPTION; do
+while getopts "dp:b:cht:l:g:m:n" OPTION; do
     case $OPTION in
         p)
             PREFIX_DIR="$OPTARG";
@@ -97,6 +97,7 @@ while getopts "dp:b:cht:l:g:m:" OPTION; do
             echo "-l [llvm cpnfigure option]  add llvm build options.";
             echo "-m [llvm cmake option]      add llvm build options.";
             echo "-g [gnu option]             add gcc,binutils,gdb build options.";
+            echo "-n                          print toolchain version and exit.";
             exit 0;
         ;;
         t)
@@ -111,6 +112,10 @@ while getopts "dp:b:cht:l:g:m:" OPTION; do
         ;;
         m)
             BUILD_LLVM_CMAKE_OPTION="$BUILD_LLVM_CMAKE_OPTION $OPTARG";
+        ;;
+        n)
+            echo $LLVM_VERSION;
+            exit 0;
         ;;
         g)
             BUILD_TARGET_CONF_OPTION="$BUILD_TARGET_CONF_OPTION $OPTARG";

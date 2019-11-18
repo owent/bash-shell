@@ -38,7 +38,7 @@ BUILD_DOWNLOAD_ONLY=0;
 CHECK_INFO_SLEEP=3
 
 # ======================= 安装目录初始化/工作目录清理 =======================
-while getopts "dp:cht:d:g:" OPTION; do
+while getopts "dp:cht:d:g:n" OPTION; do
     case $OPTION in
         p)
             PREFIX_DIR="$OPTARG";
@@ -62,6 +62,7 @@ while getopts "dp:cht:d:g:" OPTION; do
             echo "-t [build target]           set build target(gmp mpfr mpc isl gcc binutils gdb libatomic_ops bdw-gc).";
             echo "-d [compoment option]       add dependency compoments build options.";
             echo "-g [gnu option]             add gcc,binutils,gdb build options.";
+            echo "-n                          print toolchain version and exit.";
             exit 0;
         ;;
         t)
@@ -72,6 +73,10 @@ while getopts "dp:cht:d:g:" OPTION; do
         ;;
         g)
             BUILD_TARGET_CONF_OPTION="$BUILD_TARGET_CONF_OPTION $OPTARG";
+        ;;
+        n)
+            echo $COMPOMENTS_GCC_VERSION;
+            exit 0;
         ;;
         ?)  #当有不认识的选项的时候arg为?
             echo "unkonw argument detected";
