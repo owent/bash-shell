@@ -572,6 +572,7 @@ apt install -y vim curl wget iotop htop aptitude wpasupplicant wireless-tools;
 # 网络重启
 systemctl restart networking # systemctl restart network
 
+## ================ 手动配置网络/WLAN ================
 # WLAN配置见 https://pve.proxmox.com/wiki/WLAN
 # 设置无线网卡(DHCP)
 ip address          # 查看无线网卡的interface name
@@ -599,6 +600,15 @@ WLAN_GATEWAY=...                 # 查到的网关(routers 字段对应的值)
 
 # 设置默认路由
 ip route change default via $WLAN_GATEWAY dev $WLAN_INTERFACE
+
+## ================ 使用Network Manager配置网络/WLAN ================
+apt install -y network-manager
+### patch for BUG of Network Manager, https://lists.debian.org/debian-user/2017/06/msg01045.html
+ln -s /dev/null /etc/systemd/network/99-default.link
+
+# 开启转发（如果需要作为网关）
+sed -i -r 's/#?net.ipv4.ip_forward=.*/net.ipv4.ip_forward=1/' /etc/sysctl.conf
+sed -i -r 's/#?net.ipv6.conf.all.forwarding=.*/net.ipv6.conf.all.forwarding=1/' /etc/sysctl.conf
 
 # DNS
 cat /etc/resolv.conf
