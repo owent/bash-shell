@@ -288,15 +288,35 @@ deb http://download.proxmox.wiki/debian/ buster pve-no-subscription
 apt-get update -y ;
 ```
 
-### nodejs 替换淘宝软件源
+### nodejs 软件源
 
 ```bash
-npm install -g cnpm --registry=https://registry.npm.taobao.org
-
 npm config set registry https://registry.npm.taobao.org
+npm config set registry https://mirrors.tencent.com/npm/
+
+# yarn install ...
 ```
 
-### ruby和gem源
+### python/pypi 软件源
+
+```bash
+echo '[global]
+index-url = https://mirrors.aliyun.com/pypi/simple/
+[install]
+trusted-host=mirrors.aliyun.com
+' >  ~/.pip/pip.conf ;
+
+echo '[global]
+index-url = https://mirrors.tencent.com/pypi/simple/
+[install]
+trusted-host=mirrors.tencent.com
+' >  ~/.pip/pip.conf ;
+
+# pip install --user ...
+# python/python3 -m pip install --user ...
+```
+
+### ruby gem/bundle 软件源
 
 ```bash
 # 安装脚本（通过rvm） https://github.com/huacnlee/init.d/blob/master/install_rvm
@@ -316,12 +336,14 @@ gem sources --remove https://rubygems.org/
 
 gem sources --add https://gems.ruby-china.org/
 gem sources --add http://mirrors.aliyun.com/rubygems/
+gem sources --add http://mirrors.tencent.com/rubygems/
 
 # bundle
 bundle config mirror.https://rubygems.org https://gems.ruby-china.org 
 bundle config mirror.https://rubygems.org http://mirrors.aliyun.com/rubygems/
+bundle config mirror.https://rubygems.org http://mirrors.tencent.com/rubygems/
 
-# or in Gemfile, edit source 'https://rubygems.org/' to 'https://gems.ruby-china.org' or 'http://mirrors.aliyun.com/rubygems/'
+# or in Gemfile, edit source 'https://rubygems.org/' to 'https://gems.ruby-china.org' or 'http://mirrors.aliyun.com/rubygems/' or 'http://mirrors.tencent.com/rubygems/'
 ```
 
 ## 环境
