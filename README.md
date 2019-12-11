@@ -692,12 +692,29 @@ choco install --yes jdk8 openjdk  # jdk11
 修改 ``` $HOME/.cargo/config``` 为:
 
 ```
+# https://doc.rust-lang.org/cargo/reference/config.html
 [source.crates-io]
 registry = "https://github.com/rust-lang/crates.io-index"
 replace-with = 'ustc'
 [source.ustc]
-registry = "git://mirrors.ustc.edu.cn/crates.io-index"
+registry = "https://mirrors.ustc.edu.cn/crates.io-index"
+
+# [http]
+# proxy = "HOST:PORT"       # HTTP proxy to use for HTTP requests (defaults to none)
+#                           # in libcurl format, e.g., "socks5h://host:port"
+# timeout = 30              # Timeout for each HTTP request, in seconds
+# multiplexing = true       # whether or not to use HTTP/2 multiplexing where possible
+
 ```
+
+配置读取的优先级为(Cargo were invoked in ```/projects/foo/bar/baz```):
+
+* /projects/foo/bar/baz/.cargo/config
+* /projects/foo/bar/.cargo/config
+* /projects/foo/.cargo/config
+* /projects/.cargo/config
+* /.cargo/config
+* $CARGO_HOME/config ($CARGO_HOME defaults to $HOME/.cargo)
 
 ### Atom Editor
 
