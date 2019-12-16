@@ -43,8 +43,8 @@ fi
 tar -axvf "$OPENSSL_PKG_NAME";
 if [ ! -e "$OPENSSL_PREFIX_DIR" ]; then
     cd "$OPENSSL_DIR_NAME";
-    ./config --prefix="$OPENSSL_PREFIX_DIR";
-    make;
+    ./config --prefix="$OPENSSL_PREFIX_DIR" ${OPENSSL_BUILD_OPTIONS[@]};
+    make ; # -j;
     make install;
     cd - ;
 fi
@@ -103,5 +103,5 @@ cd "$NGINX_DIR_NAME";
   --with-openssl="$WORKING_DIR/$OPENSSL_DIR_NAME" \
   --with-openssl-opt="-fPIC" ;
 
-make;
+make ; # -j;
 make install;
