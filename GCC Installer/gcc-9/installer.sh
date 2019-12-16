@@ -12,6 +12,7 @@ COMPOMENTS_GCC_VERSION=9.2.0;
 COMPOMENTS_BINUTILS_VERSION=2.32;
 COMPOMENTS_PYTHON_VERSION=2.7.16;
 COMPOMENTS_GDB_VERSION=8.3;
+COMPOMENTS_GLOBAL_VERSION=6.6.3;
 if [ "owent$COMPOMENTS_GDB_STATIC_BUILD" == "owent" ]; then
     COMPOMENTS_GDB_STATIC_BUILD=0;
 fi
@@ -59,7 +60,7 @@ while getopts "dp:cht:d:g:n" OPTION; do
             echo "-c                          clean build cache.";
             echo "-d                          download only.";
             echo "-h                          help message.";
-            echo "-t [build target]           set build target(gmp mpfr mpc isl gcc binutils gdb libatomic_ops bdw-gc).";
+            echo "-t [build target]           set build target(gmp mpfr mpc isl gcc binutils gdb libatomic_ops bdw-gc global).";
             echo "-d [compoment option]       add dependency compoments build options.";
             echo "-g [gnu option]             add gcc,binutils,gdb build options.";
             echo "-n                          print toolchain version and exit.";
@@ -494,6 +495,23 @@ if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list gdb $BUILD_TARGET_
                 echo -e "\\033[31;1mError: build gdb failed.\\033[39;49;0m"
             fi
         fi
+    fi
+fi
+
+# ======================= install global tool =======================
+if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list global $BUILD_TARGET_COMPOMENTS) ]; then
+    GLOBAL_PKG=$(check_and_download "global" "global-*.tar.gz" "https://ftp.gnu.org/gnu/global/global-$COMPOMENTS_GLOBAL_VERSION.tar.gz" );
+    if [ $? -ne 0 ]; then
+        echo -e "$GLOBAL_PKG";
+        exit -1;
+    fi
+    if [ $BUILD_DOWNLOAD_ONLY -eq 0 ]; then
+        tar -zxvf $GLOBAL_PKG;
+        GLOBAL_DIR=$(ls -d global-* | grep -v \.tar\.gz);
+        cd $GLOBAL_DIR;
+        ./configure --prefix=$PREFIX_DIR --with-pic=yes;
+        make $BUILD_THREAD_OPT && make install;
+        cd "$WORKING_DIR";
     fi
 fi
 
