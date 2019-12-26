@@ -320,10 +320,14 @@ trusted-host=mirrors.tencent.com
 
 ```bash
 # 安装脚本（通过rvm） https://github.com/huacnlee/init.d/blob/master/install_rvm
-command gpg --keyserver hkp://keys.gnupg.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3
-command curl -L https://get.rvm.io | bash -s stable
+gpg --keyserver hkp://keys.gnupg.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3
+curl -L https://get.rvm.io | bash -s stable
 
-source /usr/local/rvm/scripts/rvm ;
+if [ whoami = 'root']; then
+    source /etc/profile.d/rvm.sh ;
+else
+    source ~/.rvm/scripts/rvm ;
+fi
 
 rvm list known;
 
