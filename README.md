@@ -506,9 +506,9 @@ sudo dnf install -y gcc gcc-c++ gdb valgrind automake make libcurl-devel expat-d
 sudo yum install -y zlib-devel;
 
 # git
-RE2C_VERSION=1.2.1 ;
-GIT_VERSION=2.23.0 ;
-GIT_LFS_VERSION=2.9.0 ;
+RE2C_VERSION=1.3 ;
+GIT_VERSION=2.24.1 ;
+GIT_LFS_VERSION=2.9.1 ;
 GIT_INSTALL_PREFIX=/opt ;
 export PATH="$GIT_INSTALL_PREFIX/re2c/latest/bin/:$GIT_INSTALL_PREFIX/git/latest/bin/:$GIT_INSTALL_PREFIX/git-lfs/latest/bin/:$PATH"
 wget https://github.com/skvadrik/re2c/releases/download/$RE2C_VERSION/re2c-$RE2C_VERSION.tar.xz;
