@@ -17,18 +17,25 @@ CERT_SVR_NAME=server;
 CERT_CLI_NAME=;
 CERT_CONF_PATH=openssl.cnf;
 
-CERT_CRYPTO_LEN=2048;
+CERT_RSA_CRYPTO_LEN=2048;
+CERT_ECC_CURVE=prime192v1; # openssl ecparam -list_curves
 CERT_CA_SERIAL=00;
-CERT_CA_TIME=3650;
+CERT_CA_TIME=7300;
 CERT_CA_NAME=ca;
+CERT_HASH_NAME="-sha256";
+CERT_USE_ECC=0;
 
-while getopts "c:f:hl:n:s:t:" OPTION; do
+while getopts "c:e:f:hl:n:s:t:" OPTION; do
     case $OPTION in
         a)
-            CERT_CA_NAME="OPTARG";
+            CERT_CA_NAME="$OPTARG";
         ;;
         c)
-            CERT_CLI_NAME="OPTARG";
+            CERT_CLI_NAME="$OPTARG";
+            CERT_USE_ECC=1;
+        ;;
+        e)
+            CERT_ECC_CURVE="$OPTARG";
         ;;
         f)
             CERT_CONF_PATH="$OPTARG";
@@ -38,16 +45,18 @@ while getopts "c:f:hl:n:s:t:" OPTION; do
             echo "options:";
             echo "-a=[ca cert name]           set ca cert name(default=$CERT_CA_NAME).";
             echo "-c=[client cert name]       set client cert name.";
+            echo "-e=[ecc cert curve]         set ecc cert curve(default=$CERT_ECC_CURVE).";
             echo "-f=[configure file]         set configure file(default=$CERT_CONF_PATH).";
             echo "-h                          help message.";
-            echo "-l=[cert crypto lengtn]     set cert crypto lengtn(default=$CERT_CRYPTO_LEN).";
+            echo "-l=[cert crypto lengtn]     set RSA cert crypto length(default=$CERT_CRYPTO_LEN).";
             echo "-n=[ca serial]              serial if init ca work dir(default=$CERT_CA_SERIAL).";
             echo "-s=[server cert name]       set server cert name(default=$CERT_SVR_NAME).";
             echo "-t=[ca expire time]         set new ca cert expire time in day(default=$CERT_CA_TIME).";
             exit 0;
         ;;
         l)
-            CERT_CRYPTO_LEN=$OPTARG;
+            CERT_RSA_CRYPTO_LEN=$OPTARG;
+            CERT_USE_ECC=0;
         ;;
         n)
             CERT_CA_SERIAL="$OPTARG";
@@ -76,15 +85,23 @@ fi
 # 生成CA证书文件
 if [ ! -e $CERT_CA_NAME.key ] || [ ! -e $CERT_CA_NAME.crt ]; then
     echo "generate ca cert";
-    openssl genrsa -out $CERT_CA_NAME.key $CERT_CRYPTO_LEN;
-    openssl req -x509 -new -days $CERT_CA_TIME -key $CERT_CA_NAME.key -out $CERT_CA_NAME.crt -config $CERT_CONF_PATH;
+    if [ $CERT_USE_ECC -ne 0 ]; then
+        openssl ecparam -genkey -name $CERT_ECC_CURVE -out $CERT_CA_NAME.pem
+    else
+        openssl genrsa -out $CERT_CA_NAME.key $CERT_RSA_CRYPTO_LEN;
+    fi
+    openssl req -x509 $CERT_HASH_NAME -new -days $CERT_CA_TIME -key $CERT_CA_NAME.key -out $CERT_CA_NAME.crt -config $CERT_CONF_PATH;
 fi
 
 # 生成证书文件
 function mk_cert() {
     CERT_NAME=$1;
-    openssl genrsa -out $CERT_NAME.key $CERT_CRYPTO_LEN;
-    openssl req -new -key $CERT_NAME.key -out $CERT_NAME.csr -config $CERT_CONF_PATH;
+    if [ $CERT_USE_ECC -ne 0 ]; then
+        openssl ecparam -genkey -name $CERT_ECC_CURVE -out $CERT_NAME.key
+    else
+        openssl genrsa -out $CERT_NAME.key $CERT_RSA_CRYPTO_LEN;
+    fi
+    openssl req -new $CERT_HASH_NAME -key $CERT_NAME.key -out $CERT_NAME.csr -config $CERT_CONF_PATH;
     openssl req -text -noout -in $CERT_NAME.csr;
 }
 
@@ -93,11 +110,11 @@ if [ ! -z "$CERT_SVR_NAME" ]; then
     # 服务器证书
     mk_cert $CERT_SVR_NAME;
     # 签证
-    openssl $CERT_CA_NAME -in $CERT_SVR_NAME.csr -out $CERT_SVR_NAME.crt -cert $CERT_CA_NAME.crt -keyfile $CERT_CA_NAME.key -extensions v3_req -config $CERT_CONF_PATH;
+    openssl ca -in $CERT_SVR_NAME.csr -out $CERT_SVR_NAME.crt -cert $CERT_CA_NAME.crt -keyfile $CERT_CA_NAME.key -extensions v3_req -config $CERT_CONF_PATH;
 fi
 
 # 用于客户端验证的个人证书
 if [ ! -z "$CERT_CLI_NAME" ]; then
     mk_cert $CERT_CLI_NAME;
-    openssl  pkcs12 -export -inkey $CERT_CLI_NAME.key -in $CERT_CLI_NAME.crt -out $CERT_CLI_NAME.p12;
+    openssl pkcs12 -export -inkey $CERT_CLI_NAME.key -in $CERT_CLI_NAME.crt -out $CERT_CLI_NAME.p12;
 fi

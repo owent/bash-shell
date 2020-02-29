@@ -139,23 +139,23 @@ localityName			= Locality Name (eg, city)
 localityName_default	= ShangHai
 
 organizationName		= Organization Name (eg, company)
-organizationName_default	= Moyou
-organizationName_default	= Moyou
+organizationName_default	= OWenT
+organizationName_default	= OWenT
 
 # we can do this but it is not needed normally :-)
 #1.organizationName		= Second Organization Name (eg, company)
 #1.organizationName_default	= World Wide Web Pty Ltd
 
 organizationalUnitName		= Organizational Unit Name (eg, section)
-organizationalUnitName_default	= Moyou
+organizationalUnitName_default	= OWenT
 
 commonName			    = Common Name (e.g. server FQDN or YOUR name)
 commonName_max			= 64
-commonName_default	    = muyo.co
+commonName_default	    = owent.net
 
 emailAddress			= Email Address
 emailAddress_max		= 64
-emailAddress_default	= admin@muyo.co
+emailAddress_default	= admin@owent.net
 
 # ---------------- 证书信息默认值 ----------------
 
@@ -234,19 +234,21 @@ subjectAltName = @alt_names   # 增加了别名区
 # 别名DNS和IP配置
 # @see https://www.openssl.org/docs/manmaster/apps/x509v3_config.html 
 [ alt_names ]
-DNS.1 = muyo.co
-DNS.2 = *.muyo.co
-DNS.3 = *.no1.muyo.co
-IP.1 = 172.18.10.1
-IP.2 = 172.18.11.1
-IP.3 = 172.18.40.2
-IP.4 = 172.18.40.3
-IP.5 = 172.18.40.4
-IP.6 = 172.18.40.5
-IP.7 = 172.18.40.6
-
-IP.8 = 121.40.215.112
-IP.9 = 139.129.129.253
+DNS.1 = owent
+DNS.2 = owent.net
+DNS.3 = *.owent.net
+DNS.4 = ouri.app
+DNS.5 = *.ouri.app
+DNS.6 = atframe.work
+DNS.7 = *.atframe.work
+DNS.8 = mdoc.xyz
+DNS.9 = *.mdoc.xyz
+DNS.10 = sdks.xyz
+DNS.11 = *.sdks.xyz
+IP.1 = 172.18.1.1
+IP.2 = 172.18.1.10
+IP.3 = 172.18.10.1
+IP.3 = 172.18.31.1
 
 [ v3_ca ]
 
