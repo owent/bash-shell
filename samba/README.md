@@ -47,7 +47,8 @@ sudo smbpasswd -a owent
    usershare owner only = yes
    force create mode = 0777
    force directory mode = 0777
-   socket options = TCP_NODELAY IPTOS_LOWDELAY SO_RCVBUF=65536 SO_SNDBUF=65536 # 连接优化
+   # socket options = TCP_NODELAY IPTOS_LOWDELAY SO_RCVBUF=2097152 SO_SNDBUF=2097152 # 连接优化
+   socket options = TCP_NODELAY SO_RCVBUF=2097152 SO_SNDBUF=2097152 # 连接优化
 
 [share]
    comment = Shared Directories(Guest account: nobody)
