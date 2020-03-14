@@ -3,7 +3,7 @@
 # Dependency: libedit-devel libxml2-devel ncurses-devel python-devel swig
 
 # ======================================= 配置 =======================================
-LLVM_VERSION=9.0.0;
+LLVM_VERSION=9.0.1;
 PREFIX_DIR=/usr/local/llvm-$LLVM_VERSION;
 BUILD_TARGET_COMPOMENTS="llvm clang compiler_rt libcxx libcxxabi clang_tools_extra lldb lld libunwind";
 
