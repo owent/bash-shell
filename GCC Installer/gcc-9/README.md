@@ -53,7 +53,7 @@ GCC 9的大致(C/C++)内容如下：
 
 #### 系统
 
-CentOS 7 & Manjaro 14
+CentOS 7
 
 #### 编译的依赖库
 
@@ -66,10 +66,11 @@ CentOS 7 & Manjaro 14
 
 #### 编译目标
 
-+ gcc 9.1.0
-+ binutils 2.32
-+ python 2.7.16 *[按需]*
-+ gdb 8.3 (如果存在ncurses-devel包)
++ gcc 9.3.0
++ binutils 2.34
++ python 2.7.17 *[按需]*
++ gdb 9.1 (如果存在ncurses-devel包)
++ global 6.6.4
 
 #### 注
 
@@ -81,6 +82,7 @@ CentOS 7 & Manjaro 14
 
 1. 在执行 install.sh 脚本前安装 ncurses-devel 和 python-devel， 用于编译gdb和开启python功能
 2. 添加libstdcxx加载脚本到 ```~/.gdb-load-libstdcxx.py```
+
   ```python
   import sys
   import os
@@ -96,11 +98,13 @@ CentOS 7 & Manjaro 14
   ```
 
 3. 编辑[用户目录]/.gdbinit,添加
+
   ```bash
   so ~/.gdb-load-libstdcxx.py
   ```
 
 #### History
 
++ 2020-03-23    Update gmp to 6.2.0, gcc to 9.3.0, binutils to 2.34, Python to 2.7.17, gdb to 9.1, global to 6.6.4
 + 2019-08-23    Update gcc to 9.2.0
 + 2019-06-03    Created

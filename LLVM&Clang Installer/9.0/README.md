@@ -45,10 +45,10 @@ tail -f nohup.out;
 
 ### 发行注记
 
-+ llvm : http://llvm.org/releases/9.0.0/docs/ReleaseNotes.html
-+ clang : http://llvm.org/releases/9.0.0/tools/clang/docs/ReleaseNotes.html
-+ clang Extra : http://llvm.org/releases/9.0.0/tools/clang/tools/extra/docs/ReleaseNotes.html
-+ lld: http://llvm.org/releases/9.0.0/tools/lld/docs/ReleaseNotes.html
++ llvm : http://llvm.org/releases/9.0.1/docs/ReleaseNotes.html
++ clang : http://llvm.org/releases/9.0.1/tools/clang/docs/ReleaseNotes.html
++ clang Extra : http://llvm.org/releases/9.0.1/tools/clang/tools/extra/docs/ReleaseNotes.html
++ lld: http://llvm.org/releases/9.0.1/tools/lld/docs/ReleaseNotes.html
 
 ## 编译安装 LLVM + Clang 9.0
 
@@ -74,18 +74,18 @@ CentOS 7
 
 #### 编译的依赖库：
 
-+ libc++ 9.0.0
-+ libc++abi 9.0.0
-+ libunwind 9.0.0
++ libc++ 9.0.1
++ libc++abi 9.0.1
++ libunwind 9.0.1
 
 #### 默认编译目标：
 
-+ llvm 9.0.0
-+ clang 9.0.0
-+ compiler_rt 9.0.0
-+ clang_tools_extra 9.0.0
-+ lldb 9.0.0
-+ lld 9.0.0
++ llvm 9.0.1
++ clang 9.0.1
++ compiler_rt 9.0.1
++ clang_tools_extra 9.0.1
++ lldb 9.0.1
++ lld 9.0.1
 
 #### 注：
 
@@ -96,6 +96,8 @@ CentOS 7
 + 如果增加编译组件，比如已装有gtest要编译lld，使用命令 ```./install.sh -t +openmp```
 
 #### History:
+
++ 2020-03-23     Update to 9.0.1
 + 2019-09-20     Created
 
 #### 参考文献

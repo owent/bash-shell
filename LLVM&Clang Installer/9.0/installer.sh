@@ -16,7 +16,7 @@ BUILD_OTHER_CONF_OPTION="";
 BUILD_DOWNLOAD_ONLY=0;
 BUILD_USE_LD="";
 BUILD_TYPE="Release";
- 
+
 # ======================= 内存大于13GB，使用动态链接库（linking libLLVM-XXX.so的时候会消耗巨量内存） =======================
 if [ -z "$CHECK_AVAILABLE_MEMORY" ]; then
     CHECK_AVAILABLE_MEMORY=0;
@@ -262,7 +262,7 @@ function build_llvm_toolchain() {
 
     # unpack llvm
     if [ "0" == $(is_in_list llvm $BUILD_TARGET_COMPOMENTS) ]; then
-        LLVM_PKG=$(check_and_download "llvm" "llvm-*.tar.xz" "https://releases.llvm.org/$LLVM_VERSION/llvm-$LLVM_VERSION.src.tar.xz" );
+        LLVM_PKG=$(check_and_download "llvm" "llvm-*.tar.xz" "https://github.com/llvm/llvm-project/releases/download/llvmorg-$LLVM_VERSION/llvm-$LLVM_VERSION.src.tar.xz" );
         if [ $? -ne 0 ]; then
             echo -e "$LLVM_PKG";
             return 1;
@@ -284,7 +284,7 @@ function build_llvm_toolchain() {
 
     # unpack clang
     if [ "0" == $(is_in_list clang $BUILD_TARGET_COMPOMENTS) ]; then
-        CLANG_PKG=$(check_and_download "clang" "cfe-*.tar.xz" "https://releases.llvm.org/$LLVM_VERSION/cfe-$LLVM_VERSION.src.tar.xz" );
+        CLANG_PKG=$(check_and_download "clang" "clang-*.tar.xz" "https://github.com/llvm/llvm-project/releases/download/llvmorg-$LLVM_VERSION/clang-$LLVM_VERSION.src.tar.xz" );
         if [ $? -ne 0 ]; then
             echo -e "$CLANG_PKG";
             exit 1;
@@ -292,7 +292,7 @@ function build_llvm_toolchain() {
         if [ $BUILD_DOWNLOAD_ONLY -eq 0 ]; then
             if [ ! -e "$LLVM_DIR/tools/clang" ]; then
                 tar -axvf $CLANG_PKG;
-                CLANG_DIR=$(ls -d cfe-* | grep -v \.tar\.xz);
+                CLANG_DIR=$(ls -d clang-* | grep -v \.tar\.xz);
                 mv "$CLANG_DIR" "$LLVM_DIR/tools/clang";
             fi
         fi
@@ -301,7 +301,7 @@ function build_llvm_toolchain() {
 
     # unpack clang tools extra
     if [ "0" == $(is_in_list clang_tools_extra $BUILD_TARGET_COMPOMENTS) ]; then
-        CLANG_TOOLS_EXTRA_PKG=$(check_and_download "clang tools extra" "clang-tools-extra-*.tar.xz" "https://releases.llvm.org/$LLVM_VERSION/clang-tools-extra-$LLVM_VERSION.src.tar.xz" );
+        CLANG_TOOLS_EXTRA_PKG=$(check_and_download "clang tools extra" "clang-tools-extra-*.tar.xz" "https://github.com/llvm/llvm-project/releases/download/llvmorg-$LLVM_VERSION/clang-tools-extra-$LLVM_VERSION.src.tar.xz" );
         if [ $? -ne 0 ]; then
             echo -e "$CLANG_TOOLS_EXTRA_PKG";
             exit -1;
@@ -324,7 +324,7 @@ function build_llvm_toolchain() {
 
     # unpack compiler rt
     if [ "0" == $(is_in_list compiler_rt $BUILD_TARGET_COMPOMENTS) ]; then
-        COMPILER_RT_PKG=$(check_and_download "compiler rt" "compiler-rt-*.tar.xz" "https://releases.llvm.org/$LLVM_VERSION/compiler-rt-$LLVM_VERSION.src.tar.xz" );
+        COMPILER_RT_PKG=$(check_and_download "compiler rt" "compiler-rt-*.tar.xz" "https://github.com/llvm/llvm-project/releases/download/llvmorg-$LLVM_VERSION/compiler-rt-$LLVM_VERSION.src.tar.xz" );
         if [ $? -ne 0 ]; then
             echo -e "$COMPILER_RT_PKG";
             exit -1;
@@ -351,7 +351,7 @@ function build_llvm_toolchain() {
 
     # unpack libcxxabi
     if [ "0" == $(is_in_list libcxxabi $BUILD_TARGET_COMPOMENTS) ]; then
-        LIBCXXABI_PKG=$(check_and_download "libc++abi" "libcxxabi-*.tar.xz" "https://releases.llvm.org/$LLVM_VERSION/libcxxabi-$LLVM_VERSION.src.tar.xz" );
+        LIBCXXABI_PKG=$(check_and_download "libc++abi" "libcxxabi-*.tar.xz" "https://github.com/llvm/llvm-project/releases/download/llvmorg-$LLVM_VERSION/libcxxabi-$LLVM_VERSION.src.tar.xz" );
         if [ $? -ne 0 ]; then
             echo -e "$LIBCXXABI_PKG";
             exit -1;
@@ -370,7 +370,7 @@ function build_llvm_toolchain() {
 
     # unpack libcxx
     if [ "0" == $(is_in_list libcxx $BUILD_TARGET_COMPOMENTS) ]; then
-        LIBCXX_PKG=$(check_and_download "libc++" "libcxx-*.tar.xz" "https://releases.llvm.org/$LLVM_VERSION/libcxx-$LLVM_VERSION.src.tar.xz" );
+        LIBCXX_PKG=$(check_and_download "libc++" "libcxx-*.tar.xz" "https://github.com/llvm/llvm-project/releases/download/llvmorg-$LLVM_VERSION/libcxx-$LLVM_VERSION.src.tar.xz" );
         if [ $? -ne 0 ]; then
             echo -e "$LIBCXX_PKG";
             exit -1;
@@ -387,7 +387,7 @@ function build_llvm_toolchain() {
 
     # unpack lld
     if [ "0" == $(is_in_list lld $BUILD_TARGET_COMPOMENTS) ]; then
-        LLD_PKG=$(check_and_download "lld" "lld-*.tar.xz" "https://releases.llvm.org/$LLVM_VERSION/lld-$LLVM_VERSION.src.tar.xz" );
+        LLD_PKG=$(check_and_download "lld" "lld-*.tar.xz" "https://github.com/llvm/llvm-project/releases/download/llvmorg-$LLVM_VERSION/lld-$LLVM_VERSION.src.tar.xz" );
         if [ $? -ne 0 ]; then
             echo -e "$LLD_PKG";
             exit -1;
@@ -418,7 +418,7 @@ function build_llvm_toolchain() {
 
     # unpack polly (require gmp,cloog-isl)
     if [ "0" == $(is_in_list polly $BUILD_TARGET_COMPOMENTS) ]; then
-        POLLY_PKG=$(check_and_download "polly" "polly-*.tar.xz" "https://releases.llvm.org/$LLVM_VERSION/polly-$LLVM_VERSION.src.tar.xz" );
+        POLLY_PKG=$(check_and_download "polly" "polly-*.tar.xz" "https://github.com/llvm/llvm-project/releases/download/llvmorg-$LLVM_VERSION/polly-$LLVM_VERSION.src.tar.xz" );
         if [ $? -ne 0 ]; then
             echo -e "$POLLY_PKG";
             exit -1;
@@ -535,7 +535,7 @@ if [ "0" == $(is_in_list lldb $BUILD_TARGET_COMPOMENTS) ]; then
     LLDB_DEP_LIBEDIT=$(whereis libedit.so | awk '{print $2}');
     LLDB_DEP_LIBXML2=$(whereis libxml2.so | awk '{print $2}');
     LLDB_DEP_NCURSES=$(whereis libncurses.so | awk '{print $2}');
-    LLDB_PKG=$(check_and_download "lldb" "lldb-*.tar.xz" "https://releases.llvm.org/$LLVM_VERSION/lldb-$LLVM_VERSION.src.tar.xz" );
+    LLDB_PKG=$(check_and_download "lldb" "lldb-*.tar.xz" "https://github.com/llvm/llvm-project/releases/download/llvmorg-$LLVM_VERSION/lldb-$LLVM_VERSION.src.tar.xz" );
     if [ 0 -eq $LLDB_DEP_PYTHON2 ] && [ 0 -eq $LLDB_DEP_SWIG ] && [ ! -z "$LLDB_DEP_LIBEDIT" ] && [ ! -z "$LLDB_DEP_LIBXML2" ] && [ ! -z "$LLDB_DEP_NCURSES" ] ; then
         if [ $? -ne 0 ]; then
             echo -e "$LLDB_PKG";
@@ -560,7 +560,7 @@ LLDB_DIR="$LLVM_DIR/tools/lldb";
 
 # unpack libunwind
 if [ "0" == $(is_in_list libunwind $BUILD_TARGET_COMPOMENTS) ]; then
-    LIBUNWIND_PKG=$(check_and_download "libunwind" "libunwind-*.tar.xz" "https://releases.llvm.org/$LLVM_VERSION/libunwind-$LLVM_VERSION.src.tar.xz" );
+    LIBUNWIND_PKG=$(check_and_download "libunwind" "libunwind-*.tar.xz" "https://github.com/llvm/llvm-project/releases/download/llvmorg-$LLVM_VERSION/libunwind-$LLVM_VERSION.src.tar.xz" );
     if [ $? -ne 0 ]; then
         echo -e "$LLDB_PKG";
         exit -1;

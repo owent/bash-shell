@@ -45,7 +45,7 @@ while getopts "c:e:f:hl:n:s:t:" OPTION; do
             echo "options:";
             echo "-a=[ca cert name]           set ca cert name(default=$CERT_CA_NAME).";
             echo "-c=[client cert name]       set client cert name.";
-            echo "-e=[ecc cert curve]         set ecc cert curve(default=$CERT_ECC_CURVE).";
+            echo "-e=[ecc cert curve]         set ecc cert curve(prime192v1/secp192r1, more can be found by openssl ecparam -list_curves).";
             echo "-f=[configure file]         set configure file(default=$CERT_CONF_PATH).";
             echo "-h                          help message.";
             echo "-l=[cert crypto lengtn]     set RSA cert crypto length(default=$CERT_CRYPTO_LEN).";
