@@ -8,7 +8,7 @@ for PENDING_TO_KILL in $(ps --sort start_time -u $USER -o pid,state,etimes,start
 done
 
 # 启用ssh-agent来控制鉴权
-eval $(ssh-agent);
+eval $(timeout 3h ssh-agent);
 
 # 默认ssh会检查key的权限，所以设置权限600
 chmod 600 "$CI_SSH_KEY";
