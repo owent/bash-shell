@@ -364,6 +364,11 @@ export STAGE_BUILD_CMAKE_OPTION="$STAGE_BUILD_CMAKE_OPTION -DLLVM_ENABLE_MODULES
 
 if [ "x$BUILD_TARGET_COMPOMENTS" == "xall" ]; then
     export STAGE_BUILD_CMAKE_OPTION="$STAGE_BUILD_CMAKE_OPTION -DCOMPILER_RT_USE_BUILTINS_LIBRARY=ON -DLIBUNWIND_USE_COMPILER_RT=ON -DLIBCXX_USE_COMPILER_RT=ON -DLIBCXXABI_US    E_COMPILER_RT=ON -DLIBCXXABI_USE_LLVM_UNWINDER=ON";
+    BUILD_TARGET_HAS_COMPILER_RT=1;
+    BUILD_TARGET_HAS_LIBCXX=1;
+    BUILD_TARGET_HAS_LIBCXX_ABI=1;
+    BUILD_TARGET_HAS_LIBUNWIND=1;
+    BUILD_TARGET_HAS_LLD=1;
 else
     BUILD_TARGET_HAS_COMPILER_RT=0;
     BUILD_TARGET_HAS_LIBCXX=0;
@@ -453,15 +458,19 @@ fi
 if [ $CHECK_IS_UNIX -ne 0 ] && [ -e "$STAGE_BUILD_PREFIX_DIR/bin/ld.lld" ]; then
     export LD="$STAGE_BUILD_PREFIX_DIR/bin/ld.lld" ;
     export STAGE_BUILD_CMAKE_OPTION="$STAGE_BUILD_CMAKE_OPTION -DLLVM_ENABLE_LLD=YES -DCMAKE_LINKER=$LD" ;
+    LD_LOADER_SCRIPT="export LD=\"$LD\"";
 elif [ $CHECK_IS_MACOS -ne 0 ] && [ -e "$STAGE_BUILD_PREFIX_DIR/bin/ld64.lld" ]; then
     export LD="$STAGE_BUILD_PREFIX_DIR/bin/ld64.lld" ;
     export STAGE_BUILD_CMAKE_OPTION="$STAGE_BUILD_CMAKE_OPTION -DLLVM_ENABLE_LLD=YES -DCMAKE_LINKER=$LD" ;
+    LD_LOADER_SCRIPT="export LD=\"$LD\"";
 elif [ $CHECK_IS_WINDOWS -ne 0 ] && [ -e "$STAGE_BUILD_PREFIX_DIR/bin/lld-link" ]; then
     export LD="$STAGE_BUILD_PREFIX_DIR/bin/lld-link" ;
     export STAGE_BUILD_CMAKE_OPTION="$STAGE_BUILD_CMAKE_OPTION -DLLVM_ENABLE_LLD=YES -DCMAKE_LINKER=$LD" ;
+    LD_LOADER_SCRIPT="export LD=\"$LD\"";
 elif [ -e "$STAGE_BUILD_PREFIX_DIR/bin/lld" ]; then
     export LD="$STAGE_BUILD_PREFIX_DIR/bin/lld" ;
     export STAGE_BUILD_CMAKE_OPTION="$STAGE_BUILD_CMAKE_OPTION -DLLVM_ENABLE_LLD=YES -DCMAKE_LINKER=$LD" ;
+    LD_LOADER_SCRIPT="export LD=\"$LD\"";
 fi
 BUILD_USE_LD="";
 
@@ -513,10 +522,17 @@ export CC="$LLVM_HOME_DIR/bin/clang" ;
 export CXX="$LLVM_HOME_DIR/bin/clang++" ;
 export AR="$LLVM_HOME_DIR/bin/llvm-ar" ;
 export AS="$LLVM_HOME_DIR/bin/llvm-as" ;
-export LD="$(which lld || which ld.lld || which ld.gold || which ld)" ;
+$LD_LOADER_SCRIPT" ;
+export RANDLIB="$LLVM_HOME_DIR/bin/llvm-ranlib" ;
+export NM="$LLVM_HOME_DIR/bin/llvm-nm" ;
+export STRIP="$LLVM_HOME_DIR/bin/llvm-strip" ;
+export OBJCOPY="$LLVM_HOME_DIR/bin/llvm-objcopy" ;
+export OBJDUMP="$LLVM_HOME_DIR/bin/llvm-objdump" ;
+export READELF="$LLVM_HOME_DIR/bin/llvm-readelf" ;
 
 "$@"
 ' >> "$PREFIX_DIR/load-llvm-envs.sh" ;
+    chmod +x "$PREFIX_DIR/load-llvm-envs.sh";
 
     LLVM_CONFIG_PATH="$PREFIX_DIR/bin/llvm-config";
     echo -e "\\033[33;1mAddition, run the cmds below to add environment var(s).\\033[39;49;0m";

@@ -98,7 +98,8 @@ CentOS 7
 #### History:
 
 + 2020-04-22     Created
-
++ 2020-05-12     更新优化环境变量加载脚本
++ 
 #### 参考文献
 
 1. [llvm官网](http://llvm.org/)

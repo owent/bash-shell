@@ -603,9 +603,16 @@ export CXX="$GCC_HOME_DIR/bin/g++" ;
 export AR="$GCC_HOME_DIR/bin/ar" ;
 export AS="$GCC_HOME_DIR/bin/as" ;
 export LD="$(which ld.gold || which ld)" ;
+export RANDLIB="$GCC_HOME_DIR/bin/ranlib" ;
+export NM="$GCC_HOME_DIR/bin/nm" ;
+export STRIP="$GCC_HOME_DIR/bin/strip" ;
+export OBJCOPY="$GCC_HOME_DIR/bin/objcopy" ;
+export OBJDUMP="$GCC_HOME_DIR/bin/objdump" ;
+export READELF="$GCC_HOME_DIR/bin/readelf" ;
 
 "$@"
 ' > $PREFIX_DIR/load-gcc-envs.sh ;
+chmod +x "$PREFIX_DIR/load-gcc-envs.sh" ;
 
 if [ $BUILD_DOWNLOAD_ONLY -eq 0 ]; then
     echo -e "\\033[33;1mAddition, run the cmds below to add environment var(s).\\033[39;49;0m" ;
