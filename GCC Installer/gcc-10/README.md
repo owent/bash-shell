@@ -97,9 +97,10 @@ CentOS 7
 
 3. 编辑[用户目录]/.gdbinit,添加
 
-  ```bash
-  so ~/.gdb-load-libstdcxx.py
-  ```
+```bash
+add-auto-load-safe-path 安装目录/
+so ~/.gdb-load-libstdcxx.py
+```
 
 #### History
 

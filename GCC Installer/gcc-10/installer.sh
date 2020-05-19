@@ -507,9 +507,7 @@ if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list gdb $BUILD_TARGET_
         if [ $BUILD_DOWNLOAD_ONLY -ne 0 ]; then
             PYTHON_PKG=$(check_and_download "python" "Python-*.tar.xz" "https://www.python.org/ftp/python/$COMPOMENTS_PYTHON_VERSION/Python-$COMPOMENTS_PYTHON_VERSION.tar.xz" );
         else
-            if [ ! -z "$(find /usr/include -name Python.h)" ]; then
-                GDB_PYTHON_OPT="--with-python";
-            elif [ ! -z "$(find $PREFIX_DIR -name Python.h)" ]; then
+            if [ ! -z "$(find $PREFIX_DIR -name Python.h)" ]; then
                 GDB_PYTHON_OPT="--with-python=$PREFIX_DIR";
             else
                 # =======================  尝试编译安装python  =======================
