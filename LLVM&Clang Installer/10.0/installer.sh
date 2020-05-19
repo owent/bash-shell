@@ -530,6 +530,7 @@ export OBJCOPY="$LLVM_HOME_DIR/bin/llvm-objcopy" ;
 export OBJDUMP="$LLVM_HOME_DIR/bin/llvm-objdump" ;
 export READELF="$LLVM_HOME_DIR/bin/llvm-readelf" ;
 
+# Maybe need add --gcc-toolchain=$GCC_HOME_DIR to compile options
 "$@"
 ' >> "$PREFIX_DIR/load-llvm-envs.sh" ;
     chmod +x "$PREFIX_DIR/load-llvm-envs.sh";
@@ -550,6 +551,7 @@ export READELF="$LLVM_HOME_DIR/bin/llvm-readelf" ;
         echo -e "\\033[35;1m\tCXXFLAGS=$($LLVM_CONFIG_PATH --cxxflags)\\033[39;49;0m";
         echo -e "\\033[35;1m\tLDFLAGS=$($LLVM_CONFIG_PATH --ldflags)\\033[39;49;0m";
     fi
+    echo -e "\\033[35;1m\tMaybe need add --gcc-toolchain=$GCC_HOME_DIR to compile options\\033[39;49;0m";
 else
     echo -e "\\033[35;1mDownloaded: $BUILD_TARGET_COMPOMENTS.\\033[39;49;0m";
 fi
