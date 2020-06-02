@@ -672,11 +672,11 @@ choco update chocolatey
 choco upgrade chocolatey
 ```
 
-```
+```ps
 choco install --yes 7zip pandoc foobar2000 Graphviz powershell-core
 
 # dev (anaconda3 also can be used instead of python3)
-choco install --yes MobaXterm git git-lfs TortoiseGit python3 ConEmu
+choco install --yes MobaXterm git git-lfs TortoiseGit python3 screentogif
 
 # dev - network
 choco install --yes wireshark WinPcap
@@ -689,6 +689,32 @@ choco install --yes nodejs npm
 
 # java
 choco install --yes jdk8 openjdk  # jdk11
+```
+
+### Windows & WinGet
+
+Github: https://github.com/microsoft/winget-cli
+Store: https://www.microsoft.com/en-us/p/app-installer/9nblggh4nns1
+
+```ps
+winget install --silent 7Zip Graphviz PowerShell ".NET Core" ScreenToGif
+# winget install --silent "Windows Terminal"
+
+# dev
+winget install --silent Git TortoiseGit GitLFS Python
+
+# dev - network
+winget install --silent Wireshark Nmap
+
+# c & c++
+winget install --silent CMake Doxygen
+
+# nodejs
+winget install --silent Node.js
+
+# java
+winget install --silent AdoptOpenJDK
+
 ```
 
 ### Rust & Cargo 国内源
