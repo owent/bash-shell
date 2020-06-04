@@ -707,13 +707,14 @@ winget install --silent Git TortoiseGit GitLFS Python
 winget install --silent Wireshark Nmap
 
 # c & c++
-winget install --silent CMake Doxygen
+winget install --silent CMake Doxygen llvm
 
 # nodejs
 winget install --silent Node.js
 
 # java
-winget install --silent AdoptOpenJDK
+# winget install --silent AdoptOpenJDK
+winget install --silent "Liberica JDK 11"
 
 ```
 
