@@ -688,7 +688,10 @@ choco install --yes cmake doxygen.install llvm ninja
 choco install --yes nodejs npm
 
 # java
-choco install --yes jdk8 openjdk  # jdk11
+# choco install --yes jdk8  
+# choco install --yes openjdk  
+# choco install --yes zulu
+choco install --yes adoptopenjdk
 ```
 
 ### Windows & WinGet
@@ -713,8 +716,8 @@ winget install --silent CMake Doxygen llvm
 winget install --silent Node.js
 
 # java
-# winget install --silent AdoptOpenJDK
-winget install --silent "Liberica JDK 11"
+winget install --silent AdoptOpenJDK
+# winget install --silent "Liberica JDK 11"
 
 ```
 
