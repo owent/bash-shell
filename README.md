@@ -320,7 +320,9 @@ trusted-host=mirrors.tencent.com
 
 ```bash
 # 安装脚本（通过rvm） https://github.com/huacnlee/init.d/blob/master/install_rvm
-gpg --keyserver hkp://keys.gnupg.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3
+# gpg --keyserver hkp://keys.gnupg.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3
+curl -sSL https://rvm.io/mpapis.asc | gpg --import -
+curl -sSL https://rvm.io/pkuczynski.asc | gpg --import -
 curl -L https://get.rvm.io | bash -s stable
 
 if [ whoami = 'root']; then
@@ -329,16 +331,17 @@ else
     source ~/.rvm/scripts/rvm ;
 fi
 
-rvm list known;
+# rvm list known;
+RUBY_VERSION=$(rvm list known | grep -F "[ruby-]" | tail -n 1 | cut -d']' -f 2 | cut -d'[' -f 1);
 
-rvm install 2.6 ;
+rvm install $RUBY_VERSION ;
 
-rvm ruby-2.6.0 ;
+rvm $RUBY_VERSION ;
 
 # gem
 gem sources --remove https://rubygems.org/
 
-gem sources --add https://gems.ruby-china.org/
+gem sources --add https://gems.ruby-china.com
 gem sources --add http://mirrors.aliyun.com/rubygems/
 gem sources --add http://mirrors.tencent.com/rubygems/
 
