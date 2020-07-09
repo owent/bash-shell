@@ -130,128 +130,31 @@ Server = http://repo.msys2.org/mingw/x86_64" > /etc/pacman.d/mirrorlist.mingw64 
 
 ### Ubuntu & Debian & WSL
 
-#### Ubuntu 18.04
+#### Ubuntu
 
 ```bash
-if [ ! -e  /etc/apt/sources.list.bak ]; then mv /etc/apt/sources.list /etc/apt/sources.list.bak ; fi
-echo "
-deb https://mirrors.cloud.tencent.com/ubuntu/ bionic main restricted universe multiverse
-deb-src https://mirrors.cloud.tencent.com/ubuntu/ bionic main main restricted universe multiverse
-deb https://mirrors.cloud.tencent.com/ubuntu/ bionic-updates main restricted universe multiverse
-deb-src https://mirrors.cloud.tencent.com/ubuntu/ bionic-updates main restricted universe multiverse
-deb https://mirrors.cloud.tencent.com/ubuntu/ bionic-backports main restricted universe multiverse
-deb-src https://mirrors.cloud.tencent.com/ubuntu/ bionic-backports main restricted universe multiverse
-deb https://mirrors.cloud.tencent.com/ubuntu/ bionic-security main restricted universe multiverse
-deb-src https://mirrors.cloud.tencent.com/ubuntu/ bionic-security main restricted universe multiverse
+if [[ ! -e  /etc/apt/sources.list.bak ]]; then mv /etc/apt/sources.list /etc/apt/sources.list.bak ; fi
 
-# 预发布软件源，不建议启用
-# deb https://mirrors.cloud.tencent.com/ubuntu/ bionic-proposed main restricted universe multiverse
-# deb-src https://mirrors.cloud.tencent.com/ubuntu/ bionic-proposed main restricted universe multiverse
-" > /etc/apt/sources.list ;
+sed -i -r 's;#?https?://security.ubuntu.com/ubuntu/?[[:space:]];http://mirrors.tencent.com/ubuntu/ ;g' /etc/apt/sources.list ;
+sed -i -r 's;#?https?://archive.ubuntu.com/ubuntu/?[[:space:]];http://mirrors.tencent.com/ubuntu/ ;g' /etc/apt/sources.list ;
+
+# sed -i -r 's;#?https?://security.ubuntu.com/ubuntu/?[[:space:]];http://mirrors.aliyun.com/ubuntu/ ;g' /etc/apt/sources.list ;
+# sed -i -r 's;#?https?://archive.ubuntu.com/ubuntu/?[[:space:]];http://mirrors.aliyun.com/ubuntu/ ;g' /etc/apt/sources.list ;
+
+# sed -i -r 's;#?https?://security.ubuntu.com/ubuntu/?[[:space:]];http://mirrors.ustc.edu.cn/ubuntu/ ;g' /etc/apt/sources.list ;
+# sed -i -r 's;#?https?://archive.ubuntu.com/ubuntu/?[[:space:]];http://mirrors.ustc.edu.cn/ubuntu/ ;g' /etc/apt/sources.list ;
 
 # apt-add-repository -y "ppa:ubuntu-toolchain-r/test" ;
-
-apt-get update -y ;
+apt update -y;
 ```
 
-```bash
-if [ ! -e  /etc/apt/sources.list.bak ]; then mv /etc/apt/sources.list /etc/apt/sources.list.bak ; fi
-echo "
-deb https://mirrors.aliyun.com/ubuntu/ bionic main restricted universe multiverse
-deb https://mirrors.aliyun.com/ubuntu/ bionic-security main restricted universe multiverse
-deb https://mirrors.aliyun.com/ubuntu/ bionic-updates main restricted universe multiverse
-deb https://mirrors.aliyun.com/ubuntu/ bionic-backports main restricted universe multiverse
-deb-src https://mirrors.aliyun.com/ubuntu/ bionic main restricted universe multiverse
-deb-src https://mirrors.aliyun.com/ubuntu/ bionic-security main restricted universe multiverse
-deb-src https://mirrors.aliyun.com/ubuntu/ bionic-updates main restricted universe multiverse
-deb-src https://mirrors.aliyun.com/ubuntu/ bionic-backports main restricted universe multiverse
-# deb https://mirrors.aliyun.com/ubuntu/ bionic-proposed main restricted universe multiverse
-# deb-src https://mirrors.aliyun.com/ubuntu/ bionic-proposed main restricted universe multiverse
-" > /etc/apt/sources.list ;
-
-# apt-add-repository -y "ppa:ubuntu-toolchain-r/test" ;
-
-apt-get update -y ;
-```
+#### Debian
 
 ```bash
-if [ ! -e  /etc/apt/sources.list.bak ]; then mv /etc/apt/sources.list /etc/apt/sources.list.bak ; fi
-echo "
-deb https://mirrors.ustc.edu.cn/ubuntu/ bionic main restricted universe multiverse
-deb-src https://mirrors.ustc.edu.cn/ubuntu/ bionic main main restricted universe multiverse
-deb https://mirrors.ustc.edu.cn/ubuntu/ bionic-updates main restricted universe multiverse
-deb-src https://mirrors.ustc.edu.cn/ubuntu/ bionic-updates main restricted universe multiverse
-deb https://mirrors.ustc.edu.cn/ubuntu/ bionic-backports main restricted universe multiverse
-deb-src https://mirrors.ustc.edu.cn/ubuntu/ bionic-backports main restricted universe multiverse
-deb https://mirrors.ustc.edu.cn/ubuntu/ bionic-security main restricted universe multiverse
-deb-src https://mirrors.ustc.edu.cn/ubuntu/ bionic-security main restricted universe multiverse
- 
-# 预发布软件源，不建议启用
-# deb https://mirrors.ustc.edu.cn/ubuntu/ bionic-proposed main restricted universe multiverse
-# deb-src https://mirrors.ustc.edu.cn/ubuntu/ bionic-proposed main restricted universe multiverse
-" > /etc/apt/sources.list ;
+sed -i -r 's;#?https?://.*/debian-security/?[[:space:]];http://mirrors.tencent.com/debian-security/ ;g' /etc/apt/sources.list ;
+sed -i -r 's;#?https?://.*/debian/?[[:space:]];http://mirrors.tencent.com/debian/ ;g' /etc/apt/sources.list ;
 
-# apt-add-repository -y "ppa:ubuntu-toolchain-r/test" ;
-
-apt-get update -y ;
-```
-
-#### Debian 10
-
-```bash
-if [ ! -e  /etc/apt/sources.list.bak ]; then mv /etc/apt/sources.list /etc/apt/sources.list.bak ; fi
-echo "
-deb http://mirrors.tencent.com/debian buster main contrib non-free
-deb http://mirrors.tencent.com/debian buster-updates main contrib non-free
-deb http://mirrors.tencent.com/debian buster-backports main contrib non-free
-# deb http://mirrors.tencent.com/debian buster-proposed-updates main contrib non-free
-deb-src http://mirrors.tencent.com/debian buster main contrib non-free
-deb-src http://mirrors.tencent.com/debian buster-updates main contrib non-free
-deb-src http://mirrors.tencent.com/debian buster-backports main contrib non-free
-# deb-src http://mirrors.tencent.com/debian buster-proposed-updates main contrib non-free**
-deb http://mirrors.tencent.com/debian-security buster/updates main
-deb-src http://mirrors.tencent.com/debian-security buster/updates main
-" > /etc/apt/sources.list ;
-
-# apt-add-repository -y "ppa:ubuntu-toolchain-r/test" ;
-
-apt-get update -y ;
-```
-
-```bash
-if [ ! -e  /etc/apt/sources.list.bak ]; then mv /etc/apt/sources.list /etc/apt/sources.list.bak ; fi
-echo "
-deb http://mirrors.aliyun.com/debian/ buster main non-free contrib
-deb-src http://mirrors.aliyun.com/debian/ buster main non-free contrib
-deb http://mirrors.aliyun.com/debian/ buster-updates main non-free contrib
-deb-src http://mirrors.aliyun.com/debian/ buster-updates main non-free contrib
-deb http://mirrors.aliyun.com/debian/ buster-backports main non-free contrib
-deb-src http://mirrors.aliyun.com/debian/ buster-backports main non-free contrib
-deb http://mirrors.aliyun.com/debian-security buster/updates main
-deb-src http://mirrors.aliyun.com/debian-security buster/updates main
-" > /etc/apt/sources.list ;
-
-# apt-add-repository -y "ppa:ubuntu-toolchain-r/test" ;
-
-apt-get update -y ;
-```
-
-```bash
-if [ ! -e  /etc/apt/sources.list.bak ]; then mv /etc/apt/sources.list /etc/apt/sources.list.bak ; fi
-echo "
-deb http://mirrors.ustc.edu.cn/debian buster main non-free contrib
-deb http://mirrors.ustc.edu.cn/debian buster-updates main non-free contrib
-deb http://mirrors.ustc.edu.cn/debian buster-backports main non-free contrib
-deb http://mirrors.ustc.edu.cn/debian-security/ buster/updates main non-free contrib
-deb-src http://mirrors.ustc.edu.cn/debian buster main non-free contrib
-deb-src http://mirrors.ustc.edu.cn/debian buster-updates main non-free contrib
-deb-src http://mirrors.ustc.edu.cn/debian buster-backports main non-free contrib
-deb-src http://mirrors.ustc.edu.cn/debian-security/ buster/updates main non-free contrib
-" > /etc/apt/sources.list ;
-
-# apt-add-repository -y "ppa:ubuntu-toolchain-r/test" ;
-
-apt-get update -y ;
+apt update -y;
 ```
 
 ### Proxmox VE 6
