@@ -227,7 +227,8 @@ authorityKeyIdentifier=keyid,issuer
 # Extensions to add to a certificate request
 
 basicConstraints = CA:FALSE
-keyUsage = nonRepudiation, digitalSignature, keyEncipherment
+keyUsage = nonRepudiation, digitalSignature, keyEncipherment, keyCertSign, cRLSign
+extendedKeyUsage = serverAuth, clientAuth
 subjectAltName = @alt_names   # 增加了别名区
 
 
@@ -243,12 +244,14 @@ DNS.6 = atframe.work
 DNS.7 = *.atframe.work
 DNS.8 = mdoc.xyz
 DNS.9 = *.mdoc.xyz
-DNS.10 = sdks.xyz
-DNS.11 = *.sdks.xyz
+DNS.10 = w-oa.com
+DNS.11 = *.w-oa.com
+DNS.12 = r-ci.com
+DNS.13 = *.r-ci.com
 IP.1 = 172.18.1.1
 IP.2 = 172.18.1.10
 IP.3 = 172.18.10.1
-IP.3 = 172.18.31.1
+IP.4 = 172.18.31.1
 
 [ v3_ca ]
 

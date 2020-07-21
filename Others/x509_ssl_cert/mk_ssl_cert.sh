@@ -91,6 +91,7 @@ if [ ! -e $CERT_CA_NAME.key ] || [ ! -e $CERT_CA_NAME.crt ]; then
         openssl genrsa -out $CERT_CA_NAME.key $CERT_RSA_CRYPTO_LEN;
     fi
     openssl req -x509 $CERT_HASH_NAME -new -days $CERT_CA_TIME -key $CERT_CA_NAME.key -out $CERT_CA_NAME.crt -config $CERT_CONF_PATH;
+    openssl x509 -in $CERT_CA_NAME.crt -out $CERT_CA_NAME.pem -outform PEM ;
 fi
 
 # 生成证书文件
@@ -111,6 +112,7 @@ if [ ! -z "$CERT_SVR_NAME" ]; then
     mk_cert $CERT_SVR_NAME;
     # 签证
     openssl ca -in $CERT_SVR_NAME.csr -out $CERT_SVR_NAME.crt -cert $CERT_CA_NAME.crt -keyfile $CERT_CA_NAME.key -extensions v3_req -config $CERT_CONF_PATH;
+    openssl x509 -in $CERT_SVR_NAME.crt -out $CERT_SVR_NAME.pem -outform PEM ;
 fi
 
 # 用于客户端验证的个人证书
