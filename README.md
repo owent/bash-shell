@@ -89,6 +89,11 @@ ssl_cert 里是使用openssl生成服务器证书的脚本和配置文件, 请�
 
 ### MSYS2 国内源
 
+下载地址:
+
++ http://mirrors.tencent.com/msys2/distrib/msys2-x86_64-latest.exe
++ http://mirrors.ustc.edu.cn/msys2/distrib/msys2-x86_64-latest.exe
+
 ```bash
 echo "##
 ## MSYS2 repository mirrorlist
@@ -96,6 +101,7 @@ echo "##
 
 ## Primary
 ## msys2.org
+Server = http://mirrors.tencent.com/msys2/msys/\$arch
 Server = http://mirrors.ustc.edu.cn/msys2/msys/\$arch
 Server = https://mirrors.tuna.tsinghua.edu.cn/msys2/msys/\$arch
 Server = http://mirror.bit.edu.cn/msys2/REPOS/MSYS2/\$arch
@@ -109,6 +115,7 @@ echo "##
 
 ## Primary
 ## msys2.org
+Server = http://mirrors.tencent.com/msys2/mingw/i686
 Server = http://mirrors.ustc.edu.cn/msys2/mingw/i686
 Server = https://mirrors.tuna.tsinghua.edu.cn/msys2/mingw/i686
 Server = http://mirror.bit.edu.cn/msys2/REPOS/MINGW/i686
@@ -121,6 +128,7 @@ echo "##
 
 ## Primary
 ## msys2.org
+Server = http://mirrors.tencent.com/msys2/mingw/x86_64
 Server = http://mirrors.ustc.edu.cn/msys2/mingw/x86_64
 Server = https://mirrors.tuna.tsinghua.edu.cn/msys2/mingw/x86_64
 Server = http://mirror.bit.edu.cn/msys2/REPOS/MINGW/x86_64
