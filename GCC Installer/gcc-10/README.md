@@ -54,19 +54,19 @@ CentOS 7
 #### 编译的依赖库
 
 + gmp 6.2.0
-+ mpfr 4.0.2
-+ mpc 1.1.0
++ mpfr 4.1.0
++ mpc 1.2.0
 + isl 0.18
 + libatomic_ops 7.6.10
 + bdw-gc 8.0.4
-+ zstd 1.4.4
++ zstd 1.4.5
 
 #### 编译目标
 
-+ gcc 10.1.0
-+ binutils 2.34
++ gcc 10.2.0
++ binutils 2.35
 + python 2.7.18 *[按需]*
-+ gdb 9.1 (如果存在ncurses-devel包)
++ gdb 9.2 (如果存在ncurses-devel包)
 + global 6.6.4
 + lz4 1.9.2 *[非必须]*
 
@@ -106,3 +106,4 @@ so ~/.gdb-load-libstdcxx.py
 
 + 2020-05-09    Created
 + 2020-05-12    更新优化环境变量加载脚本
++ 2020-08-20    更新GCC到10.2.0,更新mpfr到4.1.0,更新mpc到1.2.0,更新binutils到2.35,更新gdb到9.2,更新gdb到1.4.5
