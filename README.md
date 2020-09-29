@@ -329,7 +329,7 @@ pacman -S --noconfirm ruby;
 ```bash
 sudo pacman -Syy --noconfirm manjaro-aur-support yay;
 yay -Syy --noconfirm visual-studio-code-bin
-yay -Syy --noconfirm global
+yay -Syy --noconfirm global chrpath
 ```
 
 
@@ -417,12 +417,12 @@ sudo yum install -y gcc gcc-c++ gdb valgrind automake make libcurl-devel expat-d
 sudo dnf install -y gcc gcc-c++ gdb valgrind automake make libcurl-devel expat-devel glibc glibc-devel
 
 # External development tools
-sudo yum install -y zlib-devel;
+sudo yum install -y zlib-devel chrpath;
 
 # git
-RE2C_VERSION=1.3 ;
-GIT_VERSION=2.24.1 ;
-GIT_LFS_VERSION=2.9.1 ;
+RE2C_VERSION=2.0.3 ;
+GIT_VERSION=2.28.0 ;
+GIT_LFS_VERSION=2.12.0 ;
 GIT_INSTALL_PREFIX=/opt ;
 export PATH="$GIT_INSTALL_PREFIX/re2c/latest/bin/:$GIT_INSTALL_PREFIX/git/latest/bin/:$GIT_INSTALL_PREFIX/git-lfs/latest/bin/:$PATH"
 wget https://github.com/skvadrik/re2c/releases/download/$RE2C_VERSION/re2c-$RE2C_VERSION.tar.xz;
@@ -460,7 +460,7 @@ cd ../../ ;
 
 ```bash
 ## basic
-apt install -y vim curl wget uuid-dev libssl-dev python3-setuptools python3-pip python3-mako perl automake gdb valgrind git git-lfs unzip lunzip p7zip-full autoconf telnet iotop htop libtool build-essential pkg-config gettext
+apt install -y vim curl wget uuid-dev libssl-dev python3-setuptools python3-pip python3-mako perl automake gdb valgrind git git-lfs unzip lunzip p7zip-full autoconf telnet iotop htop libtool build-essential pkg-config gettext chrpath
 
 ## clang-llvm
 
