@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # see https://github.com/Neilpang/acme.sh for detail
 # see https://github.com/Neilpang/acme.sh/wiki/How-to-issue-a-cert
