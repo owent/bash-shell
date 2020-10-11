@@ -248,10 +248,18 @@ DNS.10 = w-oa.com
 DNS.11 = *.w-oa.com
 DNS.12 = r-ci.com
 DNS.13 = *.r-ci.com
+DNS.14 = x-ha.com
+DNS.15 = *.x-ha.com
+DNS.16 = g-ha.com
+DNS.17 = *.g-ha.com
+DNS.18 = f-ha.com
+DNS.19 = *.f-ha.com
 IP.1 = 172.18.1.1
 IP.2 = 172.18.1.10
 IP.3 = 172.18.10.1
 IP.4 = 172.18.31.1
+IP.5 = 172.31.1.1
+IP.6 = 172.20.1.1
 
 [ v3_ca ]
 
