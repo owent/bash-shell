@@ -523,7 +523,7 @@ export CXX="$LLVM_HOME_DIR/bin/clang++" ;
 export AR="$LLVM_HOME_DIR/bin/llvm-ar" ;
 export AS="$LLVM_HOME_DIR/bin/llvm-as" ;
 $LD_LOADER_SCRIPT" ;
-export RANDLIB="$LLVM_HOME_DIR/bin/llvm-ranlib" ;
+export RANLIB="$LLVM_HOME_DIR/bin/llvm-ranlib" ;
 export NM="$LLVM_HOME_DIR/bin/llvm-nm" ;
 export STRIP="$LLVM_HOME_DIR/bin/llvm-strip" ;
 export OBJCOPY="$LLVM_HOME_DIR/bin/llvm-objcopy" ;

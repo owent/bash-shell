@@ -4,15 +4,16 @@
 BUILD_TARGET_COMPOMENTS="";
 COMPOMENTS_GMP_VERSION=6.2.0;
 COMPOMENTS_MPFR_VERSION=4.1.0;
-COMPOMENTS_MPC_VERSION=1.2.0;
+COMPOMENTS_MPC_VERSION=1.2.1;
 COMPOMENTS_ISL_VERSION=0.18;
 COMPOMENTS_LIBATOMIC_OPS_VERSION=7.6.10;
 COMPOMENTS_BDWGC_VERSION=8.0.4;
 COMPOMENTS_GCC_VERSION=10.2.0;
-COMPOMENTS_BINUTILS_VERSION=2.35;
-COMPOMENTS_PYTHON_VERSION=2.7.18;
-COMPOMENTS_GDB_VERSION=9.2;
-COMPOMENTS_GLOBAL_VERSION=6.6.4;
+COMPOMENTS_BINUTILS_VERSION=2.35.1;
+COMPOMENTS_OPENSSL_VERSION=1.1.1h;
+COMPOMENTS_PYTHON_VERSION=3.9.0;
+COMPOMENTS_GDB_VERSION=10.1;
+COMPOMENTS_GLOBAL_VERSION=6.6.5;
 COMPOMENTS_ZSTD_VERSION=1.4.5;
 COMPOMENTS_LZ4_VERSION=1.9.2;
 if [ "owent$COMPOMENTS_GDB_STATIC_BUILD" == "owent" ]; then
@@ -62,7 +63,7 @@ while getopts "dp:cht:d:g:n" OPTION; do
             echo "-c                          clean build cache.";
             echo "-d                          download only.";
             echo "-h                          help message.";
-            echo "-t [build target]           set build target(gmp mpfr mpc isl zstd lz4 gcc binutils gdb libatomic_ops bdw-gc global).";
+            echo "-t [build target]           set build target(gmp mpfr mpc isl zstd lz4 gcc binutils openssl gdb libatomic_ops bdw-gc global).";
             echo "-d [compoment option]       add dependency compoments build options.";
             echo "-g [gnu option]             add gcc,binutils,gdb build options.";
             echo "-n                          print toolchain version and exit.";
@@ -498,17 +499,40 @@ if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list binutils $BUILD_TA
     fi
 fi
 
+# ======================= install openssl [后面有些组件依赖] =======================
+if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list openssl $BUILD_TARGET_COMPOMENTS) ]]; then
+    OPENSSL_PKG=$(check_and_download "openssl" "openssl-*.tar.gz" "https://www.openssl.org/source/openssl-$COMPOMENTS_OPENSSL_VERSION.tar.gz" );
+    if [[ $? -ne 0 ]]; then
+        echo -e "$OPENSSL_PKG";
+        exit -1;
+    fi
+    mkdir -p $PREFIX_DIR/internal-packages ;
+    if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
+        tar -zxvf $OPENSSL_PKG;
+        OPENSSL_SRC_DIR=$(ls -d openssl-* | grep -v \.tar\.gz);
+        cd $OPENSSL_SRC_DIR;
+        ./config "--prefix=$PREFIX_DIR/internal-packages" "--openssldir=$PREFIX_DIR/internal-packages/ssl" "--release" "no-dso" "no-tests" "no-external-tests" \
+                "no-external-tests" "no-shared"  "no-aria" "no-bf" "no-blake2" "no-camellia" "no-cast" "no-idea" "no-md2" "no-md4" "no-mdc2" "no-rc2" "no-rc4" \
+                "no-rc5" "no-ssl3" "enable-static-engine" ; # "--api=1.1.1"
+        make $BUILD_THREAD_OPT && make install_sw install_ssldirs;
+        if [[ $? -eq 0 ]]; then
+            OPENSSL_INSTALL_DIR=$PREFIX_DIR/internal-packages ;
+        fi
+    fi
+fi
+
 # ======================= install gdb(调试器) [依赖 ncurses-devel 包] =======================
 if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list gdb $BUILD_TARGET_COMPOMENTS) ]; then
     if [ -z "$(whereis ncurses | awk '{print $2;}')" ]; then
 	    echo -e "\\033[32;1mwarning: libncurses not found, skip build [gdb].\\033[39;49;0m";
     else
 	    # ======================= 检查Python开发包，如果存在，则增加 --with-pyton 选项 =======================
+        GDB_DEPS_OPT=();
         if [ $BUILD_DOWNLOAD_ONLY -ne 0 ]; then
             PYTHON_PKG=$(check_and_download "python" "Python-*.tar.xz" "https://www.python.org/ftp/python/$COMPOMENTS_PYTHON_VERSION/Python-$COMPOMENTS_PYTHON_VERSION.tar.xz" );
         else
             if [ ! -z "$(find $PREFIX_DIR -name Python.h)" ]; then
-                GDB_PYTHON_OPT="--with-python=$PREFIX_DIR";
+                GDB_DEPS_OPT=(${GDB_DEPS_OPT[@]} "--with-python=$PREFIX_DIR/bin");
             else
                 # =======================  尝试编译安装python  =======================
                 PYTHON_PKG=$(check_and_download "python" "Python-*.tar.xz" "https://www.python.org/ftp/python/$COMPOMENTS_PYTHON_VERSION/Python-$COMPOMENTS_PYTHON_VERSION.tar.xz" );
@@ -519,8 +543,8 @@ if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list gdb $BUILD_TARGET_
                 tar -Jxvf $PYTHON_PKG;
                 PYTHON_DIR=$(ls -d Python-* | grep -v \.tar.xz);
                 cd $PYTHON_DIR;
-                ./configure --prefix=$PREFIX_DIR;
-                make $BUILD_THREAD_OPT && make install && GDB_PYTHON_OPT="--with-python=$PREFIX_DIR";
+                ./configure --prefix=$PREFIX_DIR --enable-optimizations ; # --enable-optimizations require gcc 8.1.0 or later
+                make $BUILD_THREAD_OPT && make install && GDB_DEPS_OPT=(${GDB_DEPS_OPT[@]} "--with-python=$PREFIX_DIR/bin/python3");
 
                 cd "$WORKING_DIR";
             fi
@@ -545,8 +569,12 @@ if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list gdb $BUILD_TARGET_
             fi
             mkdir -p build_jobs_dir;
             cd build_jobs_dir;
-            $COMPOMENTS_GDB_STATIC_BUILD_PREFIX ../configure --prefix=$PREFIX_DIR --with-gmp=$PREFIX_DIR --with-mpc=$PREFIX_DIR --with-mpfr=$PREFIX_DIR --with-isl=$PREFIX_DIR $BDWGC_PREBIUILT --enable-build-with-cxx --enable-gold --enable-libada --enable-objc-gc --enable-libssp --enable-lto $COMPOMENTS_GDB_STATIC_BUILD_FLAGS $GDB_PYTHON_OPT $BUILD_TARGET_CONF_OPTION;
-            $COMPOMENTS_GDB_STATIC_BUILD_PREFIX make $BUILD_THREAD_OPT && make install;
+            if [[ ! -z "$OPENSSL_INSTALL_DIR" ]]; then
+                GDB_DEPS_OPT=(${GDB_DEPS_OPT[@]} "--with-openssl=$OPENSSL_INSTALL_DIR");
+            fi
+            $COMPOMENTS_GDB_STATIC_BUILD_PREFIX ../configure --prefix=$PREFIX_DIR --with-gmp=$PREFIX_DIR --with-mpc=$PREFIX_DIR --with-mpfr=$PREFIX_DIR --with-isl=$PREFIX_DIR $BDWGC_PREBIUILT --enable-build-with-cxx --enable-gold --enable-libada --enable-objc-gc --enable-libssp --enable-lto --enable-vtable-verify $COMPOMENTS_GDB_STATIC_BUILD_FLAGS $GDB_PYTHON_OPT $BUILD_TARGET_CONF_OPTION;
+            $COMPOMENTS_GDB_STATIC_BUILD_PREFIX make $BUILD_THREAD_OPT || $COMPOMENTS_GDB_STATIC_BUILD_PREFIX make;
+            make install;
             cd "$WORKING_DIR";
 
             ls $PREFIX_DIR/bin/gdb;
@@ -603,7 +631,7 @@ export CXX="$GCC_HOME_DIR/bin/g++" ;
 export AR="$GCC_HOME_DIR/bin/ar" ;
 export AS="$GCC_HOME_DIR/bin/as" ;
 export LD="$(which ld.gold || which ld)" ;
-export RANDLIB="$GCC_HOME_DIR/bin/ranlib" ;
+export RANLIB="$GCC_HOME_DIR/bin/ranlib" ;
 export NM="$GCC_HOME_DIR/bin/nm" ;
 export STRIP="$GCC_HOME_DIR/bin/strip" ;
 export OBJCOPY="$GCC_HOME_DIR/bin/objcopy" ;
@@ -611,10 +639,24 @@ export OBJDUMP="$GCC_HOME_DIR/bin/objdump" ;
 export READELF="$GCC_HOME_DIR/bin/readelf" ;
 
 "$@"
-' > $PREFIX_DIR/load-gcc-envs.sh ;
+' > "$PREFIX_DIR/load-gcc-envs.sh" ;
 chmod +x "$PREFIX_DIR/load-gcc-envs.sh" ;
 
-if [ $BUILD_DOWNLOAD_ONLY -eq 0 ]; then
+echo "# -*- python -*-
+import sys
+import os
+import glob
+
+for stdcxx_path in glob.glob('$PREFIX_DIR/share/gcc-*/python'):
+dir_ = os.path.expanduser(stdcxx_path)
+if os.path.exists(dir_) and not dir_ in sys.path:
+    sys.path.insert(0, dir_)
+    from libstdcxx.v6.printers import register_libstdcxx_printers
+    register_libstdcxx_printers(None)
+" > "$PREFIX_DIR/load-libstdc++-gdb-printers.py" ;
+chmod +x "$PREFIX_DIR/load-libstdc++-gdb-printers.py" ;
+
+if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
     echo -e "\\033[33;1mAddition, run the cmds below to add environment var(s).\\033[39;49;0m" ;
     echo -e "\\033[31;1mexport PATH=$PATH\\033[39;49;0m" ;
     echo -e "\\033[31;1mexport LD_LIBRARY_PATH=$LD_LIBRARY_PATH\\033[39;49;0m" ;

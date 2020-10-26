@@ -54,6 +54,7 @@ GCC 8的大致(C/C++)内容如下：
 CentOS 7 & CentOS 6.2
 
 #### 系统库
+
 + gzip 1.5
 + zip/unzip 3.0/6.0
 + GNU make 3.82
@@ -63,18 +64,22 @@ CentOS 7 & CentOS 6.2
 + gcc 4.8.5
 
 #### 编译的依赖库
-+ gmp 6.1.2
-+ mpfr 4.0.1
-+ mpc 1.1.0
+
++ gmp 6.2.0
++ mpfr 4.1.0
++ mpc 1.2.1
 + isl 0.18
-+ libatomic_ops 7.6.4
-+ bdw-gc 7.6.6
++ libatomic_ops 7.6.10
++ bdw-gc 8.0.4
++ openssl 1.1.1h
 
 #### 编译目标
-+ gcc 8.1.0
-+ binutils 2.30
-+ python 2.7.15 *[按需]*
-+ gdb 8.1 (如果存在ncurses-devel包)
+
++ gcc 8.4.0
++ binutils 2.35.1
++ python 3.9.0 *[按需]*
++ gdb 10.1 (如果存在ncurses-devel包)
++ global 6.6.5
 
 #### 注
 + (所有的库都会被安装在**$PREFEX_DIR**里)
@@ -83,27 +88,21 @@ CentOS 7 & CentOS 6.2
 给特定用户安装 gdb的pretty-printer 用以友好打印stdc++的stl容器
 
 1. 在执行 install.sh 脚本前安装 ncurses-devel 和 python-devel， 用于编译gdb和开启python功能
-2. 添加libstdcxx加载脚本到 ```~/.gdb-load-libstdcxx.py```
-  ```python
-  import sys
-  import os
-  import glob
-  
-  for stdcxx_path in glob.glob('安装目录/share/gcc-*/python'):
-    p = os.path.expanduser(stdcxx_path)
-    print p
-    if os.path.exists(p):
-      sys.path.insert(0, p)
-      from libstdcxx.v6.printers import register_libstdcxx_printers
-      register_libstdcxx_printers(None)
-  ```
+2. gdb载入后可使用 ```so [安装目录]/load-libstdc++-gdb-printers.py``` 手动加载gdb的pretty printers
 
-3. 编辑[用户目录]/.gdbinit,添加
-  ```bash
-  so ~/.gdb-load-libstdcxx.py
-  ```
 
 #### History
 + 2018-05-01    Created
 + 2018-08-13    更新GCC到8.2.0,更新libatomic_ops到7.6.6,更新bdwgc到7.6.8,更新binutils到2.31
 + 2019-02-01    更新libatomic_ops到7.6.8，更新bdwgc到8.0.2，移除bdwgc的编译脚本patch，还原binutils到2.30(2.31的golden组件有兼容问题)，更新gdb到8.2.1，修订开启multilib切重复运行脚本时libatomic_ops部分内容使用了32位的问题。
++ 2020-10-26    更新组件,增加工具脚本 ```load-gcc-envs.sh``` 和 ```load-libstdc++-gdb-printers.py``` ,增加内部使用的openssl,增加编译global。
+  + GCC           -> 8.4.0
+  + mpfr          -> 4.1.0
+  + mpc           -> 1.2.0
+  + libatomic_ops -> 7.6.10
+  + bdwgc         -> 8.0.4
+  + binutils      -> 2.35.1
+  + openssl       -> 1.1.1h
+  + python        -> 2.7.18
+  + gdb           -> 10.1
+  + global        -> 6.6.5

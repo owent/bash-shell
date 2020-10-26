@@ -418,43 +418,9 @@ sudo dnf install -y gcc gcc-c++ gdb valgrind automake make libcurl-devel expat-d
 
 # External development tools
 sudo yum install -y zlib-devel chrpath;
-
-# git
-RE2C_VERSION=2.0.3 ;
-GIT_VERSION=2.28.0 ;
-GIT_LFS_VERSION=2.12.0 ;
-GIT_INSTALL_PREFIX=/opt ;
-export PATH="$GIT_INSTALL_PREFIX/re2c/latest/bin/:$GIT_INSTALL_PREFIX/git/latest/bin/:$GIT_INSTALL_PREFIX/git-lfs/latest/bin/:$PATH"
-wget https://github.com/skvadrik/re2c/releases/download/$RE2C_VERSION/re2c-$RE2C_VERSION.tar.xz;
-tar -axvf re2c-$RE2C_VERSION.tar.xz ;
-cd re2c-$RE2C_VERSION ;
-./configure --prefix=$GIT_INSTALL_PREFIX/re2c/$RE2C_VERSION --with-pic=yes;
-make -j8;
-sudo make install;
-sudo ln -s $GIT_INSTALL_PREFIX/re2c/$RE2C_VERSION $GIT_INSTALL_PREFIX/re2c/latest ;
-cd ..;
-
-wget https://mirrors.edge.kernel.org/pub/software/scm/git/git-$GIT_VERSION.tar.xz;
-tar -axvf git-$GIT_VERSION.tar.xz ;
-cd git-$GIT_VERSION;
-./configure --prefix=$GIT_INSTALL_PREFIX/git/$GIT_VERSION --with-curl --with-expat --with-openssl --with-libpcre2 --with-editor=vim ;
-make -j8 all doc;
-sudo make install install-doc install-html;
-cd contrib/subtree;
-sudo make install install-doc install-html;
-sudo ln -s $GIT_INSTALL_PREFIX/git/$GIT_VERSION $GIT_INSTALL_PREFIX/git/latest ;
-cd ../../../ ;
-mkdir -p git-lfs;
-cd git-lfs;
-# git lfs
-wget https://github.com/git-lfs/git-lfs/releases/download/v$GIT_LFS_VERSION/git-lfs-linux-amd64-v$GIT_LFS_VERSION.tar.gz ;
-mkdir git-lfs-v$GIT_LFS_VERSION;
-cd git-lfs-v$GIT_LFS_VERSION ; 
-tar -axvf ../git-lfs-linux-amd64-v$GIT_LFS_VERSION.tar.gz ;
-sudo env PREFIX=$GIT_INSTALL_PREFIX/git-lfs/v$GIT_LFS_VERSION ./install.sh ;
-sudo ln -s $GIT_INSTALL_PREFIX/git-lfs/v$GIT_LFS_VERSION $GIT_INSTALL_PREFIX/git-lfs/latest ;
-cd ../../ ;
 ```
+
+Build git, see https://github.com/owent-utils/docker-setup/blob/master/setup-devtools/setup_git.sh for details.
 
 ### Ubuntu & Debian &  WSL
 
