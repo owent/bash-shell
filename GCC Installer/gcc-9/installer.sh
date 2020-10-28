@@ -537,7 +537,13 @@ if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list global $BUILD_TARG
         tar -zxvf $GLOBAL_PKG;
         GLOBAL_DIR=$(ls -d global-* | grep -v \.tar\.gz);
         cd $GLOBAL_DIR;
-        ./configure --prefix=$PREFIX_DIR --with-pic=yes;
+        # patch for global 6.6.5 linking error
+        echo "int main() { return 0; }" | gcc -x c -ltinfo -o /dev/null - 2>/dev/null;
+        if [[ $? -eq 0 ]]; then
+            env "LIBS=$LIBS -ltinfo" ./configure --prefix=$PREFIX_DIR --with-pic=yes;
+        else
+            ./configure --prefix=$PREFIX_DIR --with-pic=yes;
+        fi
         make $BUILD_THREAD_OPT && make install;
         cd "$WORKING_DIR";
     fi
