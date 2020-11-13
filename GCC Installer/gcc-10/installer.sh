@@ -11,6 +11,8 @@ COMPOMENTS_BDWGC_VERSION=8.0.4;
 COMPOMENTS_GCC_VERSION=10.2.0;
 COMPOMENTS_BINUTILS_VERSION=2.35.1;
 COMPOMENTS_OPENSSL_VERSION=1.1.1h;
+COMPOMENTS_ZLIB_VERSION=1.2.11;
+COMPOMENTS_LIBFFI_VERSION=3.3;
 COMPOMENTS_PYTHON_VERSION=3.9.0;
 COMPOMENTS_GDB_VERSION=10.1;
 COMPOMENTS_GLOBAL_VERSION=6.6.5;
@@ -63,7 +65,7 @@ while getopts "dp:cht:d:g:n" OPTION; do
             echo "-c                          clean build cache.";
             echo "-d                          download only.";
             echo "-h                          help message.";
-            echo "-t [build target]           set build target(gmp mpfr mpc isl zstd lz4 gcc binutils openssl gdb libatomic_ops bdw-gc global).";
+            echo "-t [build target]           set build target(gmp mpfr mpc isl zstd lz4 zlib libffi gcc binutils openssl gdb libatomic_ops bdw-gc global).";
             echo "-d [compoment option]       add dependency compoments build options.";
             echo "-g [gnu option]             add gcc,binutils,gdb build options.";
             echo "-n                          print toolchain version and exit.";
@@ -89,14 +91,14 @@ while getopts "dp:cht:d:g:n" OPTION; do
     esac
 done
 
-if [ $BUILD_DOWNLOAD_ONLY -eq 0 ]; then
+if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
     mkdir -p "$PREFIX_DIR"
     PREFIX_DIR="$( cd "$PREFIX_DIR" && pwd )";
 fi
 
 # ======================= 转到脚本目录 =======================
 WORKING_DIR="$PWD";
-if [ -z "$CC" ]; then
+if [[ -z "$CC" ]]; then
     export CC=gcc;
     export CXX=g++;
 fi
@@ -104,7 +106,7 @@ fi
 # ======================= 如果是64位系统且没安装32位的开发包，则编译要gcc加上 --disable-multilib 参数, 不生成32位库 =======================
 SYS_LONG_BIT=$(getconf LONG_BIT);
 GCC_OPT_DISABLE_MULTILIB="";
-if [ $SYS_LONG_BIT == "64" ]; then
+if [[ $SYS_LONG_BIT == "64" ]]; then
     GCC_OPT_DISABLE_MULTILIB="--disable-multilib";
     echo "int main() { return 0; }" > conftest.c;
     $CC -m32 -o conftest ${CFLAGS} ${CPPFLAGS} ${LDFLAGS} conftest.c > /dev/null 2>&1;
@@ -120,9 +122,9 @@ if [ $SYS_LONG_BIT == "64" ]; then
 fi
 
 # ======================= 如果强制开启，则开启 =======================
-if [ ! -z "$GCC_OPT_DISABLE_MULTILIB" ] && [ "$GCC_OPT_DISABLE_MULTILIB"=="--disable-multilib" ] ; then
+if [[ ! -z "$GCC_OPT_DISABLE_MULTILIB" ]] && [[ "$GCC_OPT_DISABLE_MULTILIB"=="--disable-multilib" ]] ; then
     for opt in $BUILD_TARGET_CONF_OPTION ; do
-        if [ "$opt" == "--enable-multilib" ]; then
+        if [[ "$opt" == "--enable-multilib" ]]; then
             echo -e "\\033[32;1mwarning: 32 bit build test failed, but --enable-multilib enabled in GCC_OPT_DISABLE_MULTILIB.\\033[39;49;0m"
             GCC_OPT_DISABLE_MULTILIB="";
             break;
@@ -135,7 +137,7 @@ fi
 BUILD_THREAD_OPT=6;
 BUILD_CPU_NUMBER=$(cat /proc/cpuinfo | grep -c "^processor[[:space:]]*:[[:space:]]*[0-9]*");
 BUILD_THREAD_OPT=$BUILD_CPU_NUMBER;
-if [ $BUILD_THREAD_OPT -gt 6 ]; then
+if [[ $BUILD_THREAD_OPT -gt 6 ]]; then
     BUILD_THREAD_OPT=$(($BUILD_CPU_NUMBER-1));
 fi
 BUILD_THREAD_OPT="-j$BUILD_THREAD_OPT";
@@ -149,17 +151,17 @@ function check_and_download(){
     PKG_URL="$3";
      
     PKG_VAR_VAL=($(find . -maxdepth 1 -name "$PKG_MATCH_EXPR"));
-    if [ ${#PKG_VAR_VAL} -gt 0 ]; then
+    if [[ ${#PKG_VAR_VAL} -gt 0 ]]; then
         echo "${PKG_VAR_VAL[0]}"
         return 0;
     fi
      
-    if [ -z "$PKG_URL" ]; then
+    if [[ -z "$PKG_URL" ]]; then
         echo -e "\\033[31;1m$PKG_NAME not found.\\033[39;49;0m" 
         return 1;
     fi
      
-    if [ -z "$4" ]; then
+    if [[ -z "$4" ]]; then
         wget -c "$PKG_URL";
     else
         wget -c "$PKG_URL" -O "$4";
@@ -167,7 +169,7 @@ function check_and_download(){
     
     PKG_VAR_VAL=($(find . -maxdepth 1 -name "$PKG_MATCH_EXPR"));
      
-    if [ ${#PKG_VAR_VAL} -eq 0 ]; then
+    if [[ ${#PKG_VAR_VAL} -eq 0 ]]; then
         echo -e "\\033[31;1m$PKG_NAME not found.\\033[39;49;0m" 
         return 1;
     fi
@@ -181,7 +183,7 @@ function is_in_list() {
     shift;
 
     for i in $*; do
-        if [ "$ele" == "$i" ]; then
+        if [[ "$ele" == "$i" ]]; then
             echo 0;
             exit 0;
         fi
@@ -220,19 +222,19 @@ sleep $CHECK_INFO_SLEEP
 swapoff -a
 
 # install gmp
-if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list gmp $BUILD_TARGET_COMPOMENTS) ]; then
+if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list gmp $BUILD_TARGET_COMPOMENTS) ]]; then
     GMP_PKG=$(check_and_download "gmp" "gmp-*.tar.xz" "https://ftp.gnu.org/gnu/gmp/gmp-$COMPOMENTS_GMP_VERSION.tar.xz" );
     if [ $? -ne 0 ]; then
         echo -e "$GMP_PKG";
         exit -1;
     fi
-    if [ $BUILD_DOWNLOAD_ONLY -eq 0 ]; then
+    if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
         tar -Jxvf $GMP_PKG;
         GMP_DIR=$(ls -d gmp-* | grep -v \.tar\.xz);
         cd $GMP_DIR;
         CPPFLAGS=-fexceptions ./configure --prefix=$PREFIX_DIR --enable-cxx --enable-assert $BUILD_OTHER_CONF_OPTION;
         make $BUILD_THREAD_OPT && make check && make install;
-        if [ $? -ne 0 ]; then
+        if [[ $? -ne 0 ]]; then
             echo -e "\\033[31;1mError: build gmp failed.\\033[39;49;0m";
             exit -1;
         fi
@@ -241,19 +243,19 @@ if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list gmp $BUILD_TARGET_
 fi
 
 # install mpfr
-if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list mpfr $BUILD_TARGET_COMPOMENTS) ]; then
+if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list mpfr $BUILD_TARGET_COMPOMENTS) ]]; then
     MPFR_PKG=$(check_and_download "mpfr" "mpfr-*.tar.xz" "https://ftp.gnu.org/gnu/mpfr/mpfr-$COMPOMENTS_MPFR_VERSION.tar.xz" );
-    if [ $? -ne 0 ]; then
+    if [[ $? -ne 0 ]]; then
         echo -e "$MPFR_PKG";
         exit -1;
     fi
-    if [ $BUILD_DOWNLOAD_ONLY -eq 0 ]; then
+    if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
         tar -Jxvf $MPFR_PKG;
         MPFR_DIR=$(ls -d mpfr-* | grep -v \.tar\.xz);
         cd $MPFR_DIR;
         ./configure --prefix=$PREFIX_DIR --with-gmp=$PREFIX_DIR --enable-assert $BUILD_OTHER_CONF_OPTION;
         make $BUILD_THREAD_OPT && make install;
-        if [ $? -ne 0 ]; then
+        if [[ $? -ne 0 ]]; then
             echo -e "\\033[31;1mError: build mpfr failed.\\033[39;49;0m";
             exit -1;
         fi
@@ -262,19 +264,19 @@ if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list mpfr $BUILD_TARGET
 fi
 
 # install mpc
-if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list mpc $BUILD_TARGET_COMPOMENTS) ]; then
+if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list mpc $BUILD_TARGET_COMPOMENTS) ]]; then
     MPC_PKG=$(check_and_download "mpc" "mpc-*.tar.gz" "https://ftp.gnu.org/gnu/mpc/mpc-$COMPOMENTS_MPC_VERSION.tar.gz" );
-    if [ $? -ne 0 ]; then
+    if [[ $? -ne 0 ]]; then
         echo -e "$MPC_PKG";
         exit -1;
     fi
-    if [ $BUILD_DOWNLOAD_ONLY -eq 0 ]; then
+    if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
         tar -zxvf $MPC_PKG;
         MPC_DIR=$(ls -d mpc-* | grep -v \.tar\.gz);
         cd $MPC_DIR;
         ./configure --prefix=$PREFIX_DIR --with-gmp=$PREFIX_DIR --with-mpfr=$PREFIX_DIR $BUILD_OTHER_CONF_OPTION;
         make $BUILD_THREAD_OPT && make install;
-        if [ $? -ne 0 ]; then
+        if [[ $? -ne 0 ]]; then
             echo -e "\\033[31;1mError: build mpc failed.\\033[39;49;0m";
             exit -1;
         fi
@@ -283,20 +285,20 @@ if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list mpc $BUILD_TARGET_
 fi
 
 # install isl
-if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list isl $BUILD_TARGET_COMPOMENTS) ]; then
+if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list isl $BUILD_TARGET_COMPOMENTS) ]]; then
     ISL_PKG=$(check_and_download "isl" "isl-*.tar.bz2" "https://gcc.gnu.org/pub/gcc/infrastructure/isl-$COMPOMENTS_ISL_VERSION.tar.bz2" );
-    if [ $? -ne 0 ]; then
+    if [[ $? -ne 0 ]]; then
         echo -e "$ISL_PKG";
         exit -1;
     fi
-    if [ $BUILD_DOWNLOAD_ONLY -eq 0 ]; then
+    if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
         tar -jxvf $ISL_PKG;
         ISL_DIR=$(ls -d isl-* | grep -v \.tar\.bz2);
         cd $ISL_DIR;
         autoreconf -i ;
         ./configure --prefix=$PREFIX_DIR --with-gmp-prefix=$PREFIX_DIR $BUILD_OTHER_CONF_OPTION;
         make $BUILD_THREAD_OPT && make install;
-        if [ $? -ne 0 ]; then
+        if [[ $? -ne 0 ]]; then
             echo -e "\\033[31;1mError: build isl failed.\\033[39;49;0m";
             exit -1;
         fi
@@ -307,18 +309,18 @@ fi
 # install libatomic_ops
 if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list libatomic_ops $BUILD_TARGET_COMPOMENTS) ]; then
     LIBATOMIC_OPS_PKG=$(check_and_download "libatomic_ops" "libatomic_ops-*.tar.gz" "https://github.com/ivmai/libatomic_ops/releases/download/v$COMPOMENTS_LIBATOMIC_OPS_VERSION/libatomic_ops-$COMPOMENTS_LIBATOMIC_OPS_VERSION.tar.gz" "libatomic_ops-$COMPOMENTS_LIBATOMIC_OPS_VERSION.tar.gz" );
-    if [ $? -ne 0 ]; then
+    if [[ $? -ne 0 ]]; then
         echo -e "$LIBATOMIC_OPS_PKG";
         exit -1;
     fi
-    if [ $BUILD_DOWNLOAD_ONLY -eq 0 ]; then
+    if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
         tar -zxvf $LIBATOMIC_OPS_PKG;
         LIBATOMIC_OPS_DIR=$(ls -d libatomic_ops-* | grep -v \.tar\.gz);
         # cd $LIBATOMIC_OPS_DIR;
         # bash ./autogen.sh ;
         # ./configure --prefix=$PREFIX_DIR ;
         # make $BUILD_THREAD_OPT && make install;
-        if [ $? -ne 0 ]; then
+        if [[ $? -ne 0 ]]; then
             echo -e "\\033[31;1mError: build libatomic_ops failed.\\033[39;49;0m";
             exit -1;
         fi
@@ -327,18 +329,18 @@ if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list libatomic_ops $BUI
 fi
 
 # install bdw-gc
-if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list bdw-gc $BUILD_TARGET_COMPOMENTS) ]; then
+if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list bdw-gc $BUILD_TARGET_COMPOMENTS) ]]; then
     BDWGC_PKG=$(check_and_download "bdw-gc" "gc-*.tar.gz" "https://github.com/ivmai/bdwgc/releases/download/v$COMPOMENTS_BDWGC_VERSION/gc-$COMPOMENTS_BDWGC_VERSION.tar.gz" "gc-$COMPOMENTS_BDWGC_VERSION.tar.gz" );
-    if [ $? -ne 0 ]; then
+    if [[ $? -ne 0 ]]; then
         echo -e "$BDWGC_PKG";
         exit -1;
     fi
-    if [ $BUILD_DOWNLOAD_ONLY -eq 0 ]; then
+    if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
         tar -zxvf $BDWGC_PKG;
         BDWGC_DIR=$(ls -d gc-* | grep -v \.tar\.gz);
         cd $BDWGC_DIR;
-        if [ ! -z "$LIBATOMIC_OPS_DIR" ]; then
-            if [ -e libatomic_ops ]; then
+        if [[ ! -z "$LIBATOMIC_OPS_DIR" ]]; then
+            if [[ -e libatomic_ops ]]; then
                 rm -rf libatomic_ops;
             fi
             mv -f ../$LIBATOMIC_OPS_DIR libatomic_ops;
@@ -349,25 +351,25 @@ if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list bdw-gc $BUILD_TARG
             BDWGC_LIBATOMIC_OPS=check ;
         fi
 
-        if [ -e Makefile ]; then
+        if [[ -e Makefile ]]; then
             make clean;
             make distclean;
         fi
 
         ./configure --prefix=$PREFIX_DIR/multilib/$SYS_LONG_BIT --enable-cplusplus --with-pic=yes --enable-shared=no --enable-static=yes --with-libatomic-ops=$BDWGC_LIBATOMIC_OPS ;
         make $BUILD_THREAD_OPT && make install;
-        if [ $? -ne 0 ]; then
+        if [[ $? -ne 0 ]]; then
             echo -e "\\033[31;1mError: build bdw-gc failed.\\033[39;49;0m";
             exit -1;
         fi
 
-        if [ $SYS_LONG_BIT == "64" ] && [ "$GCC_OPT_DISABLE_MULTILIB" == "--enable-multilib" ] ; then
+        if [[ $SYS_LONG_BIT == "64" ]] && [[ "$GCC_OPT_DISABLE_MULTILIB" == "--enable-multilib" ]] ; then
             make clean;
             make distclean;
             env CFLAGS=-m32 CPPFLAGS=-m32 ./configure --prefix=$PREFIX_DIR/multilib/32 --enable-cplusplus --with-pic=yes --enable-shared=no --enable-static=yes --with-libatomic-ops=$BDWGC_LIBATOMIC_OPS ;
 
             make $BUILD_THREAD_OPT && make install;
-            if [ $? -ne 0 ]; then
+            if [[ $? -ne 0 ]]; then
                 echo -e "\\033[31;1mError: build bdw-gc with -m32 failed.\\033[39;49;0m";
                 exit -1;
             fi
@@ -381,18 +383,18 @@ fi
 
 
 # install zstd
-if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list zstd $BUILD_TARGET_COMPOMENTS) ]; then
+if [[ -z "$BUILD_TARGET_COMPOMENTS" ]]|| [[ "0" == $(is_in_list zstd $BUILD_TARGET_COMPOMENTS) ]]; then
     ZSTD_PKG=$(check_and_download "zstd" "zstd-*.tar.gz" "https://github.com/facebook/zstd/releases/download/v$COMPOMENTS_ZSTD_VERSION/zstd-$COMPOMENTS_ZSTD_VERSION.tar.gz" "zstd-$COMPOMENTS_ZSTD_VERSION.tar.gz" );
-    if [ $? -ne 0 ]; then
+    if [[ $? -ne 0 ]]; then
         echo -e "$ZSTD_PKG";
         exit -1;
     fi
-    if [ $BUILD_DOWNLOAD_ONLY -eq 0 ]; then
+    if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
         tar -zxvf $ZSTD_PKG;
         ZSTD_DIR=$(ls -d zstd-* | grep -v \.tar\.gz);
         cd $ZSTD_DIR;
 
-        if [ -e Makefile ]; then
+        if [[ -e Makefile ]]; then
             make clean;
         fi
 
@@ -401,7 +403,7 @@ if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list zstd $BUILD_TARGET
         # cmake ../build/cmake "-DCMAKE_INSTALL_PREFIX=$PREFIX_DIR" -DZSTD_BUILD_PROGRAMS=ON -DZSTD_BUILD_TESTS=OFF
         # cmake --build . -j -- install
         make $BUILD_THREAD_OPT PREFIX=$PREFIX_DIR install;
-        if [ $? -ne 0 ]; then
+        if [[ $? -ne 0 ]]; then
             echo -e "\\033[31;1mError: build zstd failed.\\033[39;49;0m";
             exit -1;
         fi
@@ -411,23 +413,23 @@ if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list zstd $BUILD_TARGET
 fi
 
 # install lz4
-if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list lz4 $BUILD_TARGET_COMPOMENTS) ]; then
+if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list lz4 $BUILD_TARGET_COMPOMENTS) ]]; then
     LZ4_PKG=$(check_and_download "lz4" "lz4-*.tar.gz" "https://github.com/lz4/lz4/archive/v$COMPOMENTS_LZ4_VERSION.tar.gz" "lz4-$COMPOMENTS_LZ4_VERSION.tar.gz" );
-    if [ $? -ne 0 ]; then
+    if [[ $? -ne 0 ]]; then
         echo -e "$LZ4_PKG";
         exit -1;
     fi
-    if [ $BUILD_DOWNLOAD_ONLY -eq 0 ]; then
+    if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
         tar -zxvf $LZ4_PKG;
         LZ4_DIR=$(ls -d lz4-* | grep -v \.tar\.gz);
         cd $LZ4_DIR;
 
-        if [ -e Makefile ]; then
+        if [[ -e Makefile ]]; then
             make clean;
         fi
 
         make $BUILD_THREAD_OPT PREFIX=$PREFIX_DIR install;
-        if [ $? -ne 0 ]; then
+        if [[ $? -ne 0 ]]; then
             echo -e "\\033[31;1mError: build lz4 failed.\\033[39;49;0m";
             # exit -1;
         fi
@@ -437,16 +439,16 @@ if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list lz4 $BUILD_TARGET_
 fi
 
 # ======================= install gcc =======================
-if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list gcc $BUILD_TARGET_COMPOMENTS) ]; then
+if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list gcc $BUILD_TARGET_COMPOMENTS) ]]; then
     # ======================= gcc包 =======================
     GCC_PKG=$(check_and_download "gcc" "gcc-*.tar.xz" "https://gcc.gnu.org/pub/gcc/releases/gcc-$COMPOMENTS_GCC_VERSION/gcc-$COMPOMENTS_GCC_VERSION.tar.xz" );
-    if [ $? -ne 0 ]; then
+    if [[ $? -ne 0 ]]; then
         echo -e "$GCC_PKG";
         exit -1;
     fi
-    if [ $BUILD_DOWNLOAD_ONLY -eq 0 ]; then
+    if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
         GCC_DIR=$(ls -d gcc-* | grep -v \.tar\.xz);
-        if [ -z "$GCC_DIR" ]; then
+        if [[ -z "$GCC_DIR" ]]; then
             tar -axvf $GCC_PKG;
             GCC_DIR=$(ls -d gcc-* | grep -v \.tar\.xz);
         fi
@@ -461,7 +463,7 @@ if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list gcc $BUILD_TARGET_
         cd "$WORKING_DIR";
 
         ls $PREFIX_DIR/bin/*gcc
-        if [ $? -ne 0 ]; then
+        if [[ $? -ne 0 ]]; then
             echo -e "\\033[31;1mError: build gcc failed.\\033[39;49;0m";
             exit -1;
         fi
@@ -475,13 +477,13 @@ export CC=$PREFIX_DIR/bin/gcc ;
 export CXX=$PREFIX_DIR/bin/g++ ;
 
 # ======================= install binutils(链接器,汇编器 等) =======================
-if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list binutils $BUILD_TARGET_COMPOMENTS) ]; then
+if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list binutils $BUILD_TARGET_COMPOMENTS) ]]; then
     BINUTILS_PKG=$(check_and_download "binutils" "binutils-*.tar.xz" "https://ftp.gnu.org/gnu/binutils/binutils-$COMPOMENTS_BINUTILS_VERSION.tar.xz" );
-    if [ $? -ne 0 ]; then
+    if [[ $? -ne 0 ]]; then
         echo -e "$BINUTILS_PKG";
         exit -1;
     fi
-    if [ $BUILD_DOWNLOAD_ONLY -eq 0 ]; then
+    if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
         tar -Jxvf $BINUTILS_PKG;
         BINUTILS_DIR=$(ls -d binutils-* | grep -v \.tar\.xz);
         cd $BINUTILS_DIR;
@@ -493,7 +495,7 @@ if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list binutils $BUILD_TA
         cd "$WORKING_DIR";
 
         ls $PREFIX_DIR/bin/ld
-        if [ $? -ne 0 ]; then
+        if [[ $? -ne 0 ]]; then
             echo -e "\\033[31;1mError: build binutils failed.\\033[39;49;0m";
         fi
     fi
@@ -521,17 +523,61 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list openssl $BUILD_
     fi
 fi
 
+# ======================= install zlib [后面有些组件依赖] =======================
+if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list zlib $BUILD_TARGET_COMPOMENTS) ]]; then
+    ZLIB_PKG=$(check_and_download "zlib" "zlib-*.tar.gz" "http://zlib.net/zlib-$COMPOMENTS_ZLIB_VERSION.tar.gz" );
+    if [[ $? -ne 0 ]]; then
+        echo -e "$ZLIB_PKG";
+        exit -1;
+    fi
+    if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
+        tar -zxvf $ZLIB_PKG;
+        ZLIB_DIR=$(ls -d zlib-* | grep -v \.tar\.gz);
+        cd "$ZLIB_DIR";
+        ./configure --prefix=$PREFIX_DIR --static ;
+        make $BUILD_THREAD_OPT || make ;
+        if [[ $? -ne 0 ]]; then
+            echo -e "\\033[31;1mBuild zlib failed.\\033[39;49;0m";
+            exit 1;
+        fi
+        make install ;
+        cd "$WORKING_DIR";
+    fi
+fi
+
+# ======================= install libffi [后面有些组件依赖] =======================
+if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list libffi $BUILD_TARGET_COMPOMENTS) ]]; then
+    LIBFFI_PKG=$(check_and_download "libffi" "libffi-*.tar.gz" "https://github.com/libffi/libffi/releases/download/v$COMPOMENTS_LIBFFI_VERSION/libffi-$COMPOMENTS_LIBFFI_VERSION.tar.gz" );
+    if [[ $? -ne 0 ]]; then
+        echo -e "$LIBFFI_PKG";
+        exit -1;
+    fi
+    if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
+        tar -zxvf $LIBFFI_PKG;
+        LIBFFI_DIR=$(ls -d libffi-* | grep -v \.tar\.gz);
+        cd "$LIBFFI_DIR";
+        ./configure --prefix=$PREFIX_DIR --with-pic=yes ;
+        make $BUILD_THREAD_OPT || make ;
+        if [[ $? -ne 0 ]]; then
+            echo -e "\\033[31;1mBuild libffi failed.\\033[39;49;0m";
+            exit 1;
+        fi
+        make install;
+        cd "$WORKING_DIR";
+    fi
+fi
+
 # ======================= install gdb(调试器) [依赖 ncurses-devel 包] =======================
-if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list gdb $BUILD_TARGET_COMPOMENTS) ]; then
-    if [ -z "$(whereis ncurses | awk '{print $2;}')" ]; then
+if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list gdb $BUILD_TARGET_COMPOMENTS) ]]; then
+    if [[ -z "$(whereis ncurses | awk '{print $2;}')" ]]; then
 	    echo -e "\\033[32;1mwarning: libncurses not found, skip build [gdb].\\033[39;49;0m";
     else
 	    # ======================= 检查Python开发包，如果存在，则增加 --with-pyton 选项 =======================
         GDB_DEPS_OPT=();
-        if [ $BUILD_DOWNLOAD_ONLY -ne 0 ]; then
+        if [[ $BUILD_DOWNLOAD_ONLY -ne 0 ]]; then
             PYTHON_PKG=$(check_and_download "python" "Python-*.tar.xz" "https://www.python.org/ftp/python/$COMPOMENTS_PYTHON_VERSION/Python-$COMPOMENTS_PYTHON_VERSION.tar.xz" );
         else
-            if [ ! -z "$(find $PREFIX_DIR -name Python.h)" ]; then
+            if [[ ! -z "$(find $PREFIX_DIR -name Python.h)" ]]; then
                 GDB_DEPS_OPT=(${GDB_DEPS_OPT[@]} "--with-python=$PREFIX_DIR/bin");
             else
                 # =======================  尝试编译安装python  =======================
@@ -543,7 +589,7 @@ if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list gdb $BUILD_TARGET_
                 tar -Jxvf $PYTHON_PKG;
                 PYTHON_DIR=$(ls -d Python-* | grep -v \.tar.xz);
                 cd $PYTHON_DIR;
-                ./configure --prefix=$PREFIX_DIR --enable-optimizations ; # --enable-optimizations require gcc 8.1.0 or later
+                ./configure --prefix=$PREFIX_DIR --enable-optimizations --with-ensurepip=install --enable-shared ; # --enable-optimizations require gcc 8.1.0 or later
                 make $BUILD_THREAD_OPT && make install && GDB_DEPS_OPT=(${GDB_DEPS_OPT[@]} "--with-python=$PREFIX_DIR/bin/python3");
 
                 cd "$WORKING_DIR";
@@ -552,15 +598,15 @@ if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list gdb $BUILD_TARGET_
 
 	    # ======================= 正式安装GDB =======================
 	    GDB_PKG=$(check_and_download "gdb" "gdb-*.tar.xz" "https://ftp.gnu.org/gnu/gdb/gdb-$COMPOMENTS_GDB_VERSION.tar.xz" );
-	    if [ $? -ne 0 ]; then
+	    if [[ $? -ne 0 ]]; then
 		    echo -e "$GDB_PKG";
 		    exit -1;
 	    fi
-        if [ $BUILD_DOWNLOAD_ONLY -eq 0 ]; then
+        if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
             tar -Jxvf $GDB_PKG;
             GDB_DIR=$(ls -d gdb-* | grep -v \.tar\.xz);
             cd $GDB_DIR;
-            if [ $COMPOMENTS_GDB_STATIC_BUILD -ne 0 ]; then
+            if [[ $COMPOMENTS_GDB_STATIC_BUILD -ne 0 ]]; then
                 COMPOMENTS_GDB_STATIC_BUILD_FLAGS='LDFLAGS="-static"';
                 COMPOMENTS_GDB_STATIC_BUILD_PREFIX='env LDFLAGS="-static"';
             else
@@ -578,7 +624,7 @@ if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list gdb $BUILD_TARGET_
             cd "$WORKING_DIR";
 
             ls $PREFIX_DIR/bin/gdb;
-            if [ $? -ne 0 ]; then
+            if [[ $? -ne 0 ]]; then
                 echo -e "\\033[31;1mError: build gdb failed.\\033[39;49;0m"
             fi
         fi
@@ -586,13 +632,13 @@ if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list gdb $BUILD_TARGET_
 fi
 
 # ======================= install global tool =======================
-if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list global $BUILD_TARGET_COMPOMENTS) ]; then
+if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list global $BUILD_TARGET_COMPOMENTS) ]]; then
     GLOBAL_PKG=$(check_and_download "global" "global-*.tar.gz" "https://ftp.gnu.org/gnu/global/global-$COMPOMENTS_GLOBAL_VERSION.tar.gz" );
     if [ $? -ne 0 ]; then
         echo -e "$GLOBAL_PKG";
         exit -1;
     fi
-    if [ $BUILD_DOWNLOAD_ONLY -eq 0 ]; then
+    if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
         tar -zxvf $GLOBAL_PKG;
         GLOBAL_DIR=$(ls -d global-* | grep -v \.tar\.gz);
         cd $GLOBAL_DIR;
@@ -617,7 +663,7 @@ fi
 echo '#!/bin/bash
 GCC_HOME_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )";
 
-if [ "x$LD_LIBRARY_PATH" == "x" ]; then
+if [[ "x$LD_LIBRARY_PATH" == "x" ]]; then
     export LD_LIBRARY_PATH="$GCC_HOME_DIR/lib:$GCC_HOME_DIR/lib64" ;
 else
     export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$GCC_HOME_DIR/lib:$GCC_HOME_DIR/lib64" ;

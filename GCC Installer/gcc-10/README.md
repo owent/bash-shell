@@ -44,6 +44,7 @@ GCC 10的大致(C/C++)内容如下：
 20. automake
 21. gettext
 22. gperf
+23. cmake
 
 ### 我编译的环境
 
@@ -70,6 +71,8 @@ CentOS 7
 + gdb 10.1 (如果存在ncurses-devel包)
 + global 6.6.5
 + lz4 1.9.2 *[非必须]*
++ zlib 1.2.11 *[非必须]*
++ libffi 3.3 *[非必须]*
 
 #### 注
 
@@ -100,3 +103,6 @@ CentOS 7
   + python    -> 2.7.18
   + gdb       -> 10.1
   + global    -> 6.6.5
++ 2020-11-10    增加部分Python的依赖链
+  + zlib      -> 1.2.11
+  + libffi    -> 3.3
