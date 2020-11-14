@@ -73,6 +73,7 @@ CentOS 7
 + lz4 1.9.2 *[非必须]*
 + zlib 1.2.11 *[非必须]*
 + libffi 3.3 *[非必须]*
++ ncurses 6.2 *[非必须]*
 
 #### 注
 
@@ -103,6 +104,7 @@ CentOS 7
   + python    -> 2.7.18
   + gdb       -> 10.1
   + global    -> 6.6.5
-+ 2020-11-10    增加部分Python的依赖链
++ 2020-11-10    增加部分Python和gdb的依赖链
   + zlib      -> 1.2.11
   + libffi    -> 3.3
+  + ncurses   -> 6.2

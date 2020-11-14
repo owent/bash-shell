@@ -13,6 +13,7 @@ COMPOMENTS_BINUTILS_VERSION=2.35.1;
 COMPOMENTS_OPENSSL_VERSION=1.1.1h;
 COMPOMENTS_ZLIB_VERSION=1.2.11;
 COMPOMENTS_LIBFFI_VERSION=3.3;
+COMPOMENTS_NCURSES_VERSION=6.2;
 COMPOMENTS_PYTHON_VERSION=3.9.0;
 COMPOMENTS_GDB_VERSION=10.1;
 COMPOMENTS_GLOBAL_VERSION=6.6.5;
@@ -65,7 +66,7 @@ while getopts "dp:cht:d:g:n" OPTION; do
             echo "-c                          clean build cache.";
             echo "-d                          download only.";
             echo "-h                          help message.";
-            echo "-t [build target]           set build target(gmp mpfr mpc isl zstd lz4 zlib libffi gcc binutils openssl gdb libatomic_ops bdw-gc global).";
+            echo "-t [build target]           set build target(gmp mpfr mpc isl zstd lz4 zlib libffi gcc binutils openssl ncurses readline gdb libatomic_ops bdw-gc global).";
             echo "-d [compoment option]       add dependency compoments build options.";
             echo "-g [gnu option]             add gcc,binutils,gdb build options.";
             echo "-n                          print toolchain version and exit.";
@@ -197,7 +198,11 @@ function is_in_list() {
 echo -e "\\033[31;1mcheck complete.\\033[39;49;0m"
 
 # ======================= 准备环境, 把库和二进制目录导入，否则编译会找不到库或文件 =======================
-export LD_LIBRARY_PATH=$PREFIX_DIR/lib:$PREFIX_DIR/lib64:$LD_LIBRARY_PATH
+if [[ "x$LD_LIBRARY_PATH" == "x" ]]; then
+    export LD_LIBRARY_PATH="$PREFIX_DIR/lib:$PREFIX_DIR/lib64"
+else
+    export LD_LIBRARY_PATH="$PREFIX_DIR/lib:$PREFIX_DIR/lib64:$LD_LIBRARY_PATH"
+fi
 export PATH=$PREFIX_DIR/bin:$PATH
 
 echo -e "\\033[32;1mnotice: reset env LD_LIBRARY_PATH=$LD_LIBRARY_PATH\\033[39;49;0m";
@@ -475,6 +480,30 @@ fi
 
 export CC=$PREFIX_DIR/bin/gcc ;
 export CXX=$PREFIX_DIR/bin/g++ ;
+if [[ "x$PKG_CONFIG_PATH" == "x" ]]; then
+    export PKG_CONFIG_PATH="$PREFIX_DIR/internal-packages/lib/pkgconfig"
+else
+    export PKG_CONFIG_PATH="$PREFIX_DIR/internal-packages/lib/pkgconfig:$PKG_CONFIG_PATH"
+fi
+for ADDITIONAL_PKGCONFIG_PATH in $(find $PREFIX_DIR -name pkgconfig); do
+    export PKG_CONFIG_PATH="$ADDITIONAL_PKGCONFIG_PATH:$PKG_CONFIG_PATH"
+done
+
+if [[ -z "$CFLAGS" ]]; then
+    export CFLAGS="-fPIC";
+else
+    export CFLAGS="$CFLAGS -fPIC";
+fi
+if [[ -z "$CXXFLAGS" ]]; then
+    export CXXFLAGS="-fPIC";
+else
+    export CXXFLAGS="$CXXFLAGS -fPIC";
+fi
+if [[ -z "$LDFLAGS" ]]; then
+    export LDFLAGS="-L$PREFIX_DIR/lib64 -L$PREFIX_DIR/lib";
+else
+    export LDFLAGS="$LDFLAGS -L$PREFIX_DIR/lib64 -L$PREFIX_DIR/lib";
+fi
 
 # ======================= install binutils(链接器,汇编器 等) =======================
 if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list binutils $BUILD_TARGET_COMPOMENTS) ]]; then
@@ -487,6 +516,7 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list binutils $BUILD
         tar -Jxvf $BINUTILS_PKG;
         BINUTILS_DIR=$(ls -d binutils-* | grep -v \.tar\.xz);
         cd $BINUTILS_DIR;
+        make clean || true;
         ./configure --prefix=$PREFIX_DIR --with-gmp=$PREFIX_DIR --with-mpc=$PREFIX_DIR --with-mpfr=$PREFIX_DIR --with-isl=$PREFIX_DIR $BDWGC_PREBIUILT --enable-build-with-cxx --enable-gold --enable-libada --enable-libssp --enable-lto --enable-objc-gc --enable-vtable-verify --enable-plugins --disable-werror $BUILD_TARGET_CONF_OPTION;
         make $BUILD_THREAD_OPT && make install;
         # ---- 新版本的GCC编译器会激发binutils内某些组件的werror而导致编译失败 ----
@@ -502,6 +532,7 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list binutils $BUILD
 fi
 
 # ======================= install openssl [后面有些组件依赖] =======================
+# openssl的依赖太广泛了，所以不放进默认的查找目录，以防外部使用者会使用到这里的版本。如果需要使用，可以手动导入这里的openssl
 if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list openssl $BUILD_TARGET_COMPOMENTS) ]]; then
     OPENSSL_PKG=$(check_and_download "openssl" "openssl-*.tar.gz" "https://www.openssl.org/source/openssl-$COMPOMENTS_OPENSSL_VERSION.tar.gz" );
     if [[ $? -ne 0 ]]; then
@@ -513,13 +544,17 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list openssl $BUILD_
         tar -zxvf $OPENSSL_PKG;
         OPENSSL_SRC_DIR=$(ls -d openssl-* | grep -v \.tar\.gz);
         cd $OPENSSL_SRC_DIR;
-        ./config "--prefix=$PREFIX_DIR/internal-packages" "--openssldir=$PREFIX_DIR/internal-packages/ssl" "--release" "no-dso" "no-tests" "no-external-tests" \
-                "no-external-tests" "no-shared"  "no-aria" "no-bf" "no-blake2" "no-camellia" "no-cast" "no-idea" "no-md2" "no-md4" "no-mdc2" "no-rc2" "no-rc4" \
-                "no-rc5" "no-ssl3" "enable-static-engine" ; # "--api=1.1.1"
-        make $BUILD_THREAD_OPT && make install_sw install_ssldirs;
+        make clean || true;
+        # @see https://wiki.openssl.org/index.php/Compilation_and_Installation
+        ./config "--prefix=$PREFIX_DIR/internal-packages" "--openssldir=$PREFIX_DIR/internal-packages/ssl" "--release" "no-dso" "no-tests"  \
+                "no-external-tests" "no-shared" "no-blake2" "no-camellia" "no-cast" "no-idea" "no-md4" "no-mdc2" "no-rc2"                   \
+                "no-ssl2" "no-ssl3" "no-weak-ssl-ciphers" "enable-ec_nistp_64_gcc_128" "enable-static-engine" ; # "--api=1.1.1"
+        make $BUILD_THREAD_OPT || make ;
+        make install_sw install_ssldirs;
         if [[ $? -eq 0 ]]; then
             OPENSSL_INSTALL_DIR=$PREFIX_DIR/internal-packages ;
         fi
+        cd "$WORKING_DIR";
     fi
 fi
 
@@ -534,6 +569,7 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list zlib $BUILD_TAR
         tar -zxvf $ZLIB_PKG;
         ZLIB_DIR=$(ls -d zlib-* | grep -v \.tar\.gz);
         cd "$ZLIB_DIR";
+        make clean || true;
         ./configure --prefix=$PREFIX_DIR --static ;
         make $BUILD_THREAD_OPT || make ;
         if [[ $? -ne 0 ]]; then
@@ -556,6 +592,7 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list libffi $BUILD_T
         tar -zxvf $LIBFFI_PKG;
         LIBFFI_DIR=$(ls -d libffi-* | grep -v \.tar\.gz);
         cd "$LIBFFI_DIR";
+        make clean || true;
         ./configure --prefix=$PREFIX_DIR --with-pic=yes ;
         make $BUILD_THREAD_OPT || make ;
         if [[ $? -ne 0 ]]; then
@@ -567,66 +604,134 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list libffi $BUILD_T
     fi
 fi
 
-# ======================= install gdb(调试器) [依赖 ncurses-devel 包] =======================
-if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list gdb $BUILD_TARGET_COMPOMENTS) ]]; then
-    if [[ -z "$(whereis ncurses | awk '{print $2;}')" ]]; then
-	    echo -e "\\033[32;1mwarning: libncurses not found, skip build [gdb].\\033[39;49;0m";
-    else
-	    # ======================= 检查Python开发包，如果存在，则增加 --with-pyton 选项 =======================
-        GDB_DEPS_OPT=();
-        if [[ $BUILD_DOWNLOAD_ONLY -ne 0 ]]; then
-            PYTHON_PKG=$(check_and_download "python" "Python-*.tar.xz" "https://www.python.org/ftp/python/$COMPOMENTS_PYTHON_VERSION/Python-$COMPOMENTS_PYTHON_VERSION.tar.xz" );
-        else
-            if [[ ! -z "$(find $PREFIX_DIR -name Python.h)" ]]; then
-                GDB_DEPS_OPT=(${GDB_DEPS_OPT[@]} "--with-python=$PREFIX_DIR/bin");
-            else
-                # =======================  尝试编译安装python  =======================
-                PYTHON_PKG=$(check_and_download "python" "Python-*.tar.xz" "https://www.python.org/ftp/python/$COMPOMENTS_PYTHON_VERSION/Python-$COMPOMENTS_PYTHON_VERSION.tar.xz" );
-                if [ $? -ne 0 ]; then
-                    return;
-                fi
+# ======================= install ncurses =======================
+if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list ncurses $BUILD_TARGET_COMPOMENTS) ]]; then
+    NCURSES_PKG=$(check_and_download "ncurses" "ncurses-*.tar.gz" "https://invisible-mirror.net/archives/ncurses/ncurses-$COMPOMENTS_NCURSES_VERSION.tar.gz" );
+    if [[ $? -ne 0 ]]; then
+        echo -e "$NCURSES_PKG";
+        exit -1;
+    fi
+    if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
+        tar -zxvf "$NCURSES_PKG";
+        NCURSES_DIR=$(ls -d ncurses-* | grep -v \.tar\.gz);
+        cd $NCURSES_DIR;
+        make clean || true;
 
-                tar -Jxvf $PYTHON_PKG;
-                PYTHON_DIR=$(ls -d Python-* | grep -v \.tar.xz);
-                cd $PYTHON_DIR;
-                ./configure --prefix=$PREFIX_DIR --enable-optimizations --with-ensurepip=install --enable-shared ; # --enable-optimizations require gcc 8.1.0 or later
-                make $BUILD_THREAD_OPT && make install && GDB_DEPS_OPT=(${GDB_DEPS_OPT[@]} "--with-python=$PREFIX_DIR/bin/python3");
-
-                cd "$WORKING_DIR";
-            fi
+        # Pyhton require shared libraries
+        ./configure "--prefix=$PREFIX_DIR" "--with-pkg-config-libdir=$PREFIX_DIR/lib/pkgconfig"     \
+            --with-normal --without-debug --without-ada --with-termlib --enable-termcap             \
+            --enable-pc-files --with-cxx-binding --with-shared --with-cxx-shared                    \
+            --enable-ext-colors --enable-ext-mouse --enable-bsdpad --enable-opaque-curses           \
+            --with-terminfo-dirs=/etc/terminfo:/usr/share/terminfo:/lib/terminfo                    \
+            --with-termpath=/etc/termcap:/usr/share/misc/termcap ;
+        
+        make $BUILD_THREAD_OPT || make ;
+        if [[ $? -ne 0 ]]; then
+            echo -e "\\033[31;1mBuild ncurse failed.\\033[39;49;0m";
+            exit 1;
         fi
+        make install ;
 
-	    # ======================= 正式安装GDB =======================
-	    GDB_PKG=$(check_and_download "gdb" "gdb-*.tar.xz" "https://ftp.gnu.org/gnu/gdb/gdb-$COMPOMENTS_GDB_VERSION.tar.xz" );
-	    if [[ $? -ne 0 ]]; then
-		    echo -e "$GDB_PKG";
-		    exit -1;
-	    fi
-        if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
-            tar -Jxvf $GDB_PKG;
-            GDB_DIR=$(ls -d gdb-* | grep -v \.tar\.xz);
-            cd $GDB_DIR;
-            if [[ $COMPOMENTS_GDB_STATIC_BUILD -ne 0 ]]; then
-                COMPOMENTS_GDB_STATIC_BUILD_FLAGS='LDFLAGS="-static"';
-                COMPOMENTS_GDB_STATIC_BUILD_PREFIX='env LDFLAGS="-static"';
-            else
-                COMPOMENTS_GDB_STATIC_BUILD_FLAGS='';
-                COMPOMENTS_GDB_STATIC_BUILD_PREFIX='';
-            fi
-            mkdir -p build_jobs_dir;
-            cd build_jobs_dir;
-            if [[ ! -z "$OPENSSL_INSTALL_DIR" ]]; then
-                GDB_DEPS_OPT=(${GDB_DEPS_OPT[@]} "--with-openssl=$OPENSSL_INSTALL_DIR");
-            fi
-            $COMPOMENTS_GDB_STATIC_BUILD_PREFIX ../configure --prefix=$PREFIX_DIR --with-gmp=$PREFIX_DIR --with-mpc=$PREFIX_DIR --with-mpfr=$PREFIX_DIR --with-isl=$PREFIX_DIR $BDWGC_PREBIUILT --enable-build-with-cxx --enable-gold --enable-libada --enable-objc-gc --enable-libssp --enable-lto --enable-vtable-verify $COMPOMENTS_GDB_STATIC_BUILD_FLAGS $GDB_PYTHON_OPT $BUILD_TARGET_CONF_OPTION;
-            $COMPOMENTS_GDB_STATIC_BUILD_PREFIX make $BUILD_THREAD_OPT || $COMPOMENTS_GDB_STATIC_BUILD_PREFIX make;
-            make install;
-            cd "$WORKING_DIR";
+        make clean ;
+        # Pyhton require shared libraries
+        ./configure "--prefix=$PREFIX_DIR" "--with-pkg-config-libdir=$PREFIX_DIR/lib/pkgconfig"     \
+            --with-normal --without-debug --without-ada --with-termlib --enable-termcap             \
+            --enable-widec --enable-pc-files --with-cxx-binding --with-shared --with-cxx-shared     \
+            --enable-ext-colors --enable-ext-mouse --enable-bsdpad --enable-opaque-curses           \
+            --with-terminfo-dirs=/etc/terminfo:/usr/share/terminfo:/lib/terminfo                    \
+            --with-termpath=/etc/termcap:/usr/share/misc/termcap ;
+        
+        make $BUILD_THREAD_OPT || make ;
+        if [[ $? -ne 0 ]]; then
+            echo -e "\\033[31;1mBuild ncursew failed.\\033[39;49;0m";
+            exit 1;
+        fi
+        make install ;
+        cd "$WORKING_DIR";
+    fi
+fi
 
-            ls $PREFIX_DIR/bin/gdb;
-            if [[ $? -ne 0 ]]; then
-                echo -e "\\033[31;1mError: build gdb failed.\\033[39;49;0m"
-            fi
+# ------------------------ patch for global 6.6.5/Python linking error ------------------------
+echo "int main() { return 0; }" | gcc -x c -ltinfow -o /dev/null - 2>/dev/null;
+if [[ $? -eq 0 ]]; then
+    BUILD_TARGET_COMPOMENTS_PATCH_TINFO=tinfow;
+else
+    echo "int main() { return 0; }" | gcc -x c -ltinfo -o /dev/null - 2>/dev/null;
+    if [[ $? -eq 0 ]]; then
+        BUILD_TARGET_COMPOMENTS_PATCH_TINFO=tinfo;
+    else
+        BUILD_TARGET_COMPOMENTS_PATCH_TINFO=0;
+    fi
+fi
+
+# ======================= install gdb =======================
+if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list gdb $BUILD_TARGET_COMPOMENTS) ]]; then
+    # =======================  尝试编译安装python  =======================
+    PYTHON_PKG=$(check_and_download "python" "Python-*.tar.xz" "https://www.python.org/ftp/python/$COMPOMENTS_PYTHON_VERSION/Python-$COMPOMENTS_PYTHON_VERSION.tar.xz" );
+    if [[ $? -ne 0 ]]; then
+        echo -e "$PYTHON_PKG";
+        exit -1;
+    fi
+
+    if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
+        tar -Jxvf $PYTHON_PKG;
+        PYTHON_DIR=$(ls -d Python-* | grep -v \.tar.xz);
+        cd $PYTHON_DIR;
+        # --enable-optimizations require gcc 8.1.0 or later
+        PYTHON_CONFIGURE_OPTIONS=("--prefix=$PREFIX_DIR" "--enable-optimizations" "--with-ensurepip=install" "--enable-shared");
+        if [[ ! -z "$OPENSSL_INSTALL_DIR" ]]; then
+            PYTHON_CONFIGURE_OPTIONS=(${PYTHON_CONFIGURE_OPTIONS[@]} "--with-openssl=$OPENSSL_INSTALL_DIR");
+        fi
+        make clean || true;
+        ./configure ${PYTHON_CONFIGURE_OPTIONS[@]}  ;
+        make $BUILD_THREAD_OPT || make ;
+        if [[ $? -ne 0 ]]; then
+            echo -e "\\033[31;1mBuild python failed.\\033[39;49;0m";
+            exit 1;
+        fi
+        make install && GDB_DEPS_OPT=(${GDB_DEPS_OPT[@]} "--with-python=$PREFIX_DIR/bin/python3");
+
+        cd "$WORKING_DIR";
+    fi
+
+    # ======================= 正式安装GDB =======================
+    GDB_PKG=$(check_and_download "gdb" "gdb-*.tar.xz" "https://ftp.gnu.org/gnu/gdb/gdb-$COMPOMENTS_GDB_VERSION.tar.xz" );
+    if [[ $? -ne 0 ]]; then
+        echo -e "$GDB_PKG";
+        exit -1;
+    fi
+    if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
+        tar -Jxvf $GDB_PKG;
+        GDB_DIR=$(ls -d gdb-* | grep -v \.tar\.xz);
+        cd $GDB_DIR;
+        if [[ $COMPOMENTS_GDB_STATIC_BUILD -ne 0 ]]; then
+            COMPOMENTS_GDB_STATIC_BUILD_FLAGS="LDFLAGS=\"-static $LDFLAGS\"";
+            COMPOMENTS_GDB_STATIC_BUILD_PREFIX="env LDFLAGS=\"-static $LDFLAGS\"";
+        else
+            COMPOMENTS_GDB_STATIC_BUILD_FLAGS='';
+            COMPOMENTS_GDB_STATIC_BUILD_PREFIX='';
+        fi
+        if [[ -e build_jobs_dir ]]; then
+            rm -rf build_jobs_dir;
+        fi
+        mkdir -p build_jobs_dir;
+        cd build_jobs_dir;
+        make clean || true;
+        $COMPOMENTS_GDB_STATIC_BUILD_PREFIX ../configure --prefix=$PREFIX_DIR --with-gmp=$PREFIX_DIR --with-mpc=$PREFIX_DIR --with-mpfr=$PREFIX_DIR \
+                                                --with-isl=$PREFIX_DIR $BDWGC_PREBIUILT --enable-build-with-cxx --enable-gold --enable-libada       \
+                                                --enable-objc-gc --enable-libssp --enable-lto --enable-vtable-verify --with-curses=$PREFIX_DIR      \
+                                                $COMPOMENTS_GDB_STATIC_BUILD_FLAGS ${GDB_DEPS_OPT[@]} $BUILD_TARGET_CONF_OPTION;
+        $COMPOMENTS_GDB_STATIC_BUILD_PREFIX make $BUILD_THREAD_OPT || $COMPOMENTS_GDB_STATIC_BUILD_PREFIX make;
+        if [[ $? -ne 0 ]]; then
+            echo -e "\\033[31;1mBuild gdb failed.\\033[39;49;0m";
+            exit 1;
+        fi
+        make install;
+        cd "$WORKING_DIR";
+
+        ls $PREFIX_DIR/bin/gdb;
+        if [[ $? -ne 0 ]]; then
+            echo -e "\\033[31;1mError: build gdb failed.\\033[39;49;0m"
         fi
     fi
 fi
@@ -642,10 +747,11 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list global $BUILD_T
         tar -zxvf $GLOBAL_PKG;
         GLOBAL_DIR=$(ls -d global-* | grep -v \.tar\.gz);
         cd $GLOBAL_DIR;
+        make clean || true;
         # patch for global 6.6.5 linking error
         echo "int main() { return 0; }" | gcc -x c -ltinfo -o /dev/null - 2>/dev/null;
-        if [[ $? -eq 0 ]]; then
-            env "LIBS=$LIBS -ltinfo" ./configure --prefix=$PREFIX_DIR --with-pic=yes;
+        if [[ "$BUILD_TARGET_COMPOMENTS_PATCH_TINFO" != "0" ]]; then
+            env "LIBS=$LIBS -l$BUILD_TARGET_COMPOMENTS_PATCH_TINFO" ./configure --prefix=$PREFIX_DIR --with-pic=yes;
         else
             ./configure --prefix=$PREFIX_DIR --with-pic=yes;
         fi
@@ -706,6 +812,7 @@ if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
     echo -e "\\033[31;1mexport LD_LIBRARY_PATH=$LD_LIBRARY_PATH\\033[39;49;0m" ;
     echo -e "\tor you can add $PREFIX_DIR/lib, $PREFIX_DIR/lib64 (if in x86_64) and $PREFIX_DIR/libexec to file [/etc/ld.so.conf] and then run [ldconfig]" ;
     echo -e "\\033[33;1mBuild Gnu Compile Collection done.\\033[39;49;0m" ;
+    echo -e "If you want to use openssl $COMPOMENTS_OPENSSL_VERSION built by this toolchain, just add \\033[33;1m$PREFIX_DIR/internal-packages\\033[0m to search path."
 else
     echo -e "\\033[35;1mAll packages downloaded.\\033[39;49;0m";
 fi

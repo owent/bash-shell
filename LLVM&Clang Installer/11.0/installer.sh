@@ -101,7 +101,16 @@ while getopts "b:cdg:hj:l:m:np:t:" OPTION; do
             BUILD_TYPE="$OPTARG";
         ;;
         c)
-            rm -rf $(ls -A -d -p * | grep -E "(.*)/$");
+            for CLEANUP_DIR in $(find . -maxdepth 1 -mindepth 1 -type d -name "*"); do
+                if [[ -e "$CLEANUP_DIR/.git" ]]; then
+                    cd "$CLEANUP_DIR";
+                    git reset --hard;
+                    git clean -dfx;
+                    cd -;
+                else
+                    rm -rf "$CLEANUP_DIR";
+                fi
+            done
             echo -e "\\033[32;1mnotice: clear work dir(s) done.\\033[39;49;0m";
             exit 0;
         ;;
@@ -523,7 +532,11 @@ fi
 # ================================== 自举编译 ==================================
 
 # ================================== 环境覆盖 ==================================
-export LD_LIBRARY_PATH=$STAGE_BUILD_PREFIX_DIR/lib:$LD_LIBRARY_PATH
+if [[ "x$LD_LIBRARY_PATH" == "x" ]]; then
+    export LD_LIBRARY_PATH="$STAGE_BUILD_PREFIX_DIR/lib"
+else
+    export LD_LIBRARY_PATH="$STAGE_BUILD_PREFIX_DIR/lib:$LD_LIBRARY_PATH"
+fi
 export PATH=$STAGE_BUILD_PREFIX_DIR/bin:$PATH
 
 echo "add $STAGE_BUILD_PREFIX_DIR/bin to PTAH";
@@ -539,6 +552,14 @@ export OBJCOPY="$STAGE_BUILD_PREFIX_DIR/bin/llvm-objcopy" ;
 export OBJDUMP="$STAGE_BUILD_PREFIX_DIR/bin/llvm-objdump" ;
 export STRIP="$STAGE_BUILD_PREFIX_DIR/bin/llvm-strip" ;
 export STAGE_BUILD_CMAKE_OPTION="$STAGE_BUILD_CMAKE_OPTION -DCMAKE_AR=$AR -DCMAKE_RANLIB=$RANLIB -DCMAKE_NM=$NM -DCMAKE_OBJCOPY=$OBJCOPY -DCMAKE_OBJDUMP=$OBJDUMP -DCMAKE_STRIP=$STRIP";
+
+for ADDITIONAL_PKGCONFIG_PATH in $(find $PREFIX_DIR -name pkgconfig); do
+    if [[ "x$PKG_CONFIG_PATH" == "x" ]]; then
+        export PKG_CONFIG_PATH="$ADDITIONAL_PKGCONFIG_PATH"
+    else
+        export PKG_CONFIG_PATH="$ADDITIONAL_PKGCONFIG_PATH:$PKG_CONFIG_PATH"
+    fi
+done
 
 CHECK_IS_WINDOWS=0;
 CHECK_IS_MACOS=0;
@@ -603,9 +624,9 @@ else
     export CPPFLAGS="$CPPFLAGS -I$PREFIX_DIR/include -fPIC";
 fi
 if [[ -z "$LDFLAGS" ]]; then
-    export LDFLAGS="-L$PREFIX_DIR/lib -fPIC";
+    export LDFLAGS="-L$PREFIX_DIR/lib64 -L$PREFIX_DIR/lib";
 else
-    export LDFLAGS="$LDFLAGS -L$PREFIX_DIR/lib -fPIC";
+    export LDFLAGS="$LDFLAGS -L$PREFIX_DIR/lib64 -L$PREFIX_DIR/lib";
 fi
 
 # Build libedit again
@@ -616,6 +637,7 @@ if [[ -e "libedit-$COMPOMENTS_LIBEDIT_VERSION.tar.gz" ]]; then
     fi
     tar -axvf "libedit-$COMPOMENTS_LIBEDIT_VERSION.tar.gz";
     cd "libedit-$COMPOMENTS_LIBEDIT_VERSION-stage-2";
+    make clean || true;
     ./configure --prefix=$PREFIX_DIR --with-pic=yes;
     make $BUILD_JOBS_OPTION || make;
     if [[ $? -ne 0 ]]; then
@@ -629,6 +651,7 @@ fi
 if [[ -e "zlib-$COMPOMENTS_ZLIB_VERSION" ]]; then
     mkdir -p "zlib-$COMPOMENTS_ZLIB_VERSION/build_jobs_dir";
     cd "zlib-$COMPOMENTS_ZLIB_VERSION/build_jobs_dir";
+    cmake --build . -- clean || true;
     cmake .. -DCMAKE_POSITION_INDEPENDENT_CODE=YES -DBUILD_SHARED_LIBS=OFF "-DCMAKE_INSTALL_PREFIX=$PREFIX_DIR" ;
     cmake --build . -j $BUILD_JOBS_OPTION || cmake --build . ;
     if [[ $? -ne 0 ]]; then
@@ -644,6 +667,7 @@ if [[ -e "libffi-$COMPOMENTS_LIBFFI_VERSION.tar.gz" ]]; then
         tar -axvf "libffi-$COMPOMENTS_LIBFFI_VERSION.tar.gz";
     fi
     cd "libffi-$COMPOMENTS_LIBFFI_VERSION";
+    make clean || true;
     ./configure --prefix=$PREFIX_DIR --with-pic=yes ;
     make $BUILD_JOBS_OPTION || make;
     if [[ $? -ne 0 ]]; then
@@ -658,6 +682,7 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "all" == "$BUILD_TARGET_COMPOMENTS"
     if [[ -z "$(find $PREFIX_DIR -name swig)" ]]; then
         cd "swig-$COMPOMENTS_SWIG_VERSION";
         ./autogen.sh ;
+        make clean || true;
         ./configure --prefix=$PREFIX_DIR ;
         make $BUILD_JOBS_OPTION || make;
         if [[ $? -ne 0 ]]; then
@@ -674,7 +699,18 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "all" == "$BUILD_TARGET_COMPOMENTS"
         PYTHON_DIR=$(ls -d Python-* | grep -v \.tar.xz);
         cd $PYTHON_DIR;
         # --enable-shared 会导致llvm的Find脚本找不到
-        ./configure --prefix=$PREFIX_DIR --enable-optimizations --with-ensurepip=install --enable-shared ; # --enable-optimizations require gcc 8.1.0 or later
+        # 尝试使用gcc构建脚本中构建的openssl
+        OPENSSL_INSTALL_DIR="";
+        if [[ -e "$(dirname "$ORIGIN_COMPILER_CC")/../internal-packages/lib/libssl.a" ]]; then
+            OPENSSL_INSTALL_DIR="$(readlink -f "$(dirname "$ORIGIN_COMPILER_CC")"/../internal-packages)";
+        fi
+        # --enable-optimizations require gcc 8.1.0 or later
+        PYTHON_CONFIGURE_OPTIONS=("--prefix=$PREFIX_DIR" "--enable-optimizations" "--with-ensurepip=install" "--enable-shared");
+        if [[ ! -z "$OPENSSL_INSTALL_DIR" ]]; then
+            PYTHON_CONFIGURE_OPTIONS=(${PYTHON_CONFIGURE_OPTIONS[@]} "--with-openssl=$OPENSSL_INSTALL_DIR");
+        fi
+        make clean || true;
+        ./configure ${PYTHON_CONFIGURE_OPTIONS[@]}  ;
         make $BUILD_JOBS_OPTION || make;
         if [[ $? -ne 0 ]]; then
             echo -e "\\033[31;1mBuild python failed.\\033[39;49;0m";

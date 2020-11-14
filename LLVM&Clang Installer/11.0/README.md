@@ -104,6 +104,7 @@ CentOS 7
 #### History:
 
 + 2020-11-06     Created
++ 2020-11-14     修订clean命令。对git拉取的仓库执行 ```git reset --hard; git clean -dfx;``` ，不再移除目录。
 
 #### 参考文献
 
