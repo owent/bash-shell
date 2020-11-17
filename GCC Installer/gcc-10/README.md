@@ -42,9 +42,10 @@ GCC 10的大致(C/C++)内容如下：
 18. awk
 19. m4
 20. automake
-21. gettext
-22. gperf
-23. cmake
+21. autoconf
+22. gettext
+23. gperf
+24. cmake
 
 ### 我编译的环境
 
@@ -52,8 +53,13 @@ GCC 10的大致(C/C++)内容如下：
 
 CentOS 7
 
-#### 编译的依赖库
+#### 编译的依赖库和工具
 
++ m4 1.4.18
++ autoconf latest
++ automake 1.16.2
++ libtool 2.4.6
++ pkgconfig 0.29.2
 + gmp 6.2.0
 + mpfr 4.1.0
 + mpc 1.2.1
@@ -62,6 +68,9 @@ CentOS 7
 + bdw-gc 8.0.4
 + zstd 1.4.5
 + openssl 1.1.1h
++ libexpat 2.2.10
++ libxcrypt 4.4.17
++ gdbm latest
 
 #### 编译目标
 
@@ -108,3 +117,12 @@ CentOS 7
   + zlib      -> 1.2.11
   + libffi    -> 3.3
   + ncurses   -> 6.2
++ 2020-11-17    增加部分Python依赖链
+  + m4        -> 1.4.18
+  + autoconf  -> latest
+  + automake  -> 1.16.2
+  + libtool   -> 2.4.6
+  + pkgconfig -> 0.29.2
+  + libexpat  -> 2.2.10
+  + libxcrypt -> 4.4.17
+  + gdbm      -> latest

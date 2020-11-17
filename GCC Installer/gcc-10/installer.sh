@@ -2,6 +2,11 @@
 
 # ======================================= 配置 =======================================
 BUILD_TARGET_COMPOMENTS="";
+COMPOMENTS_M4_VERSION=1.4.18;
+COMPOMENTS_AUTOCONF_VERSION=latest;
+COMPOMENTS_AUTOMAKE_VERSION=1.16.2;
+COMPOMENTS_LIBTOOL_VERSION=2.4.6;
+COMPOMENTS_PKGCONFIG_VERSION=0.29.2;
 COMPOMENTS_GMP_VERSION=6.2.0;
 COMPOMENTS_MPFR_VERSION=4.1.0;
 COMPOMENTS_MPC_VERSION=1.2.1;
@@ -14,6 +19,9 @@ COMPOMENTS_OPENSSL_VERSION=1.1.1h;
 COMPOMENTS_ZLIB_VERSION=1.2.11;
 COMPOMENTS_LIBFFI_VERSION=3.3;
 COMPOMENTS_NCURSES_VERSION=6.2;
+COMPOMENTS_LIBEXPAT_VERSION=2.2.10;
+COMPOMENTS_LIBXCRYPT_VERSION=4.4.17;
+COMPOMENTS_GDBM_VERSION=latest;
 COMPOMENTS_PYTHON_VERSION=3.9.0;
 COMPOMENTS_GDB_VERSION=10.1;
 COMPOMENTS_GLOBAL_VERSION=6.6.5;
@@ -66,7 +74,7 @@ while getopts "dp:cht:d:g:n" OPTION; do
             echo "-c                          clean build cache.";
             echo "-d                          download only.";
             echo "-h                          help message.";
-            echo "-t [build target]           set build target(gmp mpfr mpc isl zstd lz4 zlib libffi gcc binutils openssl ncurses readline gdb libatomic_ops bdw-gc global).";
+            echo "-t [build target]           set build target(m4 autoconf automake libtool pkgconfig gmp mpfr mpc isl zstd lz4 zlib libffi gcc binutils openssl ncurses libexpat libxcrypt gdbm gdb libatomic_ops bdw-gc global).";
             echo "-d [compoment option]       add dependency compoments build options.";
             echo "-g [gnu option]             add gcc,binutils,gdb build options.";
             echo "-n                          print toolchain version and exit.";
@@ -163,9 +171,9 @@ function check_and_download(){
     fi
      
     if [[ -z "$4" ]]; then
-        wget -c "$PKG_URL";
+        curl --retry 3 -kL "$PKG_URL" -o "$(basename "$PKG_URL")";
     else
-        wget -c "$PKG_URL" -O "$4";
+        curl --retry 3 -kL "$PKG_URL" -o "$4";
     fi
     
     PKG_VAR_VAL=($(find . -maxdepth 1 -name "$PKG_MATCH_EXPR"));
@@ -226,6 +234,111 @@ sleep $CHECK_INFO_SLEEP
 # ======================= 关闭交换分区，否则就爽死了 =======================
 swapoff -a
 
+# install m4
+if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list m4 $BUILD_TARGET_COMPOMENTS) ]]; then
+    M4_PKG=$(check_and_download "m4" "m4-*.tar.gz" "https://ftp.gnu.org/gnu/m4/m4-${COMPOMENTS_M4_VERSION}.tar.gz" );
+    if [ $? -ne 0 ]; then
+        echo -e "$M4_PKG";
+        exit -1;
+    fi
+    if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
+        tar -zxvf $M4_PKG;
+        M4_DIR=$(ls -d m4-* | grep -v \.tar\.gz);
+        cd $M4_DIR;
+        ./configure --prefix=$PREFIX_DIR --enable-c++ ;
+        make $BUILD_THREAD_OPT && make $BUILD_THREAD_OPT check && make install;
+        if [[ $? -ne 0 ]]; then
+            echo -e "\\033[31;1mError: build m4 failed.\\033[39;49;0m";
+            exit -1;
+        fi
+        cd "$WORKING_DIR";
+    fi
+fi
+
+# install autoconf
+if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list autoconf $BUILD_TARGET_COMPOMENTS) ]]; then
+    AUTOCONF_PKG=$(check_and_download "autoconf" "autoconf-*.tar.gz" "https://ftp.gnu.org/gnu/autoconf/autoconf-${COMPOMENTS_AUTOCONF_VERSION}.tar.gz" );
+    if [ $? -ne 0 ]; then
+        echo -e "$AUTOCONF_PKG";
+        exit -1;
+    fi
+    if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
+        tar -zxvf $AUTOCONF_PKG;
+        AUTOCONF_DIR=$(ls -d autoconf-* | grep -v \.tar\.gz);
+        cd $AUTOCONF_DIR;
+        ./configure --prefix=$PREFIX_DIR ;
+        make $BUILD_THREAD_OPT && make install;
+        if [[ $? -ne 0 ]]; then
+            echo -e "\\033[31;1mError: build autoconf failed.\\033[39;49;0m";
+            exit -1;
+        fi
+        cd "$WORKING_DIR";
+    fi
+fi
+
+# install automake
+if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list automake $BUILD_TARGET_COMPOMENTS) ]]; then
+    AUTOMAKE_PKG=$(check_and_download "automake" "automake-*.tar.gz" "https://ftp.gnu.org/gnu/automake/automake-${COMPOMENTS_AUTOMAKE_VERSION}.tar.gz" );
+    if [ $? -ne 0 ]; then
+        echo -e "$AUTOMAKE_PKG";
+        exit -1;
+    fi
+    if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
+        tar -zxvf $AUTOMAKE_PKG;
+        AUTOMAKE_DIR=$(ls -d automake-* | grep -v \.tar\.gz);
+        cd $AUTOMAKE_DIR;
+        ./configure --prefix=$PREFIX_DIR ;
+        make $BUILD_THREAD_OPT && make install;
+        if [[ $? -ne 0 ]]; then
+            echo -e "\\033[31;1mError: build automake failed.\\033[39;49;0m";
+            exit -1;
+        fi
+        cd "$WORKING_DIR";
+    fi
+fi
+
+# install libtool
+if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list libtool $BUILD_TARGET_COMPOMENTS) ]]; then
+    LIBTOOL_PKG=$(check_and_download "libtool" "libtool-*.tar.gz" "https://ftp.gnu.org/gnu/libtool/libtool-${COMPOMENTS_LIBTOOL_VERSION}.tar.gz" );
+    if [ $? -ne 0 ]; then
+        echo -e "$LIBTOOL_PKG";
+        exit -1;
+    fi
+    if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
+        tar -zxvf $LIBTOOL_PKG;
+        LIBTOOL_DIR=$(ls -d libtool-* | grep -v \.tar\.gz);
+        cd $LIBTOOL_DIR;
+        ./configure --prefix=$PREFIX_DIR --with-pic=yes ;
+        make $BUILD_THREAD_OPT && make install;
+        if [[ $? -ne 0 ]]; then
+            echo -e "\\033[31;1mError: build libtool failed.\\033[39;49;0m";
+            exit -1;
+        fi
+        cd "$WORKING_DIR";
+    fi
+fi
+
+# install pkgconfig
+if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list pkgconfig $BUILD_TARGET_COMPOMENTS) ]]; then
+    PKGCONFIG_PKG=$(check_and_download "pkgconfig" "pkg-config-*.tar.gz" "https://pkg-config.freedesktop.org/releases/pkg-config-${COMPOMENTS_PKGCONFIG_VERSION}.tar.gz" );
+    if [ $? -ne 0 ]; then
+        echo -e "$PKGCONFIG_PKG";
+        exit -1;
+    fi
+    if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
+        tar -zxvf $PKGCONFIG_PKG;
+        PKGCONFIG_DIR=$(ls -d pkg-config-* | grep -v \.tar\.gz);
+        cd $PKGCONFIG_DIR;
+        ./configure --prefix=$PREFIX_DIR --with-pic=yes --with-internal-glib ;
+        make $BUILD_THREAD_OPT && make install;
+        if [[ $? -ne 0 ]]; then
+            echo -e "\\033[31;1mError: build pkgconfig failed.\\033[39;49;0m";
+            exit -1;
+        fi
+        cd "$WORKING_DIR";
+    fi
+fi
+
 # install gmp
 if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list gmp $BUILD_TARGET_COMPOMENTS) ]]; then
     GMP_PKG=$(check_and_download "gmp" "gmp-*.tar.xz" "https://ftp.gnu.org/gnu/gmp/gmp-$COMPOMENTS_GMP_VERSION.tar.xz" );
@@ -238,7 +351,7 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list gmp $BUILD_TARG
         GMP_DIR=$(ls -d gmp-* | grep -v \.tar\.xz);
         cd $GMP_DIR;
         CPPFLAGS=-fexceptions ./configure --prefix=$PREFIX_DIR --enable-cxx --enable-assert $BUILD_OTHER_CONF_OPTION;
-        make $BUILD_THREAD_OPT && make check && make install;
+        make $BUILD_THREAD_OPT && make $BUILD_THREAD_OPT check && make install;
         if [[ $? -ne 0 ]]; then
             echo -e "\\033[31;1mError: build gmp failed.\\033[39;49;0m";
             exit -1;
@@ -521,7 +634,7 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list binutils $BUILD
         make $BUILD_THREAD_OPT && make install;
         # ---- 新版本的GCC编译器会激发binutils内某些组件的werror而导致编译失败 ----
         # ---- 另外某个版本的make check有failed用例就被发布了,应该gnu的自动化测试有遗漏 ----
-        make check;
+        make $BUILD_THREAD_OPT check;
         cd "$WORKING_DIR";
 
         ls $PREFIX_DIR/bin/ld
@@ -647,6 +760,81 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list ncurses $BUILD_
             exit 1;
         fi
         make install ;
+        cd "$WORKING_DIR";
+    fi
+fi
+
+if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list libexpat $BUILD_TARGET_COMPOMENTS) ]]; then
+    LIBEXPAT_PKG=$(check_and_download "expat" "expat-*.tar.gz" "https://github.com/libexpat/libexpat/releases/download/R_${COMPOMENTS_LIBEXPAT_VERSION//./_}/expat-$COMPOMENTS_LIBEXPAT_VERSION.tar.gz" );
+    if [[ $? -ne 0 ]]; then
+        echo -e "$LIBEXPAT_PKG";
+        exit -1;
+    fi
+    if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
+        tar -zxvf "$LIBEXPAT_PKG";
+        LIBEXPAT_DIR=$(ls -d expat-* | grep -v \.tar\.gz);
+        if [[ -e "$LIBEXPAT_DIR/build_jobs_dir" ]]; then
+            rm -rf "$LIBEXPAT_DIR/build_jobs_dir";
+        fi
+        mkdir -p "$LIBEXPAT_DIR/build_jobs_dir";
+        cd "$LIBEXPAT_DIR/build_jobs_dir";
+
+        cmake .. -DCMAKE_POSITION_INDEPENDENT_CODE=YES "-DCMAKE_INSTALL_PREFIX=$PREFIX_DIR" -DEXPAT_BUILD_EXAMPLES=OFF -DEXPAT_BUILD_TESTS=OFF -DEXPAT_BUILD_DOCS=OFF -DEXPAT_BUILD_FUZZERS=OFF -DEXPAT_LARGE_SIZE=ON ;
+        cmake --build . $BUILD_THREAD_OPT || cmake --build . ;
+        if [[ $? -ne 0 ]]; then
+            echo -e "\\033[31;1mBuild libexpat failed.\\033[39;49;0m";
+            exit 1;
+        fi
+        cmake --build . -- install ;
+
+        cd "$WORKING_DIR";
+    fi
+fi
+
+if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list libxcrypt $BUILD_TARGET_COMPOMENTS) ]]; then
+    LIBXCRYPT_PKG=$(check_and_download "libxcrypt" "libxcrypt-*.tar.gz" "https://github.com/besser82/libxcrypt/archive/v$COMPOMENTS_LIBXCRYPT_VERSION.tar.gz" "libxcrypt-$COMPOMENTS_LIBXCRYPT_VERSION.tar.gz" );
+    if [[ $? -ne 0 ]]; then
+        echo -e "$LIBXCRYPT_PKG";
+        exit -1;
+    fi
+    if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
+        tar -zxvf "$LIBXCRYPT_PKG";
+        LIBXCRYPT_DIR=$(ls -d libxcrypt-* | grep -v \.tar\.gz);
+        cd "$LIBXCRYPT_DIR";
+        make clean || true;
+        ./autogen.sh ;
+        ./configure "--prefix=$PREFIX_DIR" --with-pic=yes ;
+        make $BUILD_THREAD_OPT || make ;
+        if [[ $? -ne 0 ]]; then
+            echo -e "\\033[31;1mBuild libxcrypt failed.\\033[39;49;0m";
+            exit 1;
+        fi
+        make install ;
+
+        cd "$WORKING_DIR";
+    fi
+fi
+
+if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list gdbm $BUILD_TARGET_COMPOMENTS) ]]; then
+    GDBM_PKG=$(check_and_download "gdbm" "gdbm-*.tar.gz" "https://ftp.gnu.org/gnu/gdbm/gdbm-$COMPOMENTS_GDBM_VERSION.tar.gz" );
+    if [[ $? -ne 0 ]]; then
+        echo -e "$GDBM_PKG";
+        exit -1;
+    fi
+    if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
+        tar -zxvf "$GDBM_PKG";
+        GDBM_DIR=$(ls -d gdbm-* | grep -v \.tar\.gz);
+        cd "$GDBM_DIR";
+        make clean || true;
+        # add -fcommon to solve multiple definition of `parseopt_program_args'
+        env CFLAGS="$CFLAGS -fcommon" ./configure "--prefix=$PREFIX_DIR" --with-pic=yes ;
+        make $BUILD_THREAD_OPT || make ;
+        if [[ $? -ne 0 ]]; then
+            echo -e "\\033[31;1mBuild gdbm failed.\\033[39;49;0m";
+            exit 1;
+        fi
+        make install ;
+
         cd "$WORKING_DIR";
     fi
 fi
