@@ -539,6 +539,27 @@ cat /etc/resolv.conf
 
 ### Windows & Chocolatey
 
+#### Windows Store:
+
++ Snipaste: https://www.microsoft.com/zh-cn/p/snipaste/9p1wxpkb68kx
++ ScreenToGif: https://www.microsoft.com/zh-cn/p/screentogif/9n3sqk8pds8g
++ Bitwarden: https://www.microsoft.com/zh-cn/p/bitwarden/9pjsdv0vpk04
++ Foobar2000: https://www.microsoft.com/zh-cn/p/foobar2000/9pdj8x9spf2k
++ Draw.io: https://www.microsoft.com/zh-cn/p/drawio-diagrams/9mvvszk43qqw
++ Python: https://www.microsoft.com/zh-cn/p/python-39/9p7qfqmjrfp7
+  > (anaconda3 also can be used instead of python3)
+
++ Powershell: https://www.microsoft.com/zh-cn/p/powershell/9mz1snwt0n5d
++ Powershell Preview: https://www.microsoft.com/zh-cn/p/powershell-preview/9p95zzktnrn4
++ Windows Terminal: https://www.microsoft.com/zh-cn/p/windows-terminal/9n0dx20hk701
++ WSL - Alpine: https://www.microsoft.com/zh-cn/p/alpine-wsl/9p804crf0395
++ WSL - Ubuntu: https://www.microsoft.com/zh-cn/p/ubuntu/9nblggh4msv6
++ WSL - Debian: https://www.microsoft.com/zh-cn/p/debian/9msvkqc78pk6
++ WSL Tool - x410 : https://www.microsoft.com/zh-cn/p/x410/9nlp712zmn9q
++ WinGet(目前的版本相当不好用): https://www.microsoft.com/zh-cn/p/app-installer/9nblggh4nns1
+
+#### chocolatey
+
 https://chocolatey.org
 
 https://chocolatey.org/install#install-with-powershellexe
@@ -553,10 +574,10 @@ choco upgrade chocolatey
 ```
 
 ```ps
-choco install --yes 7zip pandoc foobar2000 Graphviz powershell-core
+choco install --yes 7zip pandoc Graphviz
 
-# dev (anaconda3 also can be used instead of python3)
-choco install --yes MobaXterm git git-lfs TortoiseGit python3 screentogif
+# dev
+choco install --yes MobaXterm git git-lfs TortoiseGit
 
 # dev - network
 choco install --yes wireshark WinPcap
@@ -580,11 +601,11 @@ Github: https://github.com/microsoft/winget-cli
 Store: https://www.microsoft.com/en-us/p/app-installer/9nblggh4nns1
 
 ```ps
-winget install --silent 7Zip Graphviz PowerShell ".NET Core" ScreenToGif
+winget install --silent 7Zip Graphviz ".NET Core" ScreenToGif
 # winget install --silent "Windows Terminal"
 
 # dev
-winget install --silent Git TortoiseGit GitLFS Python
+winget install --silent Git TortoiseGit GitLFS
 
 # dev - network
 winget install --silent Wireshark Nmap
