@@ -866,7 +866,7 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list gdb $BUILD_TARG
         PYTHON_DIR=$(ls -d Python-* | grep -v \.tar.xz);
         cd $PYTHON_DIR;
         # --enable-optimizations require gcc 8.1.0 or later
-        PYTHON_CONFIGURE_OPTIONS=("--prefix=$PREFIX_DIR" "--enable-optimizations" "--with-ensurepip=install" "--enable-shared");
+        PYTHON_CONFIGURE_OPTIONS=("--prefix=$PREFIX_DIR" "--enable-optimizations" "--with-ensurepip=install" "--enable-shared" "--with-system-expat" "--with-dbmliborder=gdbm:ndbm:bdb");
         if [[ ! -z "$OPENSSL_INSTALL_DIR" ]]; then
             PYTHON_CONFIGURE_OPTIONS=(${PYTHON_CONFIGURE_OPTIONS[@]} "--with-openssl=$OPENSSL_INSTALL_DIR");
         fi

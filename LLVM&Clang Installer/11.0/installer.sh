@@ -746,6 +746,16 @@ fi
 
 rm -rf "$STAGE_BUILD_PREFIX_DIR_1";
 
+# Patch python3-config to change compiler directory from $PREFIX_DIR-stage-1 to $PREFIX_DIR
+PYTHON3_CONFIG_MAKEFILE="$(python3-config --configdir)/Makefile"
+PYTHON3_CONFIG_SYSCONFIGDATA="$(find $(dirname $(python3-config --configdir)) -name "_sysconfigdata_*.py")";
+if [[ -e "$PYTHON3_CONFIG_MAKEFILE" ]]; then
+    sed -i.bak "s;$PREFIX_DIR-stage-1;$PREFIX_DIR;g" $PYTHON3_CONFIG_MAKEFILE ;
+fi
+if [[ -e "$PYTHON3_CONFIG_SYSCONFIGDATA" ]]; then
+    sed -i.bak "s;$PREFIX_DIR-stage-1;$PREFIX_DIR;g" $PYTHON3_CONFIG_SYSCONFIGDATA ;
+fi
+
 if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
 
     DEP_COMPILER_HOME="$(dirname "$(dirname "$ORIGIN_COMPILER_CXX")")";
