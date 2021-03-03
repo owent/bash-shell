@@ -574,7 +574,7 @@ choco upgrade chocolatey
 ```
 
 ```ps
-choco install --yes modern7z pandoc Graphviz wox Everything
+choco install --yes 7zip modern7z pandoc Graphviz wox Everything
 
 # dev
 choco install --yes terminus git git-lfs TortoiseGit
