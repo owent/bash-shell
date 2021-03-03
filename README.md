@@ -574,10 +574,10 @@ choco upgrade chocolatey
 ```
 
 ```ps
-choco install --yes 7zip pandoc Graphviz
+choco install --yes modern7z pandoc Graphviz wox Everything
 
 # dev
-choco install --yes MobaXterm git git-lfs TortoiseGit
+choco install --yes terminus git git-lfs TortoiseGit
 
 # dev - network
 choco install --yes wireshark WinPcap
