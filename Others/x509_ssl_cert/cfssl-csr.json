@@ -1,0 +1,36 @@
+{
+    "key": {
+        "algo": "ecdsa",
+        "size": 384
+    },
+    "CN": "owent",
+    "hosts": [
+        "owent.net",
+        "*.owent.net",
+        "atframe.work",
+        "w-oa.com",
+        "*.w-oa.com",
+        "r-ci.com",
+        "*.r-ci.com",
+        "x-ha.com",
+        "*.x-ha.com",
+        "g-ha.com",
+        "*.g-ha.com",
+        "f-ha.com",
+        "172.18.1.1",
+        "172.18.1.10",
+        "172.18.10.1",
+        "172.18.31.1",
+        "172.31.1.1",
+        "172.20.1.1"
+    ],
+    "names": [
+        {
+            "C":  "CN",
+            "L":  "ShangHai",
+            "O":  "OWenT",
+            "OU": "OWenT",
+            "ST": "ShangHai"
+        }
+    ]
+}
