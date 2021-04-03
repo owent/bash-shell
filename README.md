@@ -546,17 +546,62 @@ cat /etc/resolv.conf
 + Bitwarden: https://www.microsoft.com/zh-cn/p/bitwarden/9pjsdv0vpk04
 + Foobar2000: https://www.microsoft.com/zh-cn/p/foobar2000/9pdj8x9spf2k
 + Draw.io: https://www.microsoft.com/zh-cn/p/drawio-diagrams/9mvvszk43qqw
-+ Python: https://www.microsoft.com/zh-cn/p/python-39/9p7qfqmjrfp7
-  > (anaconda3 also can be used instead of python3)
 
 + Powershell: https://www.microsoft.com/zh-cn/p/powershell/9mz1snwt0n5d
-+ Powershell Preview: https://www.microsoft.com/zh-cn/p/powershell-preview/9p95zzktnrn4
 + Windows Terminal: https://www.microsoft.com/zh-cn/p/windows-terminal/9n0dx20hk701
 + WSL - Alpine: https://www.microsoft.com/zh-cn/p/alpine-wsl/9p804crf0395
 + WSL - Ubuntu: https://www.microsoft.com/zh-cn/p/ubuntu/9nblggh4msv6
 + WSL - Debian: https://www.microsoft.com/zh-cn/p/debian/9msvkqc78pk6
 + WSL Tool - x410 : https://www.microsoft.com/zh-cn/p/x410/9nlp712zmn9q
 + WinGet(目前的版本相当不好用): https://www.microsoft.com/zh-cn/p/app-installer/9nblggh4nns1
+
+#### Scoop
+
+https://chocolatey.org
+
+https://chocolatey.org/install#install-with-powershellexe
+
+```ps
+Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://get.scoop.sh')
+Set-ExecutionPolicy RemoteSigned -scope CurrentUser
+scoop bucket add extras
+```
+
+```ps
+scoop install --global everything
+scoop install 7zip pandoc graphviz wox hugo hugo-extended
+
+# These can be replaced by apps from **Windows Store**
+scoop install foobar2000 bitwarden screentogif snipaste draw.io pwsh
+
+# dev
+scoop install terminus git git-lfs gitextensions
+
+# dev - network
+scoop install --global wireshark
+scoop install nmap connect
+
+# c & c++
+scoop install cmake bazel doxygen llvm ninja global
+
+# nodejs
+scoop install nodejs-lts
+
+# python
+scoop install python
+
+# golang
+scoop install go
+
+# rust
+scoop install rustup
+
+# java
+scoop install gradle maven
+
+# msys2
+scoop install msys2
+```
 
 #### chocolatey
 
