@@ -666,6 +666,17 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list openssl $BUILD_
         make install_sw install_ssldirs;
         if [[ $? -eq 0 ]]; then
             OPENSSL_INSTALL_DIR=$PREFIX_DIR/internal-packages ;
+            mkdir -p "$OPENSSL_INSTALL_DIR/ssl";
+            for COPY_SSL_DIR in "/etc/pki/tls/" "/usr/lib/ssl" "/etc/ssl/" ; do
+                if [[ -e "$COPY_SSL_DIR/cert.pem" ]]; then
+                    cp -rf "$COPY_SSL_DIR/cert.pem" "$OPENSSL_INSTALL_DIR/ssl/";
+                fi
+
+                if [[ -e "$COPY_SSL_DIR/certs" ]]; then
+                    mkdir -p "$OPENSSL_INSTALL_DIR/ssl/certs/" ;
+                    cp -rf "$COPY_SSL_DIR/certs/"* "$OPENSSL_INSTALL_DIR/ssl/certs/";
+                fi
+            done
         fi
         cd "$WORKING_DIR";
     fi
