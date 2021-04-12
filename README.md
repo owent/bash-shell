@@ -569,10 +569,13 @@ scoop bucket add extras
 
 ```ps
 scoop install --global everything
-scoop install 7zip pandoc graphviz wox hugo hugo-extended
+scoop install 7zip wox
 
 # These can be replaced by apps from **Windows Store**
 scoop install foobar2000 bitwarden screentogif snipaste draw.io pwsh
+
+# Document
+scoop install pandoc graphviz hugo hugo-extended mdbook
 
 # dev
 scoop install terminus git git-lfs gitextensions
