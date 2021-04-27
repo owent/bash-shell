@@ -564,11 +564,12 @@ https://chocolatey.org/install#install-with-powershellexe
 ```ps
 Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://get.scoop.sh')
 Set-ExecutionPolicy RemoteSigned -scope CurrentUser
+scoop install git git-lfs
 scoop bucket add extras
 ```
 
 ```ps
-scoop install --global everything git git-lfs
+scoop install --global everything
 scoop install 7zip wox
 
 # These can be replaced by apps from **Windows Store**
