@@ -568,7 +568,7 @@ scoop bucket add extras
 ```
 
 ```ps
-scoop install --global everything
+scoop install --global everything git git-lfs
 scoop install 7zip wox
 
 # These can be replaced by apps from **Windows Store**
@@ -578,11 +578,11 @@ scoop install foobar2000 bitwarden screentogif snipaste draw.io pwsh
 scoop install pandoc graphviz hugo hugo-extended mdbook
 
 # dev
-scoop install terminus git git-lfs gitextensions
+scoop install terminus gitextensions
 
 # dev - network
-scoop install --global wireshark
-scoop install nmap connect
+scoop install --global wireshark nmap
+scoop install connect
 
 # c & c++
 scoop install cmake bazel doxygen llvm ninja global
