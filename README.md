@@ -557,19 +557,19 @@ cat /etc/resolv.conf
 
 #### Scoop
 
-https://chocolatey.org
+https://scoop.sh/
 
-https://chocolatey.org/install#install-with-powershellexe
+Add ```%USERPROFILE%\scoop\shims``` to PATH.
 
 ```ps
 Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://get.scoop.sh')
 Set-ExecutionPolicy RemoteSigned -scope CurrentUser
-scoop install git git-lfs
+scoop install git git-lfs sudo
 scoop bucket add extras
 ```
 
 ```ps
-scoop install --global everything
+sudo scoop install --global everything
 scoop install 7zip wox
 
 # These can be replaced by apps from **Windows Store**
@@ -582,7 +582,7 @@ scoop install pandoc graphviz hugo hugo-extended mdbook
 scoop install terminus gitextensions
 
 # dev - network
-scoop install --global wireshark nmap
+sudo scoop install --global wireshark nmap
 scoop install connect
 
 # c & c++
