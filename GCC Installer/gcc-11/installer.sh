@@ -975,19 +975,22 @@ else
 fi
 
 export PATH="$GCC_HOME_DIR/bin:$PATH" ;
-# export CC="$GCC_HOME_DIR/bin/gcc" ;
-# export CXX="$GCC_HOME_DIR/bin/g++" ;
-# export AR="$GCC_HOME_DIR/bin/ar" ;
-# export AS="$GCC_HOME_DIR/bin/as" ;
-# export LD="$(which ld.gold || which ld)" ;
-# export RANLIB="$GCC_HOME_DIR/bin/ranlib" ;
-# export NM="$GCC_HOME_DIR/bin/nm" ;
-# export STRIP="$GCC_HOME_DIR/bin/strip" ;
-# export OBJCOPY="$GCC_HOME_DIR/bin/objcopy" ;
-# export OBJDUMP="$GCC_HOME_DIR/bin/objdump" ;
-# export READELF="$GCC_HOME_DIR/bin/readelf" ;
 
-"$@"
+
+if [[ $# -gt 0 ]]; then
+  env CC="$GCC_HOME_DIR/bin/gcc"        \
+  CXX="$GCC_HOME_DIR/bin/g++"           \
+  AR="$GCC_HOME_DIR/bin/ar"             \
+  AS="$GCC_HOME_DIR/bin/as"             \
+  LD="$(which ld.gold || which ld)"     \
+  RANLIB="$GCC_HOME_DIR/bin/ranlib"     \
+  NM="$GCC_HOME_DIR/bin/nm"             \
+  STRIP="$GCC_HOME_DIR/bin/strip"       \
+  OBJCOPY="$GCC_HOME_DIR/bin/objcopy"   \
+  OBJDUMP="$GCC_HOME_DIR/bin/objdump"   \
+  READELF="$GCC_HOME_DIR/bin/readelf"   \
+  "$@"
+fi
 ' > "$PREFIX_DIR/load-gcc-envs.sh" ;
 chmod +x "$PREFIX_DIR/load-gcc-envs.sh" ;
 
