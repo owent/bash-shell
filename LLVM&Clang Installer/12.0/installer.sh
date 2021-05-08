@@ -874,9 +874,13 @@ else
     echo -e "\\033[35;1mDownloaded: $BUILD_TARGET_COMPOMENTS.\\033[39;49;0m";
 fi
 
-
+PAKCAGE_NAME="$(dirname "$PREFIX_DIR")";
+PAKCAGE_NAME="${PAKCAGE_NAME//\//-}-llvm-clang-libc++";
+if [[ "x${PAKCAGE_NAME:0:1}" == "x-" ]]; then
+    PAKCAGE_NAME="${PAKCAGE_NAME:1}";
+fi
 mkdir -p "$PREFIX_DIR/SPECS";
-echo "Name:           llvm-clang-libc++
+echo "Name:           $PAKCAGE_NAME
 Version:        $LLVM_VERSION
 Release:        1%{?dist}
 Summary:        llvm-clang-libc++ $LLVM_VERSION
@@ -898,6 +902,11 @@ llvm-clang-libc++ $LLVM_VERSION
 %defattr  (-,root,root,0755)
 $PREFIX_DIR/*
 %exclude $PREFIX_DIR
+
+%global __requires_exclude_from ^$PREFIX_DIR/.*
+
+%global __provides_exclude_from ^$PREFIX_DIR/.*
+
 " > "$PREFIX_DIR/SPECS/rpm.spec";
 
 echo "Using:"

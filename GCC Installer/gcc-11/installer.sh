@@ -1019,8 +1019,13 @@ else
     echo -e "\\033[35;1mAll packages downloaded.\\033[39;49;0m";
 fi
 
+PAKCAGE_NAME="$(dirname "$PREFIX_DIR")";
+PAKCAGE_NAME="${PAKCAGE_NAME//\//-}-gcc";
+if [[ "x${PAKCAGE_NAME:0:1}" == "x-" ]]; then
+    PAKCAGE_NAME="${PAKCAGE_NAME:1}";
+fi
 mkdir -p "$PREFIX_DIR/SPECS";
-echo "Name:           gcc
+echo "Name:           $PAKCAGE_NAME
 Version:        $COMPOMENTS_GCC_VERSION
 Release:        1%{?dist}
 Summary:        gcc $COMPOMENTS_GCC_VERSION
@@ -1047,6 +1052,11 @@ gcc $COMPOMENTS_GCC_VERSION
 %defattr  (-,root,root,0755)
 $PREFIX_DIR/*
 %exclude $PREFIX_DIR
+
+%global __requires_exclude_from ^$PREFIX_DIR/.*
+
+%global __provides_exclude_from ^$PREFIX_DIR/.*
+
 " > "$PREFIX_DIR/SPECS/rpm.spec";
 
 echo "Using:"
