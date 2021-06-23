@@ -64,7 +64,7 @@ CentOS 7
 
 #### 编译的依赖库和工具
 
-+ m4 1.4.18
++ m4 latest
 + autoconf latest
 + automake 1.16.3
 + libtool 2.4.6
@@ -75,10 +75,10 @@ CentOS 7
 + isl 0.18
 + libatomic_ops 7.6.10
 + bdw-gc 8.0.4
-+ zstd 1.4.9
++ zstd 1.5.0
 + openssl 1.1.1k
-+ libexpat 2.3.0
-+ libxcrypt 4.4.20
++ libexpat 2.4.1
++ libxcrypt 4.4.23
 + gdbm latest
 
 #### 编译目标
@@ -107,3 +107,8 @@ CentOS 7
 #### History
 
 + 2021-05-06    Created
++ 2021-06-23    Update
+  + m4: latest, optional
+  + libexpat: 2.4.1
+  + libxcrypt: 4.4.23
+  + zstd: 1.5.0
