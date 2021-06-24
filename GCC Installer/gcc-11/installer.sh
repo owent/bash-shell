@@ -659,8 +659,8 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list openssl $BUILD_
         cd $OPENSSL_SRC_DIR;
         make clean || true;
         # @see https://wiki.openssl.org/index.php/Compilation_and_Installation
-        ./config "--prefix=$PREFIX_DIR/internal-packages" "--openssldir=$PREFIX_DIR/internal-packages/ssl" "--release" "no-dso" "no-tests"  \
-                "no-external-tests" "no-shared" "no-idea" "no-md4" "no-mdc2" "no-rc2"                                                       \
+        ./config "--prefix=$PREFIX_DIR/internal-packages" "--openssldir=$PREFIX_DIR/internal-packages/ssl" "--release" "--api=1.0.2" \
+                "no-dso" "no-tests" "no-external-tests" "no-shared" "no-idea" "no-md4" "no-mdc2" "no-rc2"                            \
                 "no-ssl2" "no-ssl3" "no-weak-ssl-ciphers" "enable-ec_nistp_64_gcc_128" "enable-static-engine" ; # "--api=1.1.1"
         make $BUILD_THREAD_OPT || make ;
         make install_sw install_ssldirs;
