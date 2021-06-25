@@ -310,9 +310,10 @@ function build_llvm_toolchain() {
     STAGE_BUILD_EXT_COMPILER_FLAGS=("-DCMAKE_INSTALL_RPATH_USE_LINK_PATH=YES")
 
     if [[ ! -z "$BUILD_USE_GCC_TOOLCHAIN" ]]; then
+        export LIBCXXABI_GCC_TOOLCHAIN=$BUILD_USE_GCC_TOOLCHAIN;
         STAGE_BUILD_EXT_COMPILER_FLAGS=("${STAGE_BUILD_EXT_COMPILER_FLAGS[@]}"
-            "-DCMAKE_CXX_FLAGS=--gcc-toolchain=$BUILD_USE_GCC_TOOLCHAIN"
-            "-DCMAKE_C_FLAGS=--gcc-toolchain=$BUILD_USE_GCC_TOOLCHAIN")
+            "-DBOOTSTRAP_CMAKE_CXX_FLAGS=--gcc-toolchain=$BUILD_USE_GCC_TOOLCHAIN"
+            "-DBOOTSTRAP_CMAKE_C_FLAGS=--gcc-toolchain=$BUILD_USE_GCC_TOOLCHAIN")
     fi
 
     if [[ ! -z "$BUILD_USE_LD" ]]; then
