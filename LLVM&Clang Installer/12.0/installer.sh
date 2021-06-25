@@ -816,15 +816,15 @@ if [[ "x/" == "x$GCC_HOME_DIR" ]] || [[ "x/usr" == "x$GCC_HOME_DIR" ]] || [[ "x/
     if [[ "x$LD_LIBRARY_PATH" == "x" ]]; then
         export LD_LIBRARY_PATH="$LLVM_HOME_DIR/lib" ;
     else
-        export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$LLVM_HOME_DIR/lib:$LLVM_HOME_DIR/lib64" ;
+        export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$LLVM_HOME_DIR/lib" ;
     fi
     
     export PATH="$LLVM_HOME_DIR/bin:$LLVM_HOME_DIR/libexec:$PATH" ;
 else
     if [[ "x$LD_LIBRARY_PATH" == "x" ]]; then
-        export LD_LIBRARY_PATH="$LLVM_HOME_DIR/lib:$GCC_HOME_DIR/lib:$GCC_HOME_DIR/lib64" ;
+        export LD_LIBRARY_PATH="$LLVM_HOME_DIR/lib:$GCC_HOME_DIR/lib64:$GCC_HOME_DIR/lib" ;
     else
-        export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$LLVM_HOME_DIR/lib:$GCC_HOME_DIR/lib:$GCC_HOME_DIR/lib64" ;
+        export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$LLVM_HOME_DIR/lib:$GCC_HOME_DIR/lib64:$GCC_HOME_DIR/lib" ;
     fi
     
     export PATH="$LLVM_HOME_DIR/bin:$LLVM_HOME_DIR/libexec:$GCC_HOME_DIR/bin:$PATH" ;
