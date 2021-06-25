@@ -307,7 +307,6 @@ fi
 export LLVM_DIR="$PWD/llvm-project-$LLVM_VERSION"
 
 function build_llvm_toolchain() {
-    STAGE_BUILD_EXT_CMAKE_OPTION=""
     STAGE_BUILD_EXT_COMPILER_FLAGS=("-DCMAKE_INSTALL_RPATH_USE_LINK_PATH=YES")
 
     if [[ ! -z "$BUILD_USE_GCC_TOOLCHAIN" ]]; then
@@ -398,10 +397,10 @@ function build_llvm_toolchain() {
     fi
     cd "$LLVM_DIR/build_jobs_dir"
 
-    cmake "$LLVM_DIR/llvm" $BUILD_WITH_NINJA "-DCMAKE_INSTALL_PREFIX=$PREFIX_DIR" -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
-        "-DLLVM_ENABLE_PROJECTS=$BUILD_TARGET_COMPOMENTS" \
-        "-DCLANG_ENABLE_BOOTSTRAP=ON" "-DCLANG_BOOTSTRAP_PASSTHROUGH=CMAKE_INSTALL_PREFIX" \
-        $BUILD_LLVM_PATCHED_OPTION $STAGE_BUILD_CMAKE_OPTION $STAGE_BUILD_EXT_CMAKE_OPTION "${STAGE_BUILD_EXT_COMPILER_FLAGS[@]}"
+    cmake "$LLVM_DIR/llvm" $BUILD_WITH_NINJA "-DCMAKE_INSTALL_PREFIX=$PREFIX_DIR" -DCMAKE_BUILD_TYPE=$BUILD_TYPE    \
+        "-DLLVM_ENABLE_PROJECTS=$BUILD_TARGET_COMPOMENTS"                                                           \
+        "-DCLANG_ENABLE_BOOTSTRAP=ON" "-DCLANG_BOOTSTRAP_PASSTHROUGH=CMAKE_INSTALL_PREFIX"                          \
+        $BUILD_LLVM_PATCHED_OPTION $STAGE_BUILD_CMAKE_OPTION "${STAGE_BUILD_EXT_COMPILER_FLAGS[@]}"
     if [[ 0 -ne $? ]]; then
         echo -e "\\033[31;1mError: build llvm failed when run cmake.\\033[39;49;0m"
         return 1
