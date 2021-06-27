@@ -172,6 +172,12 @@ set(LLVM_INSTALL_TOOLCHAIN_ONLY ON CACHE BOOL "")
 set(LLVM_TOOLCHAIN_TOOLS
     dsymutil
     llvm-ar
+    llvm-as
+    llvm-addr2line
+    llvm-bitcode-strip
+    llvm-cxxdump
+    llvm-config
+    llvm-cxxmap
     llvm-cov
     llvm-cxxfilt
     llvm-dlltool
@@ -180,16 +186,22 @@ set(LLVM_TOOLCHAIN_TOOLS
     llvm-elfabi
     llvm-gsymutil
     llvm-lib
+    llvm-link
+    llvm-lipo
+    llvm-lto
+    llvm-ml
     llvm-mt
     llvm-nm
     llvm-objcopy
     llvm-objdump
+    llvm-pdbutil
     llvm-profdata
     llvm-rc
     llvm-ranlib
     llvm-readelf
     llvm-readobj
     llvm-size
+    llvm-strings
     llvm-strip
     llvm-symbolizer
     llvm-xray
@@ -200,7 +212,8 @@ set(LLVM_DISTRIBUTION_COMPONENTS
     clang
     lld
     lldb
-    pstl
+    lldb-server
+    lldb-python
     LTO
     clang-apply-replacements
     clang-doc
