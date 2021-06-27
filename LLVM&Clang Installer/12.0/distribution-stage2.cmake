@@ -197,7 +197,10 @@ set(LLVM_TOOLCHAIN_TOOLS
     CACHE STRING "")
 
 set(LLVM_DISTRIBUTION_COMPONENTS
-    ${LLVM_ENABLE_PROJECTS}
+    clang
+    lld
+    lldb
+    pstl
     LTO
     clang-apply-replacements
     clang-doc
@@ -207,6 +210,8 @@ set(LLVM_DISTRIBUTION_COMPONENTS
     clang-refactor
     clang-scan-deps
     clang-tidy
+    # clangAnalysis
+    clang-libraries
     clangd
     builtins
     runtimes

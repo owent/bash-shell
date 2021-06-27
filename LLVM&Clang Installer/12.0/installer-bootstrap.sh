@@ -21,7 +21,8 @@ BUILD_USE_LD=""
 BUILD_USE_GCC_TOOLCHAIN=""
 BUILD_TYPE="Release"
 BUILD_JOBS_OPTION="-j$(cat /proc/cpuinfo | grep processor | awk 'BEGIN{MAX_CORE_NUM=1}{if($3>MAX_CORE_NUM){MAX_CORE_NUM=$3;}}END{print MAX_CORE_NUM;}')"
-BUILD_STAGE_CACHE_FILE="$PWD/distribution-stage1.cmake"
+BUILD_STAGE_CACHE_FILE="$PWD/distribution-stage1.cmake" ;
+BUILD_INSTALL_TARGETS="stage2-install-distribution,stage2-install-distribution-toolchain" ;
 LINK_JOBS_MAX_NUMBER=0
 if [[ "x$CHECK_AVAILABLE_MEMORY" != "x" ]]; then
     let LINK_JOBS_MAX_NUMBER=$CHECK_AVAILABLE_MEMORY/4194303 # 4GB for each linker
@@ -80,7 +81,7 @@ rm -f contest.tmp.exe contest.tmp.c
 CHECK_INFO_SLEEP=3
 
 # ======================= 安装目录初始化/工作目录清理 =======================
-while getopts "b:cdg:hj:np:s-" OPTION; do
+while getopts "b:cde:g:hi:j:np:s-" OPTION; do
     case $OPTION in
     p)
         PREFIX_DIR="$OPTARG"
@@ -106,19 +107,27 @@ while getopts "b:cdg:hj:np:s-" OPTION; do
         BUILD_DOWNLOAD_ONLY=1
         echo -e "\\033[32;1mDownload mode.\\033[39;49;0m"
         ;;
+    e)
+        BUILD_STAGE_CACHE_FILE="$OPTARG"
+        ;;
     h)
         echo "usage: $0 [options] -p=prefix_dir -c -h"
         echo "options:"
         echo "-b [build type]             Release (default), RelWithDebInfo, MinSizeRel, Debug"
         echo "-c                          clean build cache."
         echo "-d                          download only."
+        echo "-e                          set cmake cache file for stage 1."
         echo "-h                          help message."
         echo "-j [parallel jobs]          build in parallel using the given number of jobs."
+        echo "-i [install targets]        set install targets(stage2-install,stage2-install-distribution,stage2-install-distribution-toolchain and etc.)."
         echo "-g [gcc toolchain]          set gcc toolchain."
         echo "-n                          print toolchain version and exit."
         echo "-p [prefix_dir]             set prefix directory."
         echo "-s                          use shared memory to build targets when support."
         exit 0
+        ;;
+    i)
+        BUILD_INSTALL_TARGETS="$OPTARG"
         ;;
     j)
         BUILD_JOBS_OPTION="-j$OPTARG"
@@ -359,9 +368,11 @@ function build_llvm_toolchain() {
         return 1
     fi
 
-    cmake --build . --target stage2-install-distribution ;
-    cmake --build . --target stage2-install-distribution-toolchain || true ;
-    if [[ 0 -ne $? ]]; then
+    HAS_SUCCESS_INSTALL=0;
+    for BUILD_INSTALL_TARGET in $(echo "$BUILD_INSTALL_TARGETS" | tr ',' ' '); do
+        cmake --build . --target "$BUILD_INSTALL_TARGET" && HAS_SUCCESS_INSTALL=1 ;
+    done
+    if [[ 0 -eq $HAS_SUCCESS_INSTALL ]]; then
         echo -e "\\033[31;1mError: build llvm failed when install.\\033[39;49;0m"
         return 1
     fi
@@ -497,19 +508,28 @@ fi" >"$PREFIX_DIR/load-llvm-envs.sh"
     echo '
 LLVM_HOME_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )";
 
+LLVM_LD_LIBRARY_PATH="";
+for DIR_PATH in $(find "$LLVM_HOME_DIR" -name "*.so" | xargs dirname | sort -u -r); do
+  if [[ -z "$LLVM_LD_LIBRARY_PATH" ]]; then
+    LLVM_LD_LIBRARY_PATH="$DIR_PATH";
+  else
+    LLVM_LD_LIBRARY_PATH="$LLVM_LD_LIBRARY_PATH:$DIR_PATH";
+  fi
+done
+
 if [[ "x/" == "x$GCC_HOME_DIR" ]] || [[ "x/usr" == "x$GCC_HOME_DIR" ]] || [[ "x/usr/local" == "x$GCC_HOME_DIR" ]] || [[ "x$LLVM_HOME_DIR" == "x$GCC_HOME_DIR" ]]; then
     if [[ "x$LD_LIBRARY_PATH" == "x" ]]; then
-        export LD_LIBRARY_PATH="$LLVM_HOME_DIR/lib" ;
+        export LD_LIBRARY_PATH="$LLVM_LD_LIBRARY_PATH" ;
     else
-        export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$LLVM_HOME_DIR/lib" ;
+        export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$LLVM_LD_LIBRARY_PATH" ;
     fi
     
     export PATH="$LLVM_HOME_DIR/bin:$LLVM_HOME_DIR/libexec:$PATH" ;
 else
     if [[ "x$LD_LIBRARY_PATH" == "x" ]]; then
-        export LD_LIBRARY_PATH="$LLVM_HOME_DIR/lib:$GCC_HOME_DIR/lib64:$GCC_HOME_DIR/lib" ;
+        export LD_LIBRARY_PATH="$LLVM_LD_LIBRARY_PATH:$GCC_HOME_DIR/lib64:$GCC_HOME_DIR/lib" ;
     else
-        export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$LLVM_HOME_DIR/lib:$GCC_HOME_DIR/lib64:$GCC_HOME_DIR/lib" ;
+        export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$LLVM_LD_LIBRARY_PATH:$GCC_HOME_DIR/lib64:$GCC_HOME_DIR/lib" ;
     fi
     
     export PATH="$LLVM_HOME_DIR/bin:$LLVM_HOME_DIR/libexec:$GCC_HOME_DIR/bin:$PATH" ;
