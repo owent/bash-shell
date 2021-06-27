@@ -11,26 +11,17 @@ COMPOMENTS_SWIG_VERSION=v4.0.2
 COMPOMENTS_ZLIB_VERSION=1.2.11
 COMPOMENTS_LIBFFI_VERSION=3.3
 PREFIX_DIR=/usr/local/llvm-$LLVM_VERSION
-#BUILD_TARGET_COMPOMENTS="clang;clang-tools-extra;compiler-rt;debuginfo-tests;libc;libclc;libcxx;libcxxabi;libunwind;lld;lldb;mlir;openmp;parallel-libs;polly;pstl";
-# TODO 12.0.0版本编译polly失败。下个版本再开启试试
-# BUILD_TARGET_COMPOMENTS="clang;clang-tools-extra;compiler-rt;libclc;libcxx;libcxxabi;libunwind;lld;lldb;openmp;parallel-libs;polly;pstl";
-BUILD_TARGET_COMPOMENTS="clang;clang-tools-extra;compiler-rt;libclc;libcxx;libcxxabi;libunwind;lld;lldb;openmp;parallel-libs;pstl"
-# BUILD_TARGET_BAN_COMPOMENTS_STAGE_1="libclc;lldb"
-# 这个版本的libc适配有点问题，这个版本增加了thread模块，对 ```stdatomic.h``` 的适配有问题，故而排除
 
 # ======================= 非交叉编译 =======================
 CHECK_TOTAL_MEMORY=$(cat /proc/meminfo | grep MemTotal | awk '{print $2}')
 CHECK_AVAILABLE_MEMORY=$(cat /proc/meminfo | grep MemAvailable | awk '{print $2}')
-BUILD_LLVM_LLVM_OPTION="-DLLVM_BUILD_EXAMPLES=OFF -DLLVM_BUILD_TESTS=OFF -DLLVM_TEMPORARILY_ALLOW_OLD_TOOLCHAIN=ON -DLLVM_ENABLE_EH=ON -DLLVM_ENABLE_RTTI=ON"
-BUILD_LLVM_LLVM_OPTION="$BUILD_LLVM_LLVM_OPTION -DLLVM_ENABLE_PIC=ON -DLLVM_USE_INTEL_JITEVENTS=ON" # -DLLVM_ENABLE_LTO=ON
-BUILD_LLVM_LLVM_OPTION="$BUILD_LLVM_LLVM_OPTION -DCLANG_LINK_CLANG_DYLIB=ON -DLLVM_BUILD_LLVM_DYLIB=ON -DLLVM_LINK_LLVM_DYLIB=ON"
-BUILD_OTHER_CONF_OPTION=""
 BUILD_DOWNLOAD_ONLY=0
 BUILD_USE_SHM=0
 BUILD_USE_LD=""
 BUILD_USE_GCC_TOOLCHAIN=""
 BUILD_TYPE="Release"
 BUILD_JOBS_OPTION="-j$(cat /proc/cpuinfo | grep processor | awk 'BEGIN{MAX_CORE_NUM=1}{if($3>MAX_CORE_NUM){MAX_CORE_NUM=$3;}}END{print MAX_CORE_NUM;}')"
+BUILD_STAGE_CACHE_FILE="$PWD/distribution-stage1.cmake"
 LINK_JOBS_MAX_NUMBER=0
 if [[ "x$CHECK_AVAILABLE_MEMORY" != "x" ]]; then
     let LINK_JOBS_MAX_NUMBER=$CHECK_AVAILABLE_MEMORY/4194303 # 4GB for each linker
@@ -38,7 +29,9 @@ elif [[ "x$CHECK_TOTAL_MEMORY" != "x" ]]; then
     let LINK_JOBS_MAX_NUMBER=$CHECK_TOTAL_MEMORY/4194303 # 4GB for each linker
 fi
 if [[ $LINK_JOBS_MAX_NUMBER -gt 0 ]]; then
-    BUILD_LLVM_LLVM_OPTION="$BUILD_LLVM_LLVM_OPTION -DLLVM_PARALLEL_LINK_JOBS=$LINK_JOBS_MAX_NUMBER"
+    export BUILD_LLVM_PATCHED_OPTION="-DLLVM_PARALLEL_LINK_JOBS=$LINK_JOBS_MAX_NUMBER"
+else
+    export BUILD_LLVM_PATCHED_OPTION=""
 fi
 
 # ======================= 内存大于13GB，使用动态链接库（linking libLLVM-XXX.so的时候会消耗巨量内存） =======================
@@ -87,7 +80,7 @@ rm -f contest.tmp.exe contest.tmp.c
 CHECK_INFO_SLEEP=3
 
 # ======================= 安装目录初始化/工作目录清理 =======================
-while getopts "b:cdg:hj:l:m:np:st:" OPTION; do
+while getopts "b:cdg:hj:np:s-" OPTION; do
     case $OPTION in
     p)
         PREFIX_DIR="$OPTARG"
@@ -121,33 +114,14 @@ while getopts "b:cdg:hj:l:m:np:st:" OPTION; do
         echo "-d                          download only."
         echo "-h                          help message."
         echo "-j [parallel jobs]          build in parallel using the given number of jobs."
-        echo "-l [llvm configure option]  add llvm build options."
-        echo "-m [llvm cmake option]      add llvm build options."
         echo "-g [gcc toolchain]          set gcc toolchain."
         echo "-n                          print toolchain version and exit."
         echo "-p [prefix_dir]             set prefix directory."
         echo "-s                          use shared memory to build targets when support."
-        echo "-t [build target]           set build target(all;clang;clang-tools-extra;compiler-rt;debuginfo-tests;libc;libclc;libcxx;libcxxabi;libunwind;lld;lldb;mlir;openmp;parallel-libs;polly;pstl)."
         exit 0
-        ;;
-    t)
-        if [ "x$BUILD_TARGET_COMPOMENTS" == "xall" ]; then
-            BUILD_TARGET_COMPOMENTS=""
-        fi
-        if [ "+" == "${OPTARG:0:1}" ]; then
-            BUILD_TARGET_COMPOMENTS="$BUILD_TARGET_COMPOMENTS ${OPTARG:1}"
-        else
-            BUILD_TARGET_COMPOMENTS="$OPTARG"
-        fi
         ;;
     j)
         BUILD_JOBS_OPTION="-j$OPTARG"
-        ;;
-    l)
-        BUILD_LLVM_CONF_OPTION="$BUILD_LLVM_CONF_OPTION $OPTARG"
-        ;;
-    m)
-        BUILD_LLVM_CMAKE_OPTION="$BUILD_LLVM_CMAKE_OPTION $OPTARG"
         ;;
     n)
         echo $LLVM_VERSION
@@ -159,12 +133,17 @@ while getopts "b:cdg:hj:l:m:np:st:" OPTION; do
     g)
         BUILD_USE_GCC_TOOLCHAIN="$OPTARG"
         ;;
+    -)
+        break
+        ;;
     ?) #当有不认识的选项的时候arg为?
         echo "unkonw argument detected"
         exit 1
         ;;
     esac
 done
+
+shift $(($OPTIND - 1))
 
 if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
     mkdir -p "$PREFIX_DIR"
@@ -173,6 +152,7 @@ fi
 
 # ======================= 转到脚本目录 =======================
 WORKING_DIR="$PWD"
+BUILD_STAGE_CACHE_FILE="$(readlink -f "$BUILD_STAGE_CACHE_FILE")";
 
 # ======================= 统一的包检查和下载函数 =======================
 function check_and_download() {
@@ -207,46 +187,23 @@ function check_and_download() {
     echo "${PKG_VAR_VAL[0]}"
 }
 
-function is_in_list() {
-    if [[ "x$BUILD_TARGET_COMPOMENTS" == "xall" ]]; then
-        echo 0
-        exit 0
-    fi
-
-    ele="$1"
-    shift
-
-    for i in $(echo "$BUILD_TARGET_COMPOMENTS" | tr ';' ' '); do
-        if [[ "$ele" == "$i" ]]; then
-            echo 0
-            exit 0
-        fi
-    done
-
-    echo 1
-    exit 1
-}
-
 # ======================= 如果是64位系统且没安装32位的开发包，则编译要gcc加上 --disable-multilib 参数, 不生成32位库 =======================
-SYS_LONG_BIT=$(getconf LONG_BIT)
+SYS_LONG_BIT=$(getconf LONG_BIT) ;
 
 # ======================================= 搞起 =======================================
-echo -e "\\033[31;1mcheck complete.\\033[39;49;0m"
+echo -e "\\033[31;1mcheck complete.\\033[39;49;0m" ;
 
 # ======================= 准备环境, 把库和二进制目录导入，否则编译会找不到库或文件 =======================
-echo "WORKING_DIR               = $WORKING_DIR"
-echo "PREFIX_DIR                = $PREFIX_DIR"
-echo "BUILD_TARGET_COMPOMENTS   = $BUILD_TARGET_COMPOMENTS"
-echo "BUILD_LLVM_CONF_OPTION    = $BUILD_LLVM_CONF_OPTION"
-echo "BUILD_LLVM_CMAKE_OPTION   = $BUILD_LLVM_CMAKE_OPTION"
-echo "BUILD_OTHER_CONF_OPTION   = $BUILD_OTHER_CONF_OPTION"
-echo "CHECK_INFO_SLEEP          = $CHECK_INFO_SLEEP"
-echo "SYS_LONG_BIT              = $SYS_LONG_BIT"
-echo "CC                        = $CC"
-echo "CXX                       = $CXX"
-echo "BUILD_USE_LD              = $BUILD_USE_LD"
+echo "WORKING_DIR               = $WORKING_DIR" ;
+echo "PREFIX_DIR                = $PREFIX_DIR" ;
+echo "BUILD_STAGE_CACHE_FILE    = $BUILD_STAGE_CACHE_FILE" ;
+echo "CHECK_INFO_SLEEP          = $CHECK_INFO_SLEEP" ;
+echo "SYS_LONG_BIT              = $SYS_LONG_BIT" ;
+echo "CC                        = $CC" ;
+echo "CXX                       = $CXX" ;
+echo "BUILD_USE_LD              = $BUILD_USE_LD" ;
 
-echo -e "\\033[32;1mnotice: now, sleep for $CHECK_INFO_SLEEP seconds.\\033[39;49;0m"
+echo -e "\\033[32;1mnotice: now, sleep for $CHECK_INFO_SLEEP seconds.\\033[39;49;0m" ;
 sleep $CHECK_INFO_SLEEP
 
 # ======================= 关闭交换分区，否则就爽死了 =======================
@@ -286,17 +243,29 @@ if [[ ! -e "zlib-$COMPOMENTS_ZLIB_VERSION" ]]; then
     git clone -b "v$COMPOMENTS_ZLIB_VERSION" --depth 1 "https://github.com/madler/zlib.git" "zlib-$COMPOMENTS_ZLIB_VERSION"
 fi
 
-if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "xall" == "x$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list lldb) ]]; then
-    PYTHON_PKG=$(check_and_download "python" "Python-*.tar.xz" "https://www.python.org/ftp/python/$COMPOMENTS_PYTHON_VERSION/Python-$COMPOMENTS_PYTHON_VERSION.tar.xz")
-    if [[ $? -ne 0 ]]; then
-        return
-    fi
+PYTHON_PKG=$(check_and_download "python" "Python-*.tar.xz" "https://www.python.org/ftp/python/$COMPOMENTS_PYTHON_VERSION/Python-$COMPOMENTS_PYTHON_VERSION.tar.xz")
+if [[ $? -ne 0 ]]; then
+    return
+fi
 
-    if [[ ! -e "swig-$COMPOMENTS_SWIG_VERSION" ]]; then
-        git clone -b "$COMPOMENTS_SWIG_VERSION" --depth 1 "https://github.com/swig/swig.git" "swig-$COMPOMENTS_SWIG_VERSION"
-        if [[ $? -ne 0 ]]; then
-            return
-        fi
+if [[ ! -e "swig-$COMPOMENTS_SWIG_VERSION" ]]; then
+    git clone -b "$COMPOMENTS_SWIG_VERSION" --depth 1 "https://github.com/swig/swig.git" "swig-$COMPOMENTS_SWIG_VERSION"
+    if [[ $? -ne 0 ]]; then
+        exit 1
+    fi
+fi
+
+if [[ ! -e "$WORKING_DIR/distribution-stage1.cmake" ]]; then
+    curl -kL "https://raw.githubusercontent.com/owent-utils/bash-shell/main/LLVM%26Clang%20Installer/12.0/distribution-stage1.cmake" -o "$WORKING_DIR/distribution-stage1.cmake" ;
+    if [[ $? -ne 0 ]]; then
+        exit 1
+    fi
+fi
+
+if [[ ! -e "$WORKING_DIR/distribution-stage2.cmake" ]]; then
+    curl -kL "https://raw.githubusercontent.com/owent-utils/bash-shell/main/LLVM%26Clang%20Installer/12.0/distribution-stage2.cmake" -o "$WORKING_DIR/distribution-stage2.cmake" ;
+    if [[ $? -ne 0 ]]; then
+        exit 1
     fi
 fi
 
@@ -307,10 +276,27 @@ fi
 export LLVM_DIR="$PWD/llvm-project-$LLVM_VERSION"
 
 function build_llvm_toolchain() {
-    STAGE_BUILD_EXT_COMPILER_FLAGS=("-DCMAKE_INSTALL_RPATH_USE_LINK_PATH=YES" "-DBOOTSTRAP_CMAKE_BUILD_WITH_INSTALL_RPATH=YES" "-DCMAKE_BUILD_RPATH_USE_ORIGIN=YES")
+    STAGE_BUILD_EXT_COMPILER_FLAGS=("-DCMAKE_FIND_ROOT_PATH=$PREFIX_DIR"
+        "-DCMAKE_PREFIX_PATH=$PREFIX_DIR")
+
+    if [[ "x$CFLAGS" == "x" ]]; then
+        export CFLAGS="-I$PREFIX_DIR/include"
+    else
+        export CFLAGS="$CFLAGS -I$PREFIX_DIR/include"
+    fi
+    if [[ "x$CXXFLAGS" == "x" ]]; then
+        export CXXFLAGS="-I$PREFIX_DIR/include"
+    else
+        export CXXFLAGS="$CXXFLAGS -I$PREFIX_DIR/include"
+    fi
+    if [[ "x$LDFLAGS" == "x" ]]; then
+        export LDFLAGS="-L$PREFIX_DIR/lib"
+    else
+        export LDFLAGS="$LDFLAGS -L$PREFIX_DIR/lib"
+    fi
 
     if [[ ! -z "$BUILD_USE_GCC_TOOLCHAIN" ]]; then
-        export LIBCXXABI_GCC_TOOLCHAIN=$BUILD_USE_GCC_TOOLCHAIN;
+        export LIBCXXABI_GCC_TOOLCHAIN=$BUILD_USE_GCC_TOOLCHAIN
         STAGE_BUILD_EXT_COMPILER_FLAGS=("${STAGE_BUILD_EXT_COMPILER_FLAGS[@]}"
             "-DBOOTSTRAP_CMAKE_CXX_FLAGS=--gcc-toolchain=$BUILD_USE_GCC_TOOLCHAIN"
             "-DBOOTSTRAP_CMAKE_C_FLAGS=--gcc-toolchain=$BUILD_USE_GCC_TOOLCHAIN")
@@ -318,51 +304,6 @@ function build_llvm_toolchain() {
 
     if [[ ! -z "$BUILD_USE_LD" ]]; then
         STAGE_BUILD_EXT_COMPILER_FLAGS=("${STAGE_BUILD_EXT_COMPILER_FLAGS[@]}" "-DLLVM_USE_LINKER=$BUILD_USE_LD")
-    fi
-
-    STAGE_BUILD_CMAKE_OPTION=""
-    if [[ "x$BUILD_TARGET_COMPOMENTS" == "xall" ]]; then
-        STAGE_BUILD_CMAKE_OPTION="-DLIBUNWIND_USE_COMPILER_RT=ON -DLIBCXX_USE_COMPILER_RT=ON -DLIBCXXABI_USE_COMPILER_RT=ON -DLIBCXXABI_USE_LLVM_UNWINDER=ON"
-        BUILD_TARGET_HAS_COMPILER_RT=1
-        BUILD_TARGET_HAS_LIBCXX=1
-        BUILD_TARGET_HAS_LIBCXX_ABI=1
-        BUILD_TARGET_HAS_LIBUNWIND=1
-        BUILD_TARGET_HAS_LLD=1
-    else
-        BUILD_TARGET_HAS_COMPILER_RT=0
-        BUILD_TARGET_HAS_LIBCXX=0
-        BUILD_TARGET_HAS_LIBCXX_ABI=0
-        BUILD_TARGET_HAS_LIBUNWIND=0
-        BUILD_TARGET_HAS_LLD=0
-        for BUILD_TARGET in ${BUILD_TARGET_COMPOMENTS//;/ }; do
-            if [[ "compiler-rt" == "$BUILD_TARGET" ]]; then
-                BUILD_TARGET_HAS_COMPILER_RT=1
-            elif [[ "libcxx" == "$BUILD_TARGET" ]]; then
-                BUILD_TARGET_HAS_LIBCXX=1
-            elif [[ "libcxxabi" == "$BUILD_TARGET" ]]; then
-                BUILD_TARGET_HAS_LIBCXX_ABI=1
-            elif [[ "libunwind" == "$BUILD_TARGET" ]]; then
-                BUILD_TARGET_HAS_LIBUNWIND=1
-            elif [[ "lld" == "$BUILD_TARGET" ]]; then
-                BUILD_TARGET_HAS_LLD=1
-            fi
-        done
-
-        if [[ $BUILD_TARGET_HAS_COMPILER_RT -ne 0 ]] && [[ $BUILD_TARGET_HAS_LIBUNWIND -ne 0 ]]; then
-            STAGE_BUILD_CMAKE_OPTION="$STAGE_BUILD_CMAKE_OPTION -DLIBUNWIND_USE_COMPILER_RT=ON"
-        fi
-
-        if [[ $BUILD_TARGET_HAS_COMPILER_RT -ne 0 ]] && [[ $BUILD_TARGET_HAS_LIBCXX -ne 0 ]]; then
-            STAGE_BUILD_CMAKE_OPTION="$STAGE_BUILD_CMAKE_OPTION -DLIBCXX_USE_COMPILER_RT=ON"
-        fi
-
-        if [[ $BUILD_TARGET_HAS_COMPILER_RT -ne 0 ]] && [[ $BUILD_TARGET_HAS_LIBCXX_ABI -ne 0 ]]; then
-            STAGE_BUILD_CMAKE_OPTION="$STAGE_BUILD_CMAKE_OPTION -DLIBCXXABI_USE_COMPILER_RT=ON"
-        fi
-
-        if [[ $BUILD_TARGET_HAS_LIBUNWIND -ne 0 ]] && [[ $BUILD_TARGET_HAS_LIBCXX_ABI -ne 0 ]]; then
-            STAGE_BUILD_CMAKE_OPTION="$STAGE_BUILD_CMAKE_OPTION -DLIBCXXABI_USE_LLVM_UNWINDER=ON"
-        fi
     fi
 
     which ninja >/dev/null 2>&1
@@ -377,7 +318,7 @@ function build_llvm_toolchain() {
         fi
     fi
 
-    # ready to build
+    # Ready to build
     cd "$LLVM_DIR"
     if [[ -e "/dev/shm/build-install-llvm/build_jobs_dir" ]]; then
         rm -rf "/dev/shm/build-install-llvm/build_jobs_dir"
@@ -398,26 +339,28 @@ function build_llvm_toolchain() {
     fi
     cd "$LLVM_DIR/build_jobs_dir"
 
-    cmake "$LLVM_DIR/llvm" $BUILD_WITH_NINJA "-DCMAKE_INSTALL_PREFIX=$PREFIX_DIR" -DCMAKE_BUILD_TYPE=$BUILD_TYPE    \
-        "-DLLVM_ENABLE_PROJECTS=$BUILD_TARGET_COMPOMENTS" "-DCLANG_ENABLE_BOOTSTRAP=ON"                             \
-        "-DCLANG_BOOTSTRAP_PASSTHROUGH=CMAKE_INSTALL_PREFIX;CMAKE_INSTALL_RPATH_USE_LINK_PATH;CMAKE_BUILD_RPATH_USE_ORIGIN" \
-        $BUILD_LLVM_PATCHED_OPTION $STAGE_BUILD_CMAKE_OPTION "${STAGE_BUILD_EXT_COMPILER_FLAGS[@]}"
+    PASSTHROUGH_CMAKE_OPTIONS="CMAKE_INSTALL_PREFIX;CMAKE_FIND_ROOT_PATH;CMAKE_PREFIX_PATH;LLVM_PARALLEL_LINK_JOBS"
+    PASSTHROUGH_CMAKE_OPTIONS="$PASSTHROUGH_CMAKE_OPTIONS;PYTHON_HOME;LLDB_PYTHON_VERSION;LLDB_ENABLE_PYTHON;LLDB_RELOCATABLE_PYTHON"
+    cmake "$LLVM_DIR/llvm" $BUILD_WITH_NINJA "-DCMAKE_INSTALL_PREFIX=$PREFIX_DIR"               \
+        -C "$BUILD_STAGE_CACHE_FILE" "-DCLANG_BOOTSTRAP_PASSTHROUGH=$PASSTHROUGH_CMAKE_OPTIONS" \
+        $BUILD_LLVM_PATCHED_OPTION "${STAGE_BUILD_EXT_COMPILER_FLAGS[@]}" "$@"
     if [[ 0 -ne $? ]]; then
         echo -e "\\033[31;1mError: build llvm failed when run cmake.\\033[39;49;0m"
         return 1
     fi
 
     # 这里会消耗茫茫多内存，所以尝试先开启多进程编译，失败之后降级到单进程
-    cmake --build . $BUILD_JOBS_OPTION --config $BUILD_TYPE --target stage2 ||
-        cmake --build . -j2 --config $BUILD_TYPE --target stage2 ||
-        cmake --build . --config $BUILD_TYPE --target stage2
+    cmake --build . $BUILD_JOBS_OPTION --config $BUILD_TYPE --target stage2 stage2-distribution ||
+        cmake --build . -j2 --config $BUILD_TYPE --target stage2 stage2-distribution ||
+        cmake --build . --config $BUILD_TYPE --target stage2 stage2-distribution
 
     if [[ 0 -ne $? ]]; then
         echo -e "\\033[31;1mError: build llvm failed when run cmake --build .\\033[39;49;0m"
         return 1
     fi
 
-    cmake --build . --target install # --target install-distribution
+    cmake --build . --target stage2-install-distribution ;
+    cmake --build . --target stage2-install-distribution-toolchain || true ;
     if [[ 0 -ne $? ]]; then
         echo -e "\\033[31;1mError: build llvm failed when install.\\033[39;49;0m"
         return 1
@@ -479,54 +422,52 @@ if [[ -e "libffi-$COMPOMENTS_LIBFFI_VERSION.tar.gz" ]]; then
     cd "$WORKING_DIR"
 fi
 
-if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "all" == "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list lldb) ]]; then
-    if [[ -z "$(find $PREFIX_DIR -name swig)" ]]; then
-        cd "swig-$COMPOMENTS_SWIG_VERSION"
-        ./autogen.sh
-        make clean || true
-        ./configure "--prefix=$PREFIX_DIR"
-        make $BUILD_JOBS_OPTION || make
-        if [[ $? -ne 0 ]]; then
-            echo -e "\\033[31;1mBuild swig failed.\\033[39;49;0m"
-            exit 1
-        fi
-        make install
-        cd "$WORKING_DIR"
+if [[ -z "$(find $PREFIX_DIR -name swig)" ]]; then
+    cd "swig-$COMPOMENTS_SWIG_VERSION"
+    ./autogen.sh
+    make clean || true
+    ./configure "--prefix=$PREFIX_DIR"
+    make $BUILD_JOBS_OPTION || make
+    if [[ $? -ne 0 ]]; then
+        echo -e "\\033[31;1mBuild swig failed.\\033[39;49;0m"
+        exit 1
     fi
-
-    if [[ -z "$(find $PREFIX_DIR -name Python.h)" ]]; then
-        # =======================  尝试编译安装python  =======================
-        tar -axvf $PYTHON_PKG
-        PYTHON_DIR=$(ls -d Python-* | grep -v \.tar.xz)
-        cd $PYTHON_DIR
-        # --enable-shared 会导致llvm的Find脚本找不到
-        # 尝试使用gcc构建脚本中构建的openssl
-        OPENSSL_INSTALL_DIR=""
-        if [[ -e "$(dirname "$ORIGIN_COMPILER_CC")/../internal-packages/lib/libssl.a" ]]; then
-            OPENSSL_INSTALL_DIR="$(readlink -f "$(dirname "$ORIGIN_COMPILER_CC")"/../internal-packages)"
-        fi
-        # --enable-optimizations require gcc 8.1.0 or later
-        PYTHON_CONFIGURE_OPTIONS=("--prefix=$PREFIX_DIR" "--enable-optimizations" "--with-ensurepip=install" "--enable-shared")
-        if [[ ! -z "$OPENSSL_INSTALL_DIR" ]]; then
-            PYTHON_CONFIGURE_OPTIONS=(${PYTHON_CONFIGURE_OPTIONS[@]} "--with-openssl=$OPENSSL_INSTALL_DIR")
-        fi
-        make clean || true
-        ./configure ${PYTHON_CONFIGURE_OPTIONS[@]}
-        make $BUILD_JOBS_OPTION || make
-        if [[ $? -ne 0 ]]; then
-            echo -e "\\033[31;1mBuild python failed.\\033[39;49;0m"
-            exit 1
-        fi
-        make install
-
-        cd "$WORKING_DIR"
-    fi
-    if [[ ! -z "$(find $PREFIX_DIR -name Python.h)" ]]; then
-        export BUILD_LLVM_PATCHED_OPTION="$BUILD_LLVM_LLVM_OPTION -DPYTHON_HOME=$PREFIX_DIR -DLLDB_PYTHON_VERSION=3 -DLLDB_ENABLE_PYTHON=ON -DLLDB_RELOCATABLE_PYTHON=1"
-    fi
+    make install
+    cd "$WORKING_DIR"
 fi
 
-build_llvm_toolchain
+if [[ -z "$(find $PREFIX_DIR -name Python.h)" ]]; then
+    # =======================  尝试编译安装python  =======================
+    tar -axvf $PYTHON_PKG
+    PYTHON_DIR=$(ls -d Python-* | grep -v \.tar.xz)
+    cd $PYTHON_DIR
+    # --enable-shared 会导致llvm的Find脚本找不到
+    # 尝试使用gcc构建脚本中构建的openssl
+    OPENSSL_INSTALL_DIR=""
+    if [[ -e "$(dirname "$ORIGIN_COMPILER_CC")/../internal-packages/lib/libssl.a" ]]; then
+        OPENSSL_INSTALL_DIR="$(readlink -f "$(dirname "$ORIGIN_COMPILER_CC")"/../internal-packages)"
+    fi
+    # --enable-optimizations require gcc 8.1.0 or later
+    PYTHON_CONFIGURE_OPTIONS=("--prefix=$PREFIX_DIR" "--enable-optimizations" "--with-ensurepip=install" "--enable-shared")
+    if [[ ! -z "$OPENSSL_INSTALL_DIR" ]]; then
+        PYTHON_CONFIGURE_OPTIONS=(${PYTHON_CONFIGURE_OPTIONS[@]} "--with-openssl=$OPENSSL_INSTALL_DIR")
+    fi
+    make clean || true
+    ./configure ${PYTHON_CONFIGURE_OPTIONS[@]}
+    make $BUILD_JOBS_OPTION || make
+    if [[ $? -ne 0 ]]; then
+        echo -e "\\033[31;1mBuild python failed.\\033[39;49;0m"
+        exit 1
+    fi
+    make install
+
+    cd "$WORKING_DIR"
+fi
+if [[ ! -z "$(find $PREFIX_DIR -name Python.h)" ]]; then
+    export BUILD_LLVM_PATCHED_OPTION="$BUILD_LLVM_LLVM_OPTION -DPYTHON_HOME=$PREFIX_DIR -DLLDB_PYTHON_VERSION=3 -DLLDB_ENABLE_PYTHON=ON -DLLDB_RELOCATABLE_PYTHON=1"
+fi
+
+build_llvm_toolchain "$@"
 
 if [[ 0 -ne $? ]]; then
     if [ $BUILD_DOWNLOAD_ONLY -eq 0 ]; then
@@ -615,7 +556,7 @@ fi
     fi
     echo -e "\\033[35;1m\tMaybe need add --gcc-toolchain=$GCC_HOME_DIR to compile options\\033[39;49;0m"
 else
-    echo -e "\\033[35;1mDownloaded: $BUILD_TARGET_COMPOMENTS.\\033[39;49;0m"
+echo -e "\\033[35;1mDownloaded.\\033[39;49;0m"
 fi
 
 PAKCAGE_NAME="$(dirname "$PREFIX_DIR")"

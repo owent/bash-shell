@@ -1,2 +1,15 @@
 *.sh eol=lf
+*.sh.mako eol=lf
+*.sh.in eol=lf
 *.py eol=lf
+*.mako.py eol=lf
+*.md eol=crlf
+*.md.in eol=crlf
+*.bat eol=crlf
+*.bat.in eol=crlf
+*.ps1 eol=crlf
+*.ps1.in eol=crlf
+*.rst eol=lf
+*.cmake eol=lf
+*.cmake.in eol=lf
+CMakeLists.txt eol=lf

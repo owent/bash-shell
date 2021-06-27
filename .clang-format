@@ -1,0 +1,26 @@
+---
+Language: Cpp
+BasedOnStyle: Google
+ColumnLimit: 120
+DerivePointerAlignment: true
+PointerAlignment: Left
+
+# Only sort headers in each include block
+SortIncludes: true
+IncludeBlocks: Preserve
+
+# Ident #if/#else/#endif:
+#   #if defined(WIN)
+#   #  include <windows.h>
+#   #else
+#   #  include <curl.h>
+#   #endif
+IndentPPDirectives: AfterHash
+---
+
+---
+Language: Proto
+BasedOnStyle: Google
+ColumnLimit: 120
+---
+
