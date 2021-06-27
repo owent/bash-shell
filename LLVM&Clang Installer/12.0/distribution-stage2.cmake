@@ -169,12 +169,11 @@ set(LLVM_RUNTIME_BUILD_ID_LINK_TARGETS "${RUNTIME_BUILD_ID_LINK}" CACHE STRING "
 
 # Setup toolchain.
 set(LLVM_INSTALL_TOOLCHAIN_ONLY ON CACHE BOOL "")
-set(LLVM_TOOLCHAIN_TOOLS
+set(LLVM_TOOLCHAIN_TOOLS_SELECT
     dsymutil
     llvm-ar
     llvm-as
     llvm-addr2line
-    llvm-bitcode-strip
     llvm-cxxdump
     llvm-config
     llvm-cxxmap
@@ -185,10 +184,13 @@ set(LLVM_TOOLCHAIN_TOOLS
     llvm-dwp
     llvm-elfabi
     llvm-gsymutil
+    llvm-install-name-tool
+    llvm-jitlink
+    llvm-jitlistener
     llvm-lib
     llvm-link
-    llvm-lipo
     llvm-lto
+    llvm-lto2
     llvm-ml
     llvm-mt
     llvm-nm
@@ -205,27 +207,46 @@ set(LLVM_TOOLCHAIN_TOOLS
     llvm-strip
     llvm-symbolizer
     llvm-xray
+    llvm-libraries
+    llvm-headers
     sancov
-    CACHE STRING "")
+    sanstats)
+
+if(APPLE)
+  list(APPEND LLVM_TOOLCHAIN_TOOLS_SELECT llvm-bitcode-strip llvm-ifs llvm-lipo llvm-libtool-darwin)
+endif()
+set(LLVM_TOOLCHAIN_TOOLS ${LLVM_TOOLCHAIN_TOOLS_SELECT} CACHE STRING "")
 
 set(LLVM_DISTRIBUTION_COMPONENTS
     clang
     lld
+    liblldb
     lldb
     lldb-server
-    lldb-python
+    lldb-python-scripts
+    lldb-vscode
     LTO
+    libclang-headers
+    libclang-python-bindings
+    libclang
+    llc
     clang-apply-replacements
+    clang-check
+    clang-cmake-exports
+    clang-cpp
     clang-doc
     clang-format
+    clang-headers
     clang-resource-headers
     clang-include-fixer
     clang-refactor
     clang-scan-deps
     clang-tidy
-    # clangAnalysis
+    clang-tidy-headers
     clang-libraries
     clangd
+    scan-build
+    scan-view
     builtins
     runtimes
     ${LLVM_TOOLCHAIN_TOOLS}

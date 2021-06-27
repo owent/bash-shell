@@ -22,7 +22,7 @@ BUILD_USE_GCC_TOOLCHAIN=""
 BUILD_TYPE="Release"
 BUILD_JOBS_OPTION="-j$(cat /proc/cpuinfo | grep processor | awk 'BEGIN{MAX_CORE_NUM=1}{if($3>MAX_CORE_NUM){MAX_CORE_NUM=$3;}}END{print MAX_CORE_NUM;}')"
 BUILD_STAGE_CACHE_FILE="$PWD/distribution-stage1.cmake" ;
-BUILD_INSTALL_TARGETS="stage2-install-distribution,stage2-install-distribution-toolchain" ;
+BUILD_INSTALL_TARGETS="stage2-install-distribution" ;
 LINK_JOBS_MAX_NUMBER=0
 if [[ "x$CHECK_AVAILABLE_MEMORY" != "x" ]]; then
     let LINK_JOBS_MAX_NUMBER=$CHECK_AVAILABLE_MEMORY/4194303 # 4GB for each linker
@@ -507,16 +507,19 @@ fi" >"$PREFIX_DIR/load-llvm-envs.sh"
 
     echo '
 LLVM_HOME_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )";
-
+' >> "$PREFIX_DIR/load-llvm-envs.sh" ;
+cd "$PREFIX_DIR" ;
 LLVM_LD_LIBRARY_PATH="";
-for DIR_PATH in $(find "$LLVM_HOME_DIR" -name "*.so" | xargs dirname | sort -u -r); do
+for DIR_PATH in $(find "." -name "*.so" | grep -v "cpython" | grep -v -E 'python[0-9\.]*/site-packages' | xargs -r dirname | sort -u -r); do
   if [[ -z "$LLVM_LD_LIBRARY_PATH" ]]; then
-    LLVM_LD_LIBRARY_PATH="$DIR_PATH";
+    LLVM_LD_LIBRARY_PATH="\$LLVM_HOME_DIR/$DIR_PATH";
   else
-    LLVM_LD_LIBRARY_PATH="$LLVM_LD_LIBRARY_PATH:$DIR_PATH";
+    LLVM_LD_LIBRARY_PATH="$LLVM_LD_LIBRARY_PATH:\$LLVM_HOME_DIR/$DIR_PATH";
   fi
 done
 
+    echo "LLVM_LD_LIBRARY_PATH=\"$LLVM_LD_LIBRARY_PATH\" ;" >> "$PREFIX_DIR/load-llvm-envs.sh" ;
+    echo '
 if [[ "x/" == "x$GCC_HOME_DIR" ]] || [[ "x/usr" == "x$GCC_HOME_DIR" ]] || [[ "x/usr/local" == "x$GCC_HOME_DIR" ]] || [[ "x$LLVM_HOME_DIR" == "x$GCC_HOME_DIR" ]]; then
     if [[ "x$LD_LIBRARY_PATH" == "x" ]]; then
         export LD_LIBRARY_PATH="$LLVM_LD_LIBRARY_PATH" ;
