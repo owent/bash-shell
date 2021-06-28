@@ -447,19 +447,26 @@ if [[ -z "$(find $PREFIX_DIR -name swig)" ]]; then
     cd "$WORKING_DIR"
 fi
 
-if [[ -z "$(find $PREFIX_DIR -name Python.h)" ]]; then
+ORIGIN_COMPILER_PREFIX_DIR="$(dirname "$ORIGIN_COMPILER_CC")";
+ORIGIN_COMPILER_PREFIX_DIR="$(dirname "$ORIGIN_COMPILER_PREFIX_DIR")";
+
+if [[ "x$ORIGIN_COMPILER_PREFIX_DIR" != "x/usr" ]] && [[ "x$ORIGIN_COMPILER_PREFIX_DIR" != "x/usr/local" ]] && [[ ! -z "$(find "$ORIGIN_COMPILER_PREFIX_DIR/include" -name Python.h)" ]]; then
+    PYTHIN_INCLUDE_DIR="$(find "$ORIGIN_COMPILER_PREFIX_DIR/include" -name Python.h)";
+    PYTHON_HOME="$ORIGIN_COMPILER_PREFIX_DIR";
+elif [[ -z "$(find $PREFIX_DIR -name Python.h)" ]]; then
     # =======================  尝试编译安装python  =======================
     tar -axvf $PYTHON_PKG
     PYTHON_DIR=$(ls -d Python-* | grep -v \.tar.xz)
     cd $PYTHON_DIR
-    # --enable-shared 会导致llvm的Find脚本找不到
     # 尝试使用gcc构建脚本中构建的openssl
     OPENSSL_INSTALL_DIR=""
     if [[ -e "$(dirname "$ORIGIN_COMPILER_CC")/../internal-packages/lib/libssl.a" ]]; then
         OPENSSL_INSTALL_DIR="$(readlink -f "$(dirname "$ORIGIN_COMPILER_CC")"/../internal-packages)"
     fi
     # --enable-optimizations require gcc 8.1.0 or later
-    PYTHON_CONFIGURE_OPTIONS=("--prefix=$PREFIX_DIR" "--enable-optimizations" "--with-ensurepip=install" "--enable-shared")
+    PYTHON_CONFIGURE_OPTIONS=("--prefix=$PREFIX_DIR" "--enable-optimizations" "--with-normal" "--with-cxx-binding"
+        "--without-debug" "--with-ensurepip=install" "--enable-shared" "--enable-pc-files" "--with-system-ffi"
+        "--with-pkg-config-libdir=$PREFIX_DIR/lib/pkgconfig")
     if [[ ! -z "$OPENSSL_INSTALL_DIR" ]]; then
         PYTHON_CONFIGURE_OPTIONS=(${PYTHON_CONFIGURE_OPTIONS[@]} "--with-openssl=$OPENSSL_INSTALL_DIR")
     fi
@@ -472,10 +479,15 @@ if [[ -z "$(find $PREFIX_DIR -name Python.h)" ]]; then
     fi
     make install
 
+    PYTHIN_INCLUDE_DIR="$(find "$PREFIX_DIR/include" -name Python.h)";
+    PYTHON_HOME="$PREFIX_DIR";
     cd "$WORKING_DIR"
 fi
-if [[ ! -z "$(find $PREFIX_DIR -name Python.h)" ]]; then
-    export BUILD_LLVM_PATCHED_OPTION="$BUILD_LLVM_LLVM_OPTION -DPYTHON_HOME=$PREFIX_DIR -DLLDB_PYTHON_VERSION=3 -DLLDB_ENABLE_PYTHON=ON -DLLDB_RELOCATABLE_PYTHON=1"
+if [[ ! -z "$PYTHIN_INCLUDE_DIR" ]]; then
+    PYTHON_MAJOR_VERSION=$(grep -E 'PY_MAJOR_VERSION[[:space:]]*[0-9]+' "$PYTHIN_INCLUDE_DIR"/*.h | awk '{print $NF}');
+    if [[ ! -z "$PYTHON_MAJOR_VERSION" ]]; then
+        export BUILD_LLVM_PATCHED_OPTION="$BUILD_LLVM_LLVM_OPTION -DPYTHON_HOME=$PYTHON_HOME -DLLDB_PYTHON_VERSION=$PYTHON_MAJOR_VERSION -DLLDB_ENABLE_PYTHON=ON -DLLDB_RELOCATABLE_PYTHON=1"
+    fi
 fi
 
 build_llvm_toolchain "$@"
