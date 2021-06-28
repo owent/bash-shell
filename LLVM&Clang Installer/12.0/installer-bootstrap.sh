@@ -119,7 +119,7 @@ while getopts "b:cde:g:hi:j:np:s-" OPTION; do
         echo "-e                          set cmake cache file for stage 1."
         echo "-h                          help message."
         echo "-j [parallel jobs]          build in parallel using the given number of jobs."
-        echo "-i [install targets]        set install targets(stage2-install,stage2-install-distribution,stage2-install-distribution-toolchain and etc.)."
+        echo "-i [install targets]        set install targets(stage2-install,stage2-install-distribution,install,install-distribution or other targets)."
         echo "-g [gcc toolchain]          set gcc toolchain."
         echo "-n                          print toolchain version and exit."
         echo "-p [prefix_dir]             set prefix directory."

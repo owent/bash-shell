@@ -207,8 +207,7 @@ set(LLVM_TOOLCHAIN_TOOLS_SELECT
     llvm-strip
     llvm-symbolizer
     llvm-xray
-    llvm-libraries
-    llvm-headers
+    LLVM
     sancov
     sanstats)
 
@@ -229,20 +228,16 @@ set(LLVM_DISTRIBUTION_COMPONENTS
     libclang-headers
     libclang-python-bindings
     libclang
-    llc
     clang-apply-replacements
     clang-check
-    clang-cmake-exports
     clang-cpp
     clang-doc
     clang-format
-    clang-headers
     clang-resource-headers
     clang-include-fixer
     clang-refactor
     clang-scan-deps
     clang-tidy
-    clang-tidy-headers
     clang-libraries
     clangd
     scan-build
