@@ -452,6 +452,7 @@ ORIGIN_COMPILER_PREFIX_DIR="$(dirname "$ORIGIN_COMPILER_PREFIX_DIR")";
 
 if [[ "x$ORIGIN_COMPILER_PREFIX_DIR" != "x/usr" ]] && [[ "x$ORIGIN_COMPILER_PREFIX_DIR" != "x/usr/local" ]] && [[ ! -z "$(find "$ORIGIN_COMPILER_PREFIX_DIR/include" -name Python.h)" ]]; then
     PYTHIN_INCLUDE_DIR="$(find "$ORIGIN_COMPILER_PREFIX_DIR/include" -name Python.h)";
+    PYTHIN_INCLUDE_DIR="$(dirname "$PYTHIN_INCLUDE_DIR")";
     PYTHON_HOME="$ORIGIN_COMPILER_PREFIX_DIR";
 elif [[ -z "$(find $PREFIX_DIR -name Python.h)" ]]; then
     # =======================  尝试编译安装python  =======================
@@ -480,6 +481,7 @@ elif [[ -z "$(find $PREFIX_DIR -name Python.h)" ]]; then
     make install
 
     PYTHIN_INCLUDE_DIR="$(find "$PREFIX_DIR/include" -name Python.h)";
+    PYTHIN_INCLUDE_DIR="$(dirname "$PYTHIN_INCLUDE_DIR")";
     PYTHON_HOME="$PREFIX_DIR";
     cd "$WORKING_DIR"
 fi
