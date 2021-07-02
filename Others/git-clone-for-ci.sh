@@ -87,7 +87,7 @@ chmod 600 [密码文件存储地址] ;
 
 # ====== 地址别名（共享鉴权配置） ======
 git config --global --unset-all url.[Git地址].insteadOf || true
-git config --add --global url.[Git地址].insteadOf "[Git别名地址]"
+git config --add --global url.[Git地址前缀].insteadOf "[Git别名地址前缀]"
 # git config --global credential.git@github.com.helper "store --file $GIT_CREDENTIAL_FILE"
 # git config --global --unset-all url.git@github.com:.insteadOf || true
 # git config --add --global url.git@github.com:.insteadOf "https://github.com.com/"
