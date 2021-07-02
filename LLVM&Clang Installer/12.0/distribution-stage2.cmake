@@ -12,7 +12,8 @@
 # set(LLVM_ENABLE_PROJECTS
 # "clang;clang-tools-extra;compiler-rt;libc;libclc;libcxx;libcxxabi;libunwind;lld;lldb;mlir;openmp;parallel-libs;polly;pstl"
 # CACHE STRING "")
-set(LLVM_ENABLE_PROJECTS "clang;clang-tools-extra;lld;lldb;libclc;parallel-libs;pstl" CACHE STRING "")
+
+set(LLVM_ENABLE_PROJECTS "clang;clang-tools-extra;lld;llvm;lldb;libclc;parallel-libs;pstl" CACHE STRING "")
 set(LLVM_ENABLE_RUNTIMES "compiler-rt;libcxx;libcxxabi;libunwind" CACHE STRING "")
 
 set(LLVM_TARGETS_TO_BUILD Native CACHE STRING "") # X86;ARM;AArch64;RISCV
@@ -113,7 +114,8 @@ endif()
 
 # Cross compiling
 foreach(target aarch64-unknown-linux-gnu;armv7-unknown-linux-gnueabihf;i386-unknown-linux-gnu;x86_64-unknown-linux-gnu)
-  if(LINUX_${target}_SYSROOT)
+  if(LINUX_${target}_SYSROOT OR (CMAKE_HOST_SYSTEM_NAME STREQUAL "Linux" AND target MATCHES
+                                                                             "(x86_64|i386)-unknown-linux-gnu"))
     # Set the per-target builtins options.
     list(APPEND BUILTIN_TARGETS "${target}")
     set(BUILTINS_${target}_CMAKE_SYSTEM_NAME Linux CACHE STRING "")
@@ -153,11 +155,12 @@ foreach(target aarch64-unknown-linux-gnu;armv7-unknown-linux-gnueabihf;i386-unkn
     set(RUNTIMES_${target}_LLVM_ENABLE_ASSERTIONS ON CACHE BOOL "")
     set(RUNTIMES_${target}_SANITIZER_CXX_ABI "libc++" CACHE STRING "")
     set(RUNTIMES_${target}_SANITIZER_CXX_ABI_INTREE ON CACHE BOOL "")
-    set(RUNTIMES_${target}_LLVM_ENABLE_RUNTIMES "compiler-rt;libcxx;libcxxabi;libunwind;openmp" CACHE STRING "")
+    set(RUNTIMES_${target}_LLVM_ENABLE_RUNTIMES "compiler-rt;libcxx;libcxxabi;libunwind" CACHE STRING "")
 
     # Use .build-id link.
     list(APPEND RUNTIME_BUILD_ID_LINK "${target}")
-  endif()
+  endif() # LLVM_TARGETS_TO_BUILD
+  message(STATUS "Stage2: LINUX_${target}_SYSROOT=${LINUX_${target}_SYSROOT}")
 endforeach()
 
 # Ignore FUCHSIA
@@ -166,6 +169,7 @@ endforeach()
 set(LLVM_BUILTIN_TARGETS "${BUILTIN_TARGETS}" CACHE STRING "")
 set(LLVM_RUNTIME_TARGETS "${RUNTIME_TARGETS}" CACHE STRING "")
 set(LLVM_RUNTIME_BUILD_ID_LINK_TARGETS "${RUNTIME_BUILD_ID_LINK}" CACHE STRING "")
+# LLVM_TOOL_COMPILER_RT_BUILD
 
 # Setup toolchain.
 set(LLVM_INSTALL_TOOLCHAIN_ONLY ON CACHE BOOL "")
@@ -208,6 +212,8 @@ set(LLVM_TOOLCHAIN_TOOLS_SELECT
     llvm-symbolizer
     llvm-xray
     LLVM
+    LTO
+    Remarks
     sancov
     sanstats)
 
@@ -224,7 +230,6 @@ set(LLVM_DISTRIBUTION_COMPONENTS
     lldb-server
     lldb-python-scripts
     lldb-vscode
-    LTO
     libclang-headers
     libclang-python-bindings
     libclang
@@ -244,5 +249,8 @@ set(LLVM_DISTRIBUTION_COMPONENTS
     scan-view
     builtins
     runtimes
+    pp-trace
+    modularize
+    opt-viewer
     ${LLVM_TOOLCHAIN_TOOLS}
     CACHE STRING "")
