@@ -92,6 +92,14 @@ git config --add --global url.[Git地址前缀].insteadOf "[Git别名地址前�
 # git config --global --unset-all url.git@github.com:.insteadOf || true
 # git config --add --global url.git@github.com:.insteadOf "https://github.com.com/"
 
-# 按照Linux XDG目录规范（https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html），以下环境变量可能会影响鉴权配置:
+# 以下环境变量可能会影响鉴权配置:
+#   https://git-scm.com/docs/git-config#_environment
 
+# Linux XDG目录规范（https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html）
+# https://git-scm.com/docs/git-config#Documentation/git-config.txt---global
 echo "XDG_CONFIG_HOME=$XDG_CONFIG_HOME" # 默认值 $HOME/.config
+# https://git-scm.com/docs/git-config#Documentation/git-config.txt---fileconfig-file
+echo "GIT_CONFIG=$GIT_CONFIG" # .git/config
+echo "GIT_CONFIG_GLOBAL=$GIT_CONFIG_GLOBAL"
+echo "GIT_CONFIG_SYSTEM=$GIT_CONFIG_SYSTEM"
+echo "GIT_CONFIG_NOSYSTEM=$GIT_CONFIG_NOSYSTEM"
