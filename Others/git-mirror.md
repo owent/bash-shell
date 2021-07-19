@@ -41,7 +41,7 @@ echo "-----BEGIN OPENSSH PRIVATE KEY-----
 chmod 600 ~/.ssh/id_rsa.ci;
 
 for PENDING_TO_KILL in $(ps --sort start_time -u $(whoami) -o pid,state,etimes,start_time,command | grep "ssh-agent" | grep -v grep | awk '{if($3 > 259200) { print $1;}}') ; do
-    kill $PENDING_TO_KILL ;
+  kill $PENDING_TO_KILL ;
 done
 
 eval $(timeout 3h ssh-agent);
@@ -64,23 +64,46 @@ https://github.com/openssl/openssl.git          git@gitlab.com:atframework/opens
 https://github.com/libressl-portable/portable.git git@gitlab.com:atframework/libressl.git
 https://github.com/git/git.git                  git@gitlab.com:atframework/git.git
 " | while read line; do
-    REPOS=($line);
-    if [ ${#REPOS[@]} -lt 2 ]; then
-        continue;
-    fi
+  REPOS=($line);
+  if [ ${#REPOS[@]} -lt 2 ]; then
+      continue;
+  fi
 
-    DIRNAME=$(basename ${REPOS[0]}) ;
-    if [ -e $DIRNAME ]; then
-        cd $DIRNAME ;
-        git fetch origin "+refs/heads/*:refs/heads/*" "+refs/tags/*:refs/tags/*" ;
-    else
-        git clone --mirror ${REPOS[0]} $DIRNAME ;
-        cd $DIRNAME ;
-    fi
+  DIRNAME=$(basename ${REPOS[0]}) ;
+  if [[ -e "$DIRNAME/.git" ]]; then
+      rm -rf "$DIRNAME";
+  fi
+  if [[ ! -e "$DIRNAME" ]]; then
+      mkdir "$DIRNAME";
+      cd "$DIRNAME";
+      git init --bare ;
+      git remote add origin ${REPOS[0]} ;
+  else
+      cd "$DIRNAME";
+  fi
 
-    git push --force ${REPOS[1]} "+refs/heads/*:refs/heads/*" "+refs/tags/*:refs/tags/*" ;
+  git fetch origin "+refs/heads/*:refs/heads/*" "+refs/tags/*:refs/tags/*" ;
 
-    cd ..
+  HAS_FAILED_REFS=0;
+
+  echo "" > ../git-push.log ;
+  git push --prune --force ${REPOS[1]} "+refs/heads/*:refs/heads/*" "+refs/tags/*:refs/tags/*" 2>../git-push.log || HAS_FAILED_REFS=1;
+
+  if [[ $HAS_FAILED_REFS -ne 0 ]]; then
+    cat ../git-push.log ;
+    for BAD_REF_NAME in $(cat ../git-push.log | grep "remote rejected" | awk '{print $4}'); do
+      BAD_REF_PATH=$(git show-ref | grep "$BAD_REF_NAME\$" | awk '{print $2}');
+      if [[ ! -z "$BAD_REF_PATH" ]]; then
+        git update-ref -d "$BAD_REF_PATH" ;
+        fi
+    done
+
+    git push --prune --force ${REPOS[1]} "+refs/heads/*:refs/heads/*" "+refs/tags/*:refs/tags/*" ;
+  else
+    cat ../git-push.log ;
+  fi
+
+  cd ..
 done;
 
 ssh-agent -k ;
