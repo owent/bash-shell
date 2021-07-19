@@ -23,16 +23,23 @@ git push --mirror https://gitlab.com/atframework/atframe_utils.git
 cd atframe_utils
 git remote update
 # git show-ref --head
-git push --force https://gitlab.com/atframework/atframe_utils.git "+refs/heads/*:refs/heads/*" "+refs/tags/*:refs/tags/*"
+git push --progress --prune --force https://gitlab.com/atframework/atframe_utils.git "+refs/heads/*:refs/heads/*" "+refs/tags/*:refs/tags/*"
 ```
 
 CI示例
 ============
 
 ```bash
-mkdir ~/.ssh -p;
+export LANG=en_US.UTF-8
+export LANGUAGE=en_US.UTF-8
+export LC_ALL=en_US.UTF-8
 
+mkdir ~/.ssh -p;
 chmod 700 ~/.ssh;
+
+# mkdir -p ~/.ssh/.git-config ;
+# export XDG_CONFIG_HOME=$HOME/.ssh/.git-config ;
+# chmod 700 ~/.ssh/.git-config ;
 
 echo "-----BEGIN OPENSSH PRIVATE KEY-----
 私钥内容
@@ -50,6 +57,8 @@ ssh-add ~/.ssh/id_rsa.ci;
 
 export GIT_SSH_COMMAND="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o Port=22 -o User=owentou -o IdentityFile=$HOME/.ssh/id_rsa.ci" ;
 
+# git config --global --unset-all url.git@gitlab.com:.insteadOf || true
+# git config --add --global url.git@gitlab.com:.insteadOf "https://gitlab.com/"
 
 echo "
 https://github.com/Tencent/rapidjson.git        git@gitlab.com:atframework/rapidjson.git
@@ -70,9 +79,6 @@ https://github.com/git/git.git                  git@gitlab.com:atframework/git.g
   fi
 
   DIRNAME=$(basename ${REPOS[0]}) ;
-  if [[ -e "$DIRNAME/.git" ]]; then
-      rm -rf "$DIRNAME";
-  fi
   if [[ ! -e "$DIRNAME" ]]; then
       mkdir "$DIRNAME";
       cd "$DIRNAME";
@@ -82,12 +88,12 @@ https://github.com/git/git.git                  git@gitlab.com:atframework/git.g
       cd "$DIRNAME";
   fi
 
-  git fetch origin "+refs/heads/*:refs/heads/*" "+refs/tags/*:refs/tags/*" ;
+  git fetch --prune --prune-tags origin "+refs/heads/*:refs/heads/*" "+refs/tags/*:refs/tags/*" ;
 
   HAS_FAILED_REFS=0;
 
   echo "" > ../git-push.log ;
-  git push --prune --force ${REPOS[1]} "+refs/heads/*:refs/heads/*" "+refs/tags/*:refs/tags/*" 2>../git-push.log || HAS_FAILED_REFS=1;
+  git push --progress --prune --force ${REPOS[1]} "+refs/heads/*:refs/heads/*" "+refs/tags/*:refs/tags/*" 2>../git-push.log || HAS_FAILED_REFS=1;
 
   if [[ $HAS_FAILED_REFS -ne 0 ]]; then
     cat ../git-push.log ;
@@ -98,7 +104,7 @@ https://github.com/git/git.git                  git@gitlab.com:atframework/git.g
         fi
     done
 
-    git push --prune --force ${REPOS[1]} "+refs/heads/*:refs/heads/*" "+refs/tags/*:refs/tags/*" ;
+    git push --progress --prune --force ${REPOS[1]} "+refs/heads/*:refs/heads/*" "+refs/tags/*:refs/tags/*" ;
   else
     cat ../git-push.log ;
   fi
