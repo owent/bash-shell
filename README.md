@@ -579,7 +579,7 @@ scoop install foobar2000 bitwarden screentogif snipaste draw.io pwsh
 scoop install pandoc graphviz hugo hugo-extended mdbook
 
 # dev
-scoop install terminus gitextensions
+scoop install tabby gitextensions
 
 # dev - network
 sudo scoop install --global wireshark nmap
@@ -626,7 +626,7 @@ choco upgrade chocolatey
 choco install --yes 7zip modern7z pandoc Graphviz wox Everything
 
 # dev
-choco install --yes terminus git git-lfs TortoiseGit
+choco install --yes tabby git git-lfs TortoiseGit
 
 # dev - network
 choco install --yes wireshark WinPcap
@@ -654,7 +654,7 @@ winget install --silent 7Zip Graphviz ".NET Core" ScreenToGif
 # winget install --silent "Windows Terminal"
 
 # dev
-winget install --silent Git TortoiseGit GitLFS
+winget install --silent Git TortoiseGit GitLFS tabby
 
 # dev - network
 winget install --silent Wireshark Nmap
