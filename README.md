@@ -582,7 +582,7 @@ scoop install pandoc graphviz hugo hugo-extended mdbook
 scoop install tabby gitextensions
 
 # dev - network
-sudo scoop install --global wireshark nmap
+sudo scoop install --global wireshark nmap-portable
 scoop install connect
 
 # c & c++
