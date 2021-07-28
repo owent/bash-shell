@@ -83,9 +83,9 @@ CentOS 7
 
 #### 编译目标
 
-+ gcc 11.1.0
++ gcc 11.2.0
 + binutils 2.36.1
-+ python 3.9.5 *[按需]*
++ python 3.9.6 *[按需]*
 + gdb 10.2 (如果存在ncurses-devel包)
 + global 6.6.6
 + lz4 1.9.3 *[非必须]*
@@ -112,3 +112,10 @@ CentOS 7
   + libexpat: 2.4.1
   + libxcrypt: 4.4.23
   + zstd: 1.5.0
++ 2021-07-28     Update
+  > + gcc: 11.2.0
+  > + python: 3.9.6
+  > + global: 6.6.7
+  > + libffi: 3.4.2
+  > + binutils: 2.37
+  > + automake: 1.16.4
