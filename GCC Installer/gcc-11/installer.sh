@@ -683,7 +683,7 @@ fi
 
 # ======================= install zlib [后面有些组件依赖] =======================
 if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list zlib $BUILD_TARGET_COMPOMENTS) ]]; then
-  ZLIB_PKG=$(check_and_download "zlib" "zlib-*.tar.gz" "http://zlib.net/zlib-$COMPOMENTS_ZLIB_VERSION.tar.gz")
+  ZLIB_PKG=$(check_and_download "zlib" "zlib-*.tar.gz" "https://github.com/madler/zlib/archive/refs/tags/v$COMPOMENTS_ZLIB_VERSION.tar.gz" "zlib-$COMPOMENTS_ZLIB_VERSION.tar.gz")
   if [[ $? -ne 0 ]]; then
     echo -e "$ZLIB_PKG"
     exit -1
