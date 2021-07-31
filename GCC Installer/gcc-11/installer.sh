@@ -246,7 +246,8 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list m4 $BUILD_TARGE
     M4_DIR=$(ls -d m4-* | grep -v \.tar\.gz)
     cd $M4_DIR
     ./configure --prefix=$PREFIX_DIR --enable-c++
-    make $BUILD_THREAD_OPT && make install
+    make $BUILD_THREAD_OPT || make
+    make install
     if [[ $? -ne 0 ]]; then
       echo -e "\\033[31;1mError: build m4 failed.\\033[39;49;0m"
       # exit 1; # m4 is optional, maybe can use m4 on system
@@ -637,8 +638,8 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list binutils $BUILD
       --enable-build-with-cxx --enable-gold --enable-libada --enable-libssp --enable-lto --enable-objc-gc --enable-vtable-verify --enable-plugins \
       --enable-install-libiberty --disable-werror $BUILD_TARGET_CONF_OPTION
     make $BUILD_THREAD_OPT || make
-    if [[ $? -ne 0 ]] || [[ ! -e "$PREFIX_DIR/bin/ld" ]]; then
-      echo -e "\\033[31;1mError: build binutils failed.\\033[39;49;0m"
+    if [[ $? -ne 0 ]]; then
+      echo -e "\\033[31;1mError: Build binutils failed - make.\\033[39;49;0m"
       exit 1
     fi
 
@@ -647,7 +648,7 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list binutils $BUILD
     # ---- 另外某个版本的make check有failed用例就被发布了,应该gnu的自动化测试有遗漏 ----
 
     if [[ $? -ne 0 ]] || [[ ! -e "$PREFIX_DIR/bin/ld" ]]; then
-      echo -e "\\033[31;1mError: build binutils failed.\\033[39;49;0m"
+      echo -e "\\033[31;1mError: Build binutils failed - install.\\033[39;49;0m"
       exit 1
     fi
     cd "$WORKING_DIR"
