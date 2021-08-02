@@ -510,6 +510,7 @@ function build_bintuils() {
       exit 1
     fi
     if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
+      find . -name "binutils-*" -type d | xargs -r rm -rf
       tar -axvf $BINUTILS_PKG
       BINUTILS_DIR=$(ls -d binutils-* | grep -v \.tar\.xz)
       cd $BINUTILS_DIR

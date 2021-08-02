@@ -406,7 +406,9 @@ fi
 if [[ -e "zlib-$COMPOMENTS_ZLIB_VERSION" ]]; then
     mkdir -p "zlib-$COMPOMENTS_ZLIB_VERSION/build_jobs_dir"
     cd "zlib-$COMPOMENTS_ZLIB_VERSION/build_jobs_dir"
-    cmake --build . -- clean || true
+    if [[ -e "CMakeCache.txt" ]]; then
+        cmake --build . -- clean || true
+    fi
     cmake .. -DCMAKE_POSITION_INDEPENDENT_CODE=YES -DBUILD_SHARED_LIBS=OFF "-DCMAKE_INSTALL_PREFIX=$PREFIX_DIR"
     cmake --build . -j $BUILD_JOBS_OPTION || cmake --build .
     if [[ $? -ne 0 ]]; then
