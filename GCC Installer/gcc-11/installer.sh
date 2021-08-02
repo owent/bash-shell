@@ -502,6 +502,7 @@ fi
 
 # Build new version of binutils to support new version of dwarf
 function build_bintuils() {
+  INSTALL_PREFIX_PATH="$1"
   if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list binutils $BUILD_TARGET_COMPOMENTS) ]]; then
     BINUTILS_PKG=$(check_and_download "binutils" "binutils-*.tar.xz" "https://ftp.gnu.org/gnu/binutils/binutils-$COMPOMENTS_BINUTILS_VERSION.tar.xz")
     if [[ $? -ne 0 ]]; then
@@ -513,7 +514,7 @@ function build_bintuils() {
       BINUTILS_DIR=$(ls -d binutils-* | grep -v \.tar\.xz)
       cd $BINUTILS_DIR
       make clean || true
-      ./configure --prefix=$WORKING_DIR/tmp-tools --with-gmp=$PREFIX_DIR --with-mpc=$PREFIX_DIR --with-mpfr=$PREFIX_DIR --with-isl=$PREFIX_DIR $BDWGC_PREBIUILT \
+      ./configure --prefix=$INSTALL_PREFIX_PATH --with-gmp=$PREFIX_DIR --with-mpc=$PREFIX_DIR --with-mpfr=$PREFIX_DIR --with-isl=$PREFIX_DIR $BDWGC_PREBIUILT \
         --enable-build-with-cxx --enable-gold --enable-libada --enable-libssp --enable-lto --enable-objc-gc --enable-vtable-verify --enable-plugins \
         --enable-install-libiberty --disable-werror $BUILD_TARGET_CONF_OPTION
       make $BUILD_THREAD_OPT || make
@@ -524,17 +525,16 @@ function build_bintuils() {
 
       make install
 
-      if [[ $? -ne 0 ]] || [[ ! -e "$PREFIX_DIR/bin/ld" ]]; then
+      if [[ $? -ne 0 ]] || [[ ! -e "$INSTALL_PREFIX_PATH/bin/ld" ]]; then
         echo -e "\\033[31;1mError: Build binutils failed - install.\\033[39;49;0m"
         exit 1
       fi
       cd "$WORKING_DIR"
-
-      export PATH="$WORKING_DIR/tmp-tools/bin:$PATH"
     fi
   fi
 }
-build_bintuils
+build_bintuils "$WORKING_DIR/tmp-tools"
+export PATH="$WORKING_DIR/tmp-tools/bin:$PATH"
 
 # install zstd
 if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list zstd $BUILD_TARGET_COMPOMENTS) ]]; then
@@ -659,7 +659,7 @@ else
 fi
 
 # ======================= install binutils(ar,as,ld and etc.) =======================
-build_bintuils
+build_bintuils "$PREFIX_DIR"
 
 # ======================= install openssl [后面有些组件依赖] =======================
 # openssl的依赖太广泛了，所以不放进默认的查找目录，以防外部使用者会使用到这里的版本。如果需要使用，可以手动导入这里的openssl
