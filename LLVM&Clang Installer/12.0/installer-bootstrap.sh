@@ -181,9 +181,14 @@ function check_and_download() {
     fi
 
     if [[ -z "$4" ]]; then
-        wget -c "$PKG_URL"
+        curl --retry 3 -kL "$PKG_URL" -o "$(basename "$PKG_URL")"
     else
-        wget -c "$PKG_URL" -O "$4"
+        curl --retry 3 -kL "$PKG_URL" -o "$4"
+    fi
+    
+    if [[ $? -ne 0 ]]; then
+        echo -e "\\033[31;1mDownload $PKG_NAME from $PKG_URL failed.\\033[39;49;0m"
+        return 1
     fi
 
     PKG_VAR_VAL=($(find . -maxdepth 1 -name "$PKG_MATCH_EXPR"))
@@ -231,7 +236,7 @@ if [[ ! -e "llvm-project-$LLVM_VERSION/.git" ]]; then
 fi
 
 if [[ ! -e "libedit-$COMPOMENTS_LIBEDIT_VERSION.tar.gz" ]]; then
-    wget "http://thrysoee.dk/editline/libedit-$COMPOMENTS_LIBEDIT_VERSION.tar.gz"
+    curl --retry 3 -kL "http://thrysoee.dk/editline/libedit-$COMPOMENTS_LIBEDIT_VERSION.tar.gz" -o "libedit-$COMPOMENTS_LIBEDIT_VERSION.tar.gz"
     if [[ $? -ne 0 ]]; then
         rm -f "libedit-$COMPOMENTS_LIBEDIT_VERSION.tar.gz"
         echo -e "\\033[31;1mDownload from http://thrysoee.dk/editline/libedit-$COMPOMENTS_LIBEDIT_VERSION.tar.gz failed.\\033[39;49;0m"
@@ -240,7 +245,7 @@ if [[ ! -e "libedit-$COMPOMENTS_LIBEDIT_VERSION.tar.gz" ]]; then
 fi
 
 if [[ ! -e "libffi-$COMPOMENTS_LIBFFI_VERSION.tar.gz" ]]; then
-    wget "https://github.com/libffi/libffi/releases/download/v$COMPOMENTS_LIBFFI_VERSION/libffi-$COMPOMENTS_LIBFFI_VERSION.tar.gz"
+    curl --retry 3 -kL "https://github.com/libffi/libffi/releases/download/v$COMPOMENTS_LIBFFI_VERSION/libffi-$COMPOMENTS_LIBFFI_VERSION.tar.gz" -o "libffi-$COMPOMENTS_LIBFFI_VERSION.tar.gz"
     if [[ $? -ne 0 ]]; then
         rm -f "libffi-$COMPOMENTS_LIBFFI_VERSION.tar.gz"
         echo -e "\\033[31;1mDownload from https://github.com/libffi/libffi/releases/download/v$COMPOMENTS_LIBFFI_VERSION/libffi-$COMPOMENTS_LIBFFI_VERSION.tar.gz failed.\\033[39;49;0m"
