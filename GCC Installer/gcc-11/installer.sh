@@ -175,6 +175,11 @@ function check_and_download() {
   else
     curl --retry 3 -kL "$PKG_URL" -o "$4"
   fi
+  
+  if [[ $? -ne 0 ]]; then
+      echo -e "\\033[31;1mDownload $PKG_NAME from $PKG_URL failed.\\033[39;49;0m"
+      return 1
+  fi
 
   PKG_VAR_VAL=($(find . -maxdepth 1 -name "$PKG_MATCH_EXPR"))
 
