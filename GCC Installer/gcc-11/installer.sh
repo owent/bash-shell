@@ -170,15 +170,22 @@ function check_and_download() {
     return 1
   fi
 
-  if [[ -z "$4" ]]; then
-    curl --retry 3 -kL "$PKG_URL" -o "$(basename "$PKG_URL")"
-  else
-    curl --retry 3 -kL "$PKG_URL" -o "$4"
-  fi
-  
-  if [[ $? -ne 0 ]]; then
-      echo -e "\\033[31;1mDownload $PKG_NAME from $PKG_URL failed.\\033[39;49;0m"
-      return 1
+  DOWNLOAD_SUCCESS=1
+  for ((i = 0; i < 3; ++i)); do
+    if [[ $DOWNLOAD_SUCCESS -eq 0 ]]; then
+      break
+    fi
+    if [[ -z "$4" ]]; then
+      curl -kL "$PKG_URL" -o "$(basename "$PKG_URL")"
+    else
+      curl -kL "$PKG_URL" -o "$4"
+    fi
+    DOWNLOAD_SUCCESS=$?
+  done
+
+  if [[ $DOWNLOAD_SUCCESS -ne 0 ]]; then
+    echo -e "\\033[31;1mDownload $PKG_NAME from $PKG_URL failed.\\033[39;49;0m"
+    return $DOWNLOAD_SUCCESS
   fi
 
   PKG_VAR_VAL=($(find . -maxdepth 1 -name "$PKG_MATCH_EXPR"))
