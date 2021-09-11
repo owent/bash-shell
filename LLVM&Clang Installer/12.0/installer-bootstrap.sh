@@ -187,12 +187,12 @@ function check_and_download() {
     if [[ $DOWNLOAD_SUCCESS -eq 0 ]]; then
       break
     fi
+    DOWNLOAD_SUCCESS=0
     if [[ -z "$4" ]]; then
-      curl -kL "$PKG_URL" -o "$(basename "$PKG_URL")"
+      curl -kL "$PKG_URL" -o "$(basename "$PKG_URL")" || DOWNLOAD_SUCCESS=1
     else
-      curl -kL "$PKG_URL" -o "$4"
+      curl -kL "$PKG_URL" -o "$4" || DOWNLOAD_SUCCESS=1
     fi
-    DOWNLOAD_SUCCESS=$?
   done
 
   if [[ $DOWNLOAD_SUCCESS -ne 0 ]]; then
