@@ -27,7 +27,7 @@ COMPOMENTS_GDB_VERSION=10.2
 COMPOMENTS_GLOBAL_VERSION=6.6.7
 COMPOMENTS_ZSTD_VERSION=1.5.0
 COMPOMENTS_LZ4_VERSION=1.9.3
-if [ "owent$COMPOMENTS_GDB_STATIC_BUILD" == "owent" ]; then
+if [[ "owent$COMPOMENTS_GDB_STATIC_BUILD" == "owent" ]]; then
   COMPOMENTS_GDB_STATIC_BUILD=0
 fi
 
@@ -36,12 +36,12 @@ PREFIX_DIR=/usr/local/gcc-$COMPOMENTS_GCC_VERSION
 BUILD_TARGET_CONF_OPTION=""
 BUILD_OTHER_CONF_OPTION=""
 BUILD_DOWNLOAD_ONLY=0
-# BUILD_LDFLAGS="-Wl,-rpath,../lib64:../lib -Wl,-rpath-link,../lib64:../lib";
-# if [ "owent$LDFLAGS" == "owent" ]; then
-#     export LDFLAGS="$BUILD_LDFLAGS";
-# else
-#     export LDFLAGS="$LDFLAGS $BUILD_LDFLAGS";
-# fi
+BUILD_LDFLAGS="-Wl,-rpath=\$ORIGIN/../lib64:\$ORIGIN/../lib"
+if [[ "owent$LDFLAGS" == "owent" ]]; then
+  export LDFLAGS="$BUILD_LDFLAGS"
+else
+  export LDFLAGS="$LDFLAGS $BUILD_LDFLAGS"
+fi
 
 # ======================= 交叉编译配置示例(暂不可用) =======================
 # BUILD_TARGET_CONF_OPTION="--target=arm-linux --enable-multilib --enable-interwork --disable-shared"
@@ -625,11 +625,11 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list gcc $BUILD_TARG
     GCC_CONF_OPTION_ALL="--prefix=$PREFIX_DIR --with-gmp=$PREFIX_DIR --with-mpc=$PREFIX_DIR --with-mpfr=$PREFIX_DIR --with-isl=$PREFIX_DIR --with-zstd=$PREFIX_DIR $BDWGC_PREBIUILT "
     GCC_CONF_OPTION_ALL="$GCC_CONF_OPTION_ALL --enable-shared --enable-static --enable-gnu-unique-object --enable-bootstrap --enable-build-with-cxx --disable-libjava-multilib --enable-checking=release"
     GCC_CONF_OPTION_ALL="$GCC_CONF_OPTION_ALL --enable-gold --enable-ld --enable-libada --enable-libssp --enable-lto --enable-objc-gc --enable-vtable-verify"
-    GCC_CONF_OPTION_ALL="$GCC_CONF_OPTION_ALL --enable-linker-build-id"
+    GCC_CONF_OPTION_ALL="$GCC_CONF_OPTION_ALL --enable-linker-build-id --enable-rpath"
     GCC_CONF_OPTION_ALL="$GCC_CONF_OPTION_ALL $GCC_OPT_DISABLE_MULTILIB $BUILD_TARGET_CONF_OPTION"
     # env CFLAGS="--ggc-min-expand=0 --ggc-min-heapsize=6291456" CXXFLAGS="--ggc-min-expand=0 --ggc-min-heapsize=6291456" 老版本的gcc没有这个选项
-    # env LDFLAGS="$LDFLAGS -Wl,-rpath,\$ORIGIN/../lib64 -Wl,-rpath,\$ORIGIN/../../../../lib64 -Wl,-rpath-link,\$ORIGIN/../lib -Wl,-rpath-link,\$ORIGIN/../../../../lib" ../$GCC_DIR/configure $GCC_CONF_OPTION_ALL ;
-    ../$GCC_DIR/configure $GCC_CONF_OPTION_ALL
+    env LDFLAGS="$LDFLAGS -Wl,-rpath,\$ORIGIN/../../../../lib64:\$ORIGIN/../../../../lib" ../$GCC_DIR/configure $GCC_CONF_OPTION_ALL
+    # ../$GCC_DIR/configure $GCC_CONF_OPTION_ALL
     make $BUILD_THREAD_OPT && make install
     cd "$WORKING_DIR"
 
