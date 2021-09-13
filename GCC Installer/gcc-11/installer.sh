@@ -170,21 +170,28 @@ function check_and_download() {
     return 1
   fi
 
+  if [[ -z "$4" ]]; then
+    OUTPUT_FILE="$(basename "$PKG_URL")"
+  else
+    OUTPUT_FILE="$4"
+  fi
+
   DOWNLOAD_SUCCESS=1
-  for ((i = 0; i < 3; ++i)); do
+  for ((i = 0; i < 5; ++i)); do
     if [[ $DOWNLOAD_SUCCESS -eq 0 ]]; then
       break
     fi
     DOWNLOAD_SUCCESS=0
-    if [[ -z "$4" ]]; then
-      curl -kL "$PKG_URL" -o "$(basename "$PKG_URL")" || DOWNLOAD_SUCCESS=1
-    else
-      curl -kL "$PKG_URL" -o "$4" || DOWNLOAD_SUCCESS=1
+    if [[ $i -ne 0 ]]; then
+      echo "Retry to download from $PKG_URL to $OUTPUT_FILE again."
+      sleep $i || true
     fi
+    curl -kL "$PKG_URL" -o "$OUTPUT_FILE" || DOWNLOAD_SUCCESS=1
   done
 
   if [[ $DOWNLOAD_SUCCESS -ne 0 ]]; then
     echo -e "\\033[31;1mDownload $PKG_NAME from $PKG_URL failed.\\033[39;49;0m"
+    rm -f "$OUTPUT_FILE" || true
     return $DOWNLOAD_SUCCESS
   fi
 
