@@ -312,6 +312,7 @@ function build_llvm_toolchain() {
   else
     export CXXFLAGS="$CXXFLAGS -I$PREFIX_DIR/include"
   fi
+  # See https://stackoverflow.com/questions/42344932/how-to-include-correctly-wl-rpath-origin-linker-argument-in-a-makefile
   if [[ "x$LDFLAGS" == "x" ]]; then
     export LDFLAGS="-L$PREFIX_DIR/lib"
   else
@@ -407,7 +408,7 @@ if [[ -e "libedit-$COMPOMENTS_LIBEDIT_VERSION.tar.gz" ]]; then
   fi
   tar -axvf "libedit-$COMPOMENTS_LIBEDIT_VERSION.tar.gz"
   cd "libedit-$COMPOMENTS_LIBEDIT_VERSION-stage-1"
-  ./configure --prefix=$PREFIX_DIR --with-pic=yes LDFLAGS="$LDFLAGS"
+  env LDFLAGS="${LDFLAGS//\$/\$\$}" ./configure --prefix=$PREFIX_DIR --with-pic=yes
   make $BUILD_JOBS_OPTION || make
   if [[ $? -ne 0 ]]; then
     echo -e "\\033[31;1mBuild libedit failed.\\033[39;49;0m"
@@ -439,7 +440,7 @@ if [[ -e "libffi-$COMPOMENTS_LIBFFI_VERSION.tar.gz" ]]; then
   fi
   cd "libffi-$COMPOMENTS_LIBFFI_VERSION"
   make clean || true
-  ./configure "--prefix=$PREFIX_DIR" --with-pic=yes LDFLAGS="$LDFLAGS"
+  env LDFLAGS="${LDFLAGS//\$/\$\$}" ./configure "--prefix=$PREFIX_DIR" --with-pic=yes
   make $BUILD_JOBS_OPTION || make
   if [[ $? -ne 0 ]]; then
     echo -e "\\033[31;1mBuild libffi failed.\\033[39;49;0m"
@@ -453,7 +454,7 @@ if [[ -z "$(find $PREFIX_DIR -name swig)" ]]; then
   cd "swig-$COMPOMENTS_SWIG_VERSION"
   ./autogen.sh
   make clean || true
-  ./configure "--prefix=$PREFIX_DIR" LDFLAGS="$LDFLAGS"
+  env LDFLAGS="${LDFLAGS//\$/\$\$}" ./configure "--prefix=$PREFIX_DIR"
   make $BUILD_JOBS_OPTION || make
   if [[ $? -ne 0 ]]; then
     echo -e "\\033[31;1mBuild swig failed.\\033[39;49;0m"
@@ -488,7 +489,7 @@ elif [[ -z "$(find $PREFIX_DIR -name Python.h)" ]]; then
     PYTHON_CONFIGURE_OPTIONS=(${PYTHON_CONFIGURE_OPTIONS[@]} "--with-openssl=$OPENSSL_INSTALL_DIR")
   fi
   make clean || true
-  ./configure ${PYTHON_CONFIGURE_OPTIONS[@]} LDFLAGS="$LDFLAGS"
+  env LDFLAGS="${LDFLAGS//\$/\$\$}" ./configure ${PYTHON_CONFIGURE_OPTIONS[@]}
   make $BUILD_JOBS_OPTION || make
   if [[ $? -ne 0 ]]; then
     echo -e "\\033[31;1mBuild python failed.\\033[39;49;0m"
