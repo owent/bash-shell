@@ -46,6 +46,7 @@ if [[ -z "$CHECK_TOTAL_MEMORY" ]]; then
   CHECK_TOTAL_MEMORY=0
 fi
 
+export ORIGIN='$ORIGIN'
 export BUILD_LLVM_PATCHED_OPTION="$BUILD_LLVM_LLVM_OPTION"
 
 if [[ -z "$CC" ]]; then
@@ -406,7 +407,7 @@ if [[ -e "libedit-$COMPOMENTS_LIBEDIT_VERSION.tar.gz" ]]; then
   fi
   tar -axvf "libedit-$COMPOMENTS_LIBEDIT_VERSION.tar.gz"
   cd "libedit-$COMPOMENTS_LIBEDIT_VERSION-stage-1"
-  ./configure --prefix=$PREFIX_DIR --with-pic=yes
+  ./configure --prefix=$PREFIX_DIR --with-pic=yes LDFLAGS="$LDFLAGS"
   make $BUILD_JOBS_OPTION || make
   if [[ $? -ne 0 ]]; then
     echo -e "\\033[31;1mBuild libedit failed.\\033[39;49;0m"
@@ -438,7 +439,7 @@ if [[ -e "libffi-$COMPOMENTS_LIBFFI_VERSION.tar.gz" ]]; then
   fi
   cd "libffi-$COMPOMENTS_LIBFFI_VERSION"
   make clean || true
-  ./configure "--prefix=$PREFIX_DIR" --with-pic=yes
+  ./configure "--prefix=$PREFIX_DIR" --with-pic=yes LDFLAGS="$LDFLAGS"
   make $BUILD_JOBS_OPTION || make
   if [[ $? -ne 0 ]]; then
     echo -e "\\033[31;1mBuild libffi failed.\\033[39;49;0m"
@@ -452,7 +453,7 @@ if [[ -z "$(find $PREFIX_DIR -name swig)" ]]; then
   cd "swig-$COMPOMENTS_SWIG_VERSION"
   ./autogen.sh
   make clean || true
-  ./configure "--prefix=$PREFIX_DIR"
+  ./configure "--prefix=$PREFIX_DIR" LDFLAGS="$LDFLAGS"
   make $BUILD_JOBS_OPTION || make
   if [[ $? -ne 0 ]]; then
     echo -e "\\033[31;1mBuild swig failed.\\033[39;49;0m"
@@ -487,7 +488,7 @@ elif [[ -z "$(find $PREFIX_DIR -name Python.h)" ]]; then
     PYTHON_CONFIGURE_OPTIONS=(${PYTHON_CONFIGURE_OPTIONS[@]} "--with-openssl=$OPENSSL_INSTALL_DIR")
   fi
   make clean || true
-  ./configure ${PYTHON_CONFIGURE_OPTIONS[@]}
+  ./configure ${PYTHON_CONFIGURE_OPTIONS[@]} LDFLAGS="$LDFLAGS"
   make $BUILD_JOBS_OPTION || make
   if [[ $? -ne 0 ]]; then
     echo -e "\\033[31;1mBuild python failed.\\033[39;49;0m"
@@ -535,7 +536,9 @@ if [[ \"x\$GCC_HOME_DIR\" == \"x\" ]]; then
 fi" >"$PREFIX_DIR/load-llvm-envs.sh"
 
   echo '
+GCC_HOME_DIR="$(readlink -f "$GCC_HOME_DIR")";
 LLVM_HOME_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )";
+LLVM_HOME_DIR="$(readlink -f "$LLVM_HOME_DIR")";
 ' >>"$PREFIX_DIR/load-llvm-envs.sh"
   cd "$PREFIX_DIR"
   LLVM_LD_LIBRARY_PATH=""

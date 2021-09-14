@@ -42,6 +42,7 @@ if [[ "owent$LDFLAGS" == "owent" ]]; then
 else
   export LDFLAGS="$LDFLAGS $BUILD_LDFLAGS"
 fi
+export ORIGIN='$ORIGIN'
 
 # ======================= 交叉编译配置示例(暂不可用) =======================
 # BUILD_TARGET_CONF_OPTION="--target=arm-linux --enable-multilib --enable-interwork --disable-shared"
@@ -264,7 +265,7 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list m4 $BUILD_TARGE
     tar -axvf $M4_PKG
     M4_DIR=$(ls -d m4-* | grep -v \.tar\.gz)
     cd $M4_DIR
-    ./configure --prefix=$PREFIX_DIR --enable-c++
+    ./configure --prefix=$PREFIX_DIR --enable-c++ LDFLAGS="$LDFLAGS"
     make $BUILD_THREAD_OPT || make
     make install
     if [[ $? -ne 0 ]]; then
@@ -286,7 +287,7 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list autoconf $BUILD
     tar -axvf $AUTOCONF_PKG
     AUTOCONF_DIR=$(ls -d autoconf-* | grep -v \.tar\.gz)
     cd $AUTOCONF_DIR
-    ./configure --prefix=$PREFIX_DIR
+    ./configure --prefix=$PREFIX_DIR LDFLAGS="$LDFLAGS"
     make $BUILD_THREAD_OPT && make install
     if [[ $? -ne 0 ]]; then
       echo -e "\\033[31;1mError: build autoconf failed.\\033[39;49;0m"
@@ -307,7 +308,7 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list automake $BUILD
     tar -axvf $AUTOMAKE_PKG
     AUTOMAKE_DIR=$(ls -d automake-* | grep -v \.tar\.gz)
     cd $AUTOMAKE_DIR
-    ./configure --prefix=$PREFIX_DIR
+    ./configure --prefix=$PREFIX_DIR LDFLAGS="$LDFLAGS"
     make $BUILD_THREAD_OPT && make install
     if [[ $? -ne 0 ]]; then
       echo -e "\\033[31;1mError: build automake failed.\\033[39;49;0m"
@@ -328,7 +329,7 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list libtool $BUILD_
     tar -axvf $LIBTOOL_PKG
     LIBTOOL_DIR=$(ls -d libtool-* | grep -v \.tar\.gz)
     cd $LIBTOOL_DIR
-    ./configure --prefix=$PREFIX_DIR --with-pic=yes
+    ./configure --prefix=$PREFIX_DIR --with-pic=yes LDFLAGS="$LDFLAGS"
     make $BUILD_THREAD_OPT && make install
     if [[ $? -ne 0 ]]; then
       echo -e "\\033[31;1mError: build libtool failed.\\033[39;49;0m"
@@ -349,7 +350,7 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list pkgconfig $BUIL
     tar -axvf $PKGCONFIG_PKG
     PKGCONFIG_DIR=$(ls -d pkg-config-* | grep -v \.tar\.gz)
     cd $PKGCONFIG_DIR
-    ./configure --prefix=$PREFIX_DIR --with-pic=yes --with-internal-glib
+    ./configure --prefix=$PREFIX_DIR --with-pic=yes --with-internal-glib LDFLAGS="$LDFLAGS"
     make $BUILD_THREAD_OPT && make install
     if [[ $? -ne 0 ]]; then
       echo -e "\\033[31;1mError: build pkgconfig failed.\\033[39;49;0m"
@@ -370,7 +371,7 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list gmp $BUILD_TARG
     tar -axvf $GMP_PKG
     GMP_DIR=$(ls -d gmp-* | grep -v \.tar\.xz)
     cd $GMP_DIR
-    CPPFLAGS=-fexceptions ./configure --prefix=$PREFIX_DIR --enable-cxx --enable-assert $BUILD_OTHER_CONF_OPTION
+    CPPFLAGS=-fexceptions ./configure --prefix=$PREFIX_DIR --enable-cxx --enable-assert $BUILD_OTHER_CONF_OPTION LDFLAGS="$LDFLAGS"
     make $BUILD_THREAD_OPT && make install
     if [[ $? -ne 0 ]]; then
       echo -e "\\033[31;1mError: build gmp failed.\\033[39;49;0m"
@@ -391,7 +392,7 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list mpfr $BUILD_TAR
     tar -axvf $MPFR_PKG
     MPFR_DIR=$(ls -d mpfr-* | grep -v \.tar\.xz)
     cd $MPFR_DIR
-    ./configure --prefix=$PREFIX_DIR --with-gmp=$PREFIX_DIR --enable-assert $BUILD_OTHER_CONF_OPTION
+    ./configure --prefix=$PREFIX_DIR --with-gmp=$PREFIX_DIR --enable-assert $BUILD_OTHER_CONF_OPTION LDFLAGS="$LDFLAGS"
     make $BUILD_THREAD_OPT && make install
     if [[ $? -ne 0 ]]; then
       echo -e "\\033[31;1mError: build mpfr failed.\\033[39;49;0m"
@@ -412,7 +413,7 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list mpc $BUILD_TARG
     tar -axvf $MPC_PKG
     MPC_DIR=$(ls -d mpc-* | grep -v \.tar\.gz)
     cd $MPC_DIR
-    ./configure --prefix=$PREFIX_DIR --with-gmp=$PREFIX_DIR --with-mpfr=$PREFIX_DIR $BUILD_OTHER_CONF_OPTION
+    ./configure --prefix=$PREFIX_DIR --with-gmp=$PREFIX_DIR --with-mpfr=$PREFIX_DIR $BUILD_OTHER_CONF_OPTION LDFLAGS="$LDFLAGS"
     make $BUILD_THREAD_OPT && make install
     if [[ $? -ne 0 ]]; then
       echo -e "\\033[31;1mError: build mpc failed.\\033[39;49;0m"
@@ -434,7 +435,7 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list isl $BUILD_TARG
     ISL_DIR=$(ls -d isl-* | grep -v \.tar\.bz2)
     cd $ISL_DIR
     autoreconf -i
-    ./configure --prefix=$PREFIX_DIR --with-gmp-prefix=$PREFIX_DIR $BUILD_OTHER_CONF_OPTION
+    ./configure --prefix=$PREFIX_DIR --with-gmp-prefix=$PREFIX_DIR $BUILD_OTHER_CONF_OPTION LDFLAGS="$LDFLAGS"
     make $BUILD_THREAD_OPT && make install
     if [[ $? -ne 0 ]]; then
       echo -e "\\033[31;1mError: build isl failed.\\033[39;49;0m"
@@ -456,7 +457,7 @@ if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list libatomic_ops $BUI
     LIBATOMIC_OPS_DIR=$(ls -d libatomic_ops-* | grep -v \.tar\.gz)
     # cd $LIBATOMIC_OPS_DIR;
     # bash ./autogen.sh ;
-    # ./configure --prefix=$PREFIX_DIR ;
+    # ./configure --prefix=$PREFIX_DIR LDFLAGS="$LDFLAGS" ;
     # make $BUILD_THREAD_OPT && make install;
     if [[ $? -ne 0 ]]; then
       echo -e "\\033[31;1mError: build libatomic_ops failed.\\033[39;49;0m"
@@ -494,7 +495,7 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list bdw-gc $BUILD_T
       make distclean
     fi
 
-    ./configure --prefix=$PREFIX_DIR/multilib/$SYS_LONG_BIT --enable-cplusplus --with-pic=yes --enable-shared=no --enable-static=yes --with-libatomic-ops=$BDWGC_LIBATOMIC_OPS
+    ./configure --prefix=$PREFIX_DIR/multilib/$SYS_LONG_BIT --enable-cplusplus --with-pic=yes --enable-shared=no --enable-static=yes --with-libatomic-ops=$BDWGC_LIBATOMIC_OPS LDFLAGS="$LDFLAGS"
     make $BUILD_THREAD_OPT && make install
     if [[ $? -ne 0 ]]; then
       echo -e "\\033[31;1mError: build bdw-gc failed.\\033[39;49;0m"
@@ -504,7 +505,7 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list bdw-gc $BUILD_T
     if [[ $SYS_LONG_BIT == "64" ]] && [[ "$GCC_OPT_DISABLE_MULTILIB" == "--enable-multilib" ]]; then
       make clean
       make distclean
-      env CFLAGS=-m32 CPPFLAGS=-m32 ./configure --prefix=$PREFIX_DIR/multilib/32 --enable-cplusplus --with-pic=yes --enable-shared=no --enable-static=yes --with-libatomic-ops=$BDWGC_LIBATOMIC_OPS
+      env CFLAGS=-m32 CPPFLAGS=-m32 ./configure --prefix=$PREFIX_DIR/multilib/32 --enable-cplusplus --with-pic=yes --enable-shared=no --enable-static=yes --with-libatomic-ops=$BDWGC_LIBATOMIC_OPS LDFLAGS="$LDFLAGS"
 
       make $BUILD_THREAD_OPT && make install
       if [[ $? -ne 0 ]]; then
@@ -536,7 +537,7 @@ function build_bintuils() {
       make clean || true
       ./configure --prefix=$INSTALL_PREFIX_PATH --with-gmp=$PREFIX_DIR --with-mpc=$PREFIX_DIR --with-mpfr=$PREFIX_DIR --with-isl=$PREFIX_DIR $BDWGC_PREBIUILT \
         --enable-build-with-cxx --enable-gold --enable-libada --enable-libssp --enable-lto --enable-objc-gc --enable-vtable-verify --enable-plugins \
-        --enable-install-libiberty --disable-werror $BUILD_TARGET_CONF_OPTION
+        --enable-install-libiberty --disable-werror $BUILD_TARGET_CONF_OPTION LDFLAGS="$LDFLAGS"
       make $BUILD_THREAD_OPT || make
       if [[ $? -ne 0 ]]; then
         echo -e "\\033[31;1mError: Build binutils failed - make.\\033[39;49;0m"
@@ -635,7 +636,7 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list gcc $BUILD_TARG
     GCC_CONF_OPTION_ALL="$GCC_CONF_OPTION_ALL --enable-linker-build-id --enable-rpath"
     GCC_CONF_OPTION_ALL="$GCC_CONF_OPTION_ALL $GCC_OPT_DISABLE_MULTILIB $BUILD_TARGET_CONF_OPTION"
     # env CFLAGS="--ggc-min-expand=0 --ggc-min-heapsize=6291456" CXXFLAGS="--ggc-min-expand=0 --ggc-min-heapsize=6291456" 老版本的gcc没有这个选项
-    env LDFLAGS="$LDFLAGS -Wl,-rpath,\$ORIGIN/../../../../lib64:\$ORIGIN/../../../../lib" ../$GCC_DIR/configure $GCC_CONF_OPTION_ALL
+    ../$GCC_DIR/configure $GCC_CONF_OPTION_ALL LDFLAGS="$LDFLAGS -Wl,-rpath,\$ORIGIN/../../../../lib64:\$ORIGIN/../../../../lib"
     # ../$GCC_DIR/configure $GCC_CONF_OPTION_ALL
     make $BUILD_THREAD_OPT && make install
     cd "$WORKING_DIR"
@@ -731,7 +732,7 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list zlib $BUILD_TAR
     ZLIB_DIR=$(ls -d zlib-* | grep -v \.tar\.gz)
     cd "$ZLIB_DIR"
     make clean || true
-    ./configure --prefix=$PREFIX_DIR --static
+    ./configure --prefix=$PREFIX_DIR --static LDFLAGS="$LDFLAGS"
     make $BUILD_THREAD_OPT || make
     if [[ $? -ne 0 ]]; then
       echo -e "\\033[31;1mError: Build zlib failed.\\033[39;49;0m"
@@ -754,7 +755,7 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list libffi $BUILD_T
     LIBFFI_DIR=$(ls -d libffi-* | grep -v \.tar\.gz)
     cd "$LIBFFI_DIR"
     make clean || true
-    ./configure --prefix=$PREFIX_DIR --with-pic=yes
+    ./configure --prefix=$PREFIX_DIR --with-pic=yes LDFLAGS="$LDFLAGS"
     make $BUILD_THREAD_OPT || make
     if [[ $? -ne 0 ]]; then
       echo -e "\\033[31;1mError: Build libffi failed.\\033[39;49;0m"
@@ -784,7 +785,7 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list ncurses $BUILD_
       --enable-pc-files --with-cxx-binding --with-shared --with-cxx-shared \
       --enable-ext-colors --enable-ext-mouse --enable-bsdpad --enable-opaque-curses \
       --with-terminfo-dirs=/etc/terminfo:/usr/share/terminfo:/lib/terminfo \
-      --with-termpath=/etc/termcap:/usr/share/misc/termcap
+      --with-termpath=/etc/termcap:/usr/share/misc/termcap LDFLAGS="$LDFLAGS"
 
     make $BUILD_THREAD_OPT || make
     if [[ $? -ne 0 ]]; then
@@ -800,7 +801,7 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list ncurses $BUILD_
       --enable-widec --enable-pc-files --with-cxx-binding --with-shared --with-cxx-shared \
       --enable-ext-colors --enable-ext-mouse --enable-bsdpad --enable-opaque-curses \
       --with-terminfo-dirs=/etc/terminfo:/usr/share/terminfo:/lib/terminfo \
-      --with-termpath=/etc/termcap:/usr/share/misc/termcap
+      --with-termpath=/etc/termcap:/usr/share/misc/termcap LDFLAGS="$LDFLAGS"
 
     make $BUILD_THREAD_OPT || make
     if [[ $? -ne 0 ]]; then
@@ -851,7 +852,7 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list libxcrypt $BUIL
     cd "$LIBXCRYPT_DIR"
     make clean || true
     ./autogen.sh
-    ./configure "--prefix=$PREFIX_DIR" --with-pic=yes
+    ./configure "--prefix=$PREFIX_DIR" --with-pic=yes LDFLAGS="$LDFLAGS"
     make $BUILD_THREAD_OPT || make
     if [[ $? -ne 0 ]]; then
       echo -e "\\033[31;1mError: Build libxcrypt failed.\\033[39;49;0m"
@@ -875,7 +876,7 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list gdbm $BUILD_TAR
     cd "$GDBM_DIR"
     make clean || true
     # add -fcommon to solve multiple definition of `parseopt_program_args'
-    env CFLAGS="$CFLAGS -fcommon" ./configure "--prefix=$PREFIX_DIR" --with-pic=yes
+    env CFLAGS="$CFLAGS -fcommon" ./configure "--prefix=$PREFIX_DIR" --with-pic=yes LDFLAGS="$LDFLAGS"
     make $BUILD_THREAD_OPT || make
     if [[ $? -ne 0 ]]; then
       echo -e "\\033[31;1mError: Build gdbm failed.\\033[39;49;0m"
@@ -919,7 +920,7 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list gdb $BUILD_TARG
       PYTHON_CONFIGURE_OPTIONS=(${PYTHON_CONFIGURE_OPTIONS[@]} "--with-openssl=$OPENSSL_INSTALL_DIR")
     fi
     make clean || true
-    ./configure ${PYTHON_CONFIGURE_OPTIONS[@]}
+    ./configure ${PYTHON_CONFIGURE_OPTIONS[@]} LDFLAGS="$LDFLAGS"
     make $BUILD_THREAD_OPT || make
     if [[ $? -ne 0 ]]; then
       echo -e "\\033[31;1mError: Build python failed.\\033[39;49;0m"
@@ -956,7 +957,7 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list gdb $BUILD_TARG
     $COMPOMENTS_GDB_STATIC_BUILD_PREFIX ../configure --prefix=$PREFIX_DIR --with-gmp=$PREFIX_DIR --with-mpc=$PREFIX_DIR --with-mpfr=$PREFIX_DIR \
       --with-isl=$PREFIX_DIR $BDWGC_PREBIUILT --enable-build-with-cxx --enable-gold --enable-libada \
       --enable-objc-gc --enable-libssp --enable-lto --enable-vtable-verify --with-curses=$PREFIX_DIR \
-      $COMPOMENTS_GDB_STATIC_BUILD_FLAGS ${GDB_DEPS_OPT[@]} $BUILD_TARGET_CONF_OPTION
+      $COMPOMENTS_GDB_STATIC_BUILD_FLAGS ${GDB_DEPS_OPT[@]} $BUILD_TARGET_CONF_OPTION LDFLAGS="$LDFLAGS"
     $COMPOMENTS_GDB_STATIC_BUILD_PREFIX make $BUILD_THREAD_OPT || $COMPOMENTS_GDB_STATIC_BUILD_PREFIX make
     if [[ $? -ne 0 ]]; then
       echo -e "\\033[31;1mError: Build gdb failed.\\033[39;49;0m"
@@ -986,9 +987,9 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list global $BUILD_T
     # patch for global 6.6.5 linking error
     echo "int main() { return 0; }" | gcc -x c -ltinfo -o /dev/null - 2>/dev/null
     if [[ "$BUILD_TARGET_COMPOMENTS_PATCH_TINFO" != "0" ]]; then
-      env "LIBS=$LIBS -l$BUILD_TARGET_COMPOMENTS_PATCH_TINFO" ./configure --prefix=$PREFIX_DIR --with-pic=yes
+      env "LIBS=$LIBS -l$BUILD_TARGET_COMPOMENTS_PATCH_TINFO" ./configure --prefix=$PREFIX_DIR --with-pic=yes LDFLAGS="$LDFLAGS"
     else
-      ./configure --prefix=$PREFIX_DIR --with-pic=yes
+      ./configure --prefix=$PREFIX_DIR --with-pic=yes LDFLAGS="$LDFLAGS"
     fi
     make $BUILD_THREAD_OPT && make install
     cd "$WORKING_DIR"
@@ -1002,7 +1003,7 @@ fi
 # 再执行ldconfig就可以用新的gcc啦
 echo '#!/bin/bash
 GCC_HOME_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )";
-
+GCC_HOME_DIR="$(readlink -f "$GCC_HOME_DIR")";
 if [[ "x$LD_LIBRARY_PATH" == "x" ]]; then
     export LD_LIBRARY_PATH="$GCC_HOME_DIR/lib64:$GCC_HOME_DIR/lib" ;
 else
