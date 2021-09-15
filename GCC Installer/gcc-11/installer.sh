@@ -541,13 +541,13 @@ function build_bintuils() {
       env LDFLAGS="${LDFLAGS//\$/\$\$}" ./configure --prefix=$INSTALL_PREFIX_PATH --with-gmp=$PREFIX_DIR --with-mpc=$PREFIX_DIR --with-mpfr=$PREFIX_DIR --with-isl=$PREFIX_DIR $BDWGC_PREBIUILT \
         --enable-build-with-cxx --enable-gold --enable-libada --enable-libssp --enable-lto --enable-objc-gc --enable-vtable-verify --enable-plugins \
         --enable-install-libiberty --disable-werror $BUILD_TARGET_CONF_OPTION
-      make $BUILD_THREAD_OPT || make
+      env LDFLAGS="${LDFLAGS//\$/\$\$}" make $BUILD_THREAD_OPT O='$$O' || env LDFLAGS="${LDFLAGS//\$/\$\$}" make O='$$O'
       if [[ $? -ne 0 ]]; then
         echo -e "\\033[31;1mError: Build binutils failed - make.\\033[39;49;0m"
         exit 1
       fi
 
-      make install
+      env LDFLAGS="${LDFLAGS//\$/\$\$}" make install O='$$O'
 
       if [[ $? -ne 0 ]] || [[ ! -e "$INSTALL_PREFIX_PATH/bin/ld" ]]; then
         echo -e "\\033[31;1mError: Build binutils failed - install.\\033[39;49;0m"
@@ -580,7 +580,7 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list zstd $BUILD_TAR
     # cd build_jobs_dir;
     # cmake ../build/cmake "-DCMAKE_INSTALL_PREFIX=$PREFIX_DIR" -DZSTD_BUILD_PROGRAMS=ON -DZSTD_BUILD_TESTS=OFF
     # cmake --build . -j -- install
-    env LDFLAGS="${LDFLAGS//\$/\$\$}" make $BUILD_THREAD_OPT PREFIX=$PREFIX_DIR install
+    env LDFLAGS="${LDFLAGS//\$/\$\$}" make $BUILD_THREAD_OPT PREFIX=$PREFIX_DIR install O='$$O'
     if [[ $? -ne 0 ]]; then
       echo -e "\\033[31;1mError: build zstd failed.\\033[39;49;0m"
       exit 1
@@ -639,9 +639,11 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list gcc $BUILD_TARG
     GCC_CONF_OPTION_ALL="$GCC_CONF_OPTION_ALL --enable-linker-build-id --enable-rpath"
     GCC_CONF_OPTION_ALL="$GCC_CONF_OPTION_ALL $GCC_OPT_DISABLE_MULTILIB $BUILD_TARGET_CONF_OPTION"
     # env CFLAGS="--ggc-min-expand=0 --ggc-min-heapsize=6291456" CXXFLAGS="--ggc-min-expand=0 --ggc-min-heapsize=6291456" 老版本的gcc没有这个选项
-    env LDFLAGS="${LDFLAGS//\$/\$\$} -Wl,-rpath,\$\$ORIGIN/../../../../lib64:\$\$ORIGIN/../../../../lib" ../$GCC_DIR/configure $GCC_CONF_OPTION_ALL
-    # ../$GCC_DIR/configure $GCC_CONF_OPTION_ALL
-    make $BUILD_THREAD_OPT && make install
+    env LDFLAGS="${LDFLAGS//\$/\$\$} -Wl,-rpath,\$\$ORIGIN/../../../../lib64:\$\$ORIGIN/../../../../lib" \
+      ../$GCC_DIR/configure $GCC_CONF_OPTION_ALL \
+      LDFLAGS="${LDFLAGS//\$/\$\$} -Wl,-rpath,\$\$ORIGIN/../../../../lib64:\$\$ORIGIN/../../../../lib"
+    env LDFLAGS="${LDFLAGS//\$/\$\$} -Wl,-rpath,\$\$ORIGIN/../../../../lib64:\$\$ORIGIN/../../../../lib" make $BUILD_THREAD_OPT
+    env LDFLAGS="${LDFLAGS//\$/\$\$} -Wl,-rpath,\$\$ORIGIN/../../../../lib64:\$\$ORIGIN/../../../../lib" make install
     cd "$WORKING_DIR"
 
     ls $PREFIX_DIR/bin/*gcc
@@ -959,13 +961,13 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list gdb $BUILD_TARG
     env LDFLAGS="$COMPOMENTS_GDB_STATIC_BUILD_LDFLAGS" ../configure --prefix=$PREFIX_DIR --with-gmp=$PREFIX_DIR --with-mpc=$PREFIX_DIR --with-mpfr=$PREFIX_DIR \
       --with-isl=$PREFIX_DIR $BDWGC_PREBIUILT --enable-build-with-cxx --enable-gold --enable-libada \
       --enable-objc-gc --enable-libssp --enable-lto --enable-vtable-verify --with-curses=$PREFIX_DIR \
-      LDFLAGS="$COMPOMENTS_GDB_STATIC_BUILD_LDFLAGS" ${GDB_DEPS_OPT[@]} $BUILD_TARGET_CONF_OPTION
-    env LDFLAGS="$COMPOMENTS_GDB_STATIC_BUILD_LDFLAGS" make $BUILD_THREAD_OPT || env LDFLAGS="$COMPOMENTS_GDB_STATIC_BUILD_LDFLAGS" make
+      ${GDB_DEPS_OPT[@]} $BUILD_TARGET_CONF_OPTION
+    env LDFLAGS="$COMPOMENTS_GDB_STATIC_BUILD_LDFLAGS" make $BUILD_THREAD_OPT O='$$O' || env LDFLAGS="$COMPOMENTS_GDB_STATIC_BUILD_LDFLAGS" make O='$$O'
     if [[ $? -ne 0 ]]; then
       echo -e "\\033[31;1mError: Build gdb failed.\\033[39;49;0m"
       exit 1
     fi
-    make install
+    env LDFLAGS="$COMPOMENTS_GDB_STATIC_BUILD_LDFLAGS" make install O='$$O'
     cd "$WORKING_DIR"
 
     if [[ ! -e "$PREFIX_DIR/bin/gdb" ]]; then
