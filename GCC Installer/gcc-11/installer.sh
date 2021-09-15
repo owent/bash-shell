@@ -541,13 +541,13 @@ function build_bintuils() {
       env LDFLAGS="${LDFLAGS//\$/\$\$}" ./configure --prefix=$INSTALL_PREFIX_PATH --with-gmp=$PREFIX_DIR --with-mpc=$PREFIX_DIR --with-mpfr=$PREFIX_DIR --with-isl=$PREFIX_DIR $BDWGC_PREBIUILT \
         --enable-build-with-cxx --enable-gold --enable-libada --enable-libssp --enable-lto --enable-objc-gc --enable-vtable-verify --enable-plugins \
         --enable-install-libiberty --disable-werror $BUILD_TARGET_CONF_OPTION
-      env LDFLAGS="${LDFLAGS//\$/\$\$}" make $BUILD_THREAD_OPT O='$$O' || env LDFLAGS="${LDFLAGS//\$/\$\$}" make O='$$O'
+      env LDFLAGS="${LDFLAGS//\$/\$\$}" make $BUILD_THREAD_OPT O='$$$$O' || env LDFLAGS="${LDFLAGS//\$/\$\$}" make O='$$$$O'
       if [[ $? -ne 0 ]]; then
         echo -e "\\033[31;1mError: Build binutils failed - make.\\033[39;49;0m"
         exit 1
       fi
 
-      env LDFLAGS="${LDFLAGS//\$/\$\$}" make install O='$$O'
+      env LDFLAGS="${LDFLAGS//\$/\$\$}" make install O='$$$$O'
 
       if [[ $? -ne 0 ]] || [[ ! -e "$INSTALL_PREFIX_PATH/bin/ld" ]]; then
         echo -e "\\033[31;1mError: Build binutils failed - install.\\033[39;49;0m"
@@ -640,8 +640,8 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list gcc $BUILD_TARG
     GCC_CONF_OPTION_ALL="$GCC_CONF_OPTION_ALL $GCC_OPT_DISABLE_MULTILIB $BUILD_TARGET_CONF_OPTION"
     # env CFLAGS="--ggc-min-expand=0 --ggc-min-heapsize=6291456" CXXFLAGS="--ggc-min-expand=0 --ggc-min-heapsize=6291456" 老版本的gcc没有这个选项
     env LDFLAGS="${LDFLAGS//\$/\$\$} -Wl,-rpath,\$\$ORIGIN/../../../../lib64:\$\$ORIGIN/../../../../lib" \
-      ../$GCC_DIR/configure $GCC_CONF_OPTION_ALL \
-      LDFLAGS="${LDFLAGS//\$/\$\$} -Wl,-rpath,\$\$ORIGIN/../../../../lib64:\$\$ORIGIN/../../../../lib"
+      LDFLAGS_FOR_TARGET="${LDFLAGS//\$/\$\$} -Wl,-rpath,\$\$ORIGIN/../../../../lib64:\$\$ORIGIN/../../../../lib" \
+      ../$GCC_DIR/configure $GCC_CONF_OPTION_ALL
     env LDFLAGS="${LDFLAGS//\$/\$\$} -Wl,-rpath,\$\$ORIGIN/../../../../lib64:\$\$ORIGIN/../../../../lib" make $BUILD_THREAD_OPT
     env LDFLAGS="${LDFLAGS//\$/\$\$} -Wl,-rpath,\$\$ORIGIN/../../../../lib64:\$\$ORIGIN/../../../../lib" make install
     cd "$WORKING_DIR"
