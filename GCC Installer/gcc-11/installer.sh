@@ -962,12 +962,12 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list gdb $BUILD_TARG
       --with-isl=$PREFIX_DIR $BDWGC_PREBIUILT --enable-build-with-cxx --enable-gold --enable-libada \
       --enable-objc-gc --enable-libssp --enable-lto --enable-vtable-verify --with-curses=$PREFIX_DIR \
       ${GDB_DEPS_OPT[@]} $BUILD_TARGET_CONF_OPTION
-    env LDFLAGS="$COMPOMENTS_GDB_STATIC_BUILD_LDFLAGS" make $BUILD_THREAD_OPT O='$$O' || env LDFLAGS="$COMPOMENTS_GDB_STATIC_BUILD_LDFLAGS" make O='$$O'
+    env LDFLAGS="$COMPOMENTS_GDB_STATIC_BUILD_LDFLAGS" make $BUILD_THREAD_OPT O='$$$$O' || env LDFLAGS="$COMPOMENTS_GDB_STATIC_BUILD_LDFLAGS" make O='$$$$O'
     if [[ $? -ne 0 ]]; then
       echo -e "\\033[31;1mError: Build gdb failed.\\033[39;49;0m"
       exit 1
     fi
-    env LDFLAGS="$COMPOMENTS_GDB_STATIC_BUILD_LDFLAGS" make install O='$$O'
+    env LDFLAGS="$COMPOMENTS_GDB_STATIC_BUILD_LDFLAGS" make install O='$$$$O'
     cd "$WORKING_DIR"
 
     if [[ ! -e "$PREFIX_DIR/bin/gdb" ]]; then
