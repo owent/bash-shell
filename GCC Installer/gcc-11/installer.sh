@@ -540,7 +540,7 @@ function build_bintuils() {
       make clean || true
       env LDFLAGS="${LDFLAGS//\$/\$\$}" ./configure --prefix=$INSTALL_PREFIX_PATH --with-gmp=$PREFIX_DIR --with-mpc=$PREFIX_DIR --with-mpfr=$PREFIX_DIR --with-isl=$PREFIX_DIR $BDWGC_PREBIUILT \
         --enable-build-with-cxx --enable-gold --enable-libada --enable-libssp --enable-lto --enable-objc-gc --enable-vtable-verify --enable-plugins \
-        --enable-install-libiberty --disable-werror $BUILD_TARGET_CONF_OPTION
+        --enable-install-libiberty --disable-werror --enable-rpath $BUILD_TARGET_CONF_OPTION
       env LDFLAGS="${LDFLAGS//\$/\$\$}" make $BUILD_THREAD_OPT O='$$$$O' || env LDFLAGS="${LDFLAGS//\$/\$\$}" make O='$$$$O'
       if [[ $? -ne 0 ]]; then
         echo -e "\\033[31;1mError: Build binutils failed - make.\\033[39;49;0m"
@@ -638,12 +638,15 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list gcc $BUILD_TARG
     GCC_CONF_OPTION_ALL="$GCC_CONF_OPTION_ALL --enable-gold --enable-ld --enable-libada --enable-libssp --enable-lto --enable-objc-gc --enable-vtable-verify"
     GCC_CONF_OPTION_ALL="$GCC_CONF_OPTION_ALL --enable-linker-build-id --enable-rpath"
     GCC_CONF_OPTION_ALL="$GCC_CONF_OPTION_ALL $GCC_OPT_DISABLE_MULTILIB $BUILD_TARGET_CONF_OPTION"
+    # See https://stackoverflow.com/questions/13334300/how-to-build-and-install-gcc-with-built-in-rpath
+    GCC_CONF_LDFLAGS="${LDFLAGS//\$/\$\$} -Wl,-rpath,\$\$ORIGIN/../../../../lib64:\$\$ORIGIN/../../../../lib"
     # env CFLAGS="--ggc-min-expand=0 --ggc-min-heapsize=6291456" CXXFLAGS="--ggc-min-expand=0 --ggc-min-heapsize=6291456" 老版本的gcc没有这个选项
-    env LDFLAGS="${LDFLAGS//\$/\$\$} -Wl,-rpath,\$\$ORIGIN/../../../../lib64:\$\$ORIGIN/../../../../lib" \
-      LDFLAGS_FOR_TARGET="${LDFLAGS//\$/\$\$} -Wl,-rpath,\$\$ORIGIN/../../../../lib64:\$\$ORIGIN/../../../../lib" \
+    env LDFLAGS="$GCC_CONF_LDFLAGS" LDFLAGS_FOR_TARGET="$GCC_CONF_LDFLAGS" LDFLAGS_FOR_BUILD="$GCC_CONF_LDFLAGS" BOOT_LDFLAGS="$GCC_CONF_LDFLAGS" \
       ../$GCC_DIR/configure $GCC_CONF_OPTION_ALL
-    env LDFLAGS="${LDFLAGS//\$/\$\$} -Wl,-rpath,\$\$ORIGIN/../../../../lib64:\$\$ORIGIN/../../../../lib" make $BUILD_THREAD_OPT
-    env LDFLAGS="${LDFLAGS//\$/\$\$} -Wl,-rpath,\$\$ORIGIN/../../../../lib64:\$\$ORIGIN/../../../../lib" make install
+    env LDFLAGS="$GCC_CONF_LDFLAGS" LDFLAGS_FOR_TARGET="$GCC_CONF_LDFLAGS" LDFLAGS_FOR_BUILD="$GCC_CONF_LDFLAGS" BOOT_LDFLAGS="$GCC_CONF_LDFLAGS" \
+      make $BUILD_THREAD_OPT O='$$$$O'
+    env LDFLAGS="$GCC_CONF_LDFLAGS" LDFLAGS_FOR_TARGET="$GCC_CONF_LDFLAGS" LDFLAGS_FOR_BUILD="$GCC_CONF_LDFLAGS" BOOT_LDFLAGS="$GCC_CONF_LDFLAGS" \
+      make install O='$$$$O'
     cd "$WORKING_DIR"
 
     ls $PREFIX_DIR/bin/*gcc
