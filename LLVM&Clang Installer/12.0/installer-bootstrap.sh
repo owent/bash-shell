@@ -538,7 +538,7 @@ fi" >"$PREFIX_DIR/load-llvm-envs.sh"
 
   echo '
 GCC_HOME_DIR="$(readlink -f "$GCC_HOME_DIR")";
-LLVM_HOME_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )";
+LLVM_HOME_DIR="$( cd "$( dirname "$0" )" >/dev/null 2>&1 && pwd )";
 LLVM_HOME_DIR="$(readlink -f "$LLVM_HOME_DIR")";
 ' >>"$PREFIX_DIR/load-llvm-envs.sh"
   cd "$PREFIX_DIR"

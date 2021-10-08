@@ -1017,7 +1017,7 @@ fi
 # $PREFIX_DIR/lib （如果是64位机器还有$PREFIX_DIR/lib64）[另外还有$PREFIX_DIR/libexec我也不知道要不要加，反正我加了]放到LD_LIBRARY_PATH或者/etc/ld.so.conf里
 # 再执行ldconfig就可以用新的gcc啦
 echo '#!/bin/bash
-GCC_HOME_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )";
+GCC_HOME_DIR="$( cd "$( dirname "$0" )" >/dev/null 2>&1 && pwd )";
 GCC_HOME_DIR="$(readlink -f "$GCC_HOME_DIR")";
 if [[ "x$LD_LIBRARY_PATH" == "x" ]]; then
     export LD_LIBRARY_PATH="$GCC_HOME_DIR/lib64:$GCC_HOME_DIR/lib" ;
