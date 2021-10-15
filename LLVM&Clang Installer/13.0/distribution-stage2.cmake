@@ -75,7 +75,6 @@ if(APPLE)
   set(COMPILER_RT_ENABLE_TVOS OFF CACHE BOOL "")
   set(COMPILER_RT_ENABLE_WATCHOS OFF CACHE BOOL "")
   set(COMPILER_RT_USE_BUILTINS_LIBRARY ON CACHE BOOL "")
-
   set(LIBUNWIND_ENABLE_SHARED OFF CACHE BOOL "")
   set(LIBUNWIND_INSTALL_LIBRARY ON CACHE BOOL "")
   set(LIBUNWIND_USE_COMPILER_RT ON CACHE BOOL "")
@@ -166,6 +165,9 @@ foreach(target aarch64-unknown-linux-gnu;armv7-unknown-linux-gnueabihf;i386-unkn
     set(RUNTIMES_${target}_CMAKE_MODULE_LINKER_FLAGS "-fuse-ld=lld" CACHE STRING "")
     set(RUNTIMES_${target}_CMAKE_EXE_LINKER_FLAGS "-fuse-ld=lld" CACHE STRING "")
     set(RUNTIMES_${target}_COMPILER_RT_USE_BUILTINS_LIBRARY ON CACHE BOOL "")
+    if("x86_64-unknown-linux-gnu" STREQUAL "${target}" AND NOT EXISTS "/usr/include/gnu/stubs-32.h")
+      set(RUNTIMES_${target}_COMPILER_RT_DEFAULT_TARGET_ONLY ON CACHE BOOL "") # Do not build i386 on x86_64
+    endif()
     set(RUNTIMES_${target}_LIBUNWIND_ENABLE_SHARED ON CACHE BOOL "")
     set(RUNTIMES_${target}_LIBUNWIND_USE_COMPILER_RT ON CACHE BOOL "")
     set(RUNTIMES_${target}_LIBUNWIND_INSTALL_LIBRARY ON CACHE BOOL "")
