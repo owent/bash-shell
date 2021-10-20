@@ -369,20 +369,20 @@ set(LLVM_RUNTIME_BUILD_ID_LINK_TARGETS "${RUNTIME_BUILD_ID_LINK}" CACHE STRING "
 
 # Setup toolchain.
 set(LLVM_INSTALL_TOOLCHAIN_ONLY ON CACHE BOOL "")
+# See <llvm-project>/llvm/test/CMakeLists.txt
 set(LLVM_TOOLCHAIN_TOOLS_SELECT
-    dsymutil
+    llvm-addr2line
     llvm-ar
     llvm-as
-    llvm-addr2line
-    llvm-cxxdump
     llvm-config
-    llvm-cxxmap
     llvm-cov
+    llvm-cxxdump
     llvm-cxxfilt
+    llvm-cxxmap
     llvm-dlltool
+    dsymutil
     llvm-dwarfdump
     llvm-dwp
-    llvm-elfabi
     llvm-gsymutil
     llvm-install-name-tool
     llvm-jitlink
@@ -398,8 +398,8 @@ set(LLVM_TOOLCHAIN_TOOLS_SELECT
     llvm-objdump
     llvm-pdbutil
     llvm-profdata
-    llvm-rc
     llvm-ranlib
+    llvm-rc
     llvm-readelf
     llvm-readobj
     llvm-size
@@ -409,9 +409,9 @@ set(LLVM_TOOLCHAIN_TOOLS_SELECT
     llvm-xray
     LLVM
     LTO
-    Remarks
     sancov
-    sanstats)
+    sanstats
+    Remarks)
 
 if(APPLE)
   list(APPEND LLVM_TOOLCHAIN_TOOLS_SELECT llvm-bitcode-strip llvm-ifs llvm-lipo llvm-libtool-darwin)
@@ -419,34 +419,41 @@ endif()
 set(LLVM_TOOLCHAIN_TOOLS ${LLVM_TOOLCHAIN_TOOLS_SELECT} CACHE STRING "")
 
 set(LLVM_DISTRIBUTION_COMPONENTS
-    clang
+    # add_lld_tool(...) in <llvm-project>/lld
     lld
+    # add_lldb_library(...) in <llvm-project>/lldb
     liblldb
+    # add_lldb_tool(...) in <llvm-project>/lldb
     lldb
     lldb-server
     lldb-python-scripts
     lldb-vscode
+    # clang
     libclang-headers
     libclang-python-bindings
     libclang
+    # add_clang_tool(xxx) in <llvm-project>/clang
+    clang
     clang-apply-replacements
+    clang-change-namespace
     clang-check
     clang-cpp
     clang-doc
     clang-format
-    clang-resource-headers
     clang-include-fixer
     clang-refactor
     clang-scan-deps
     clang-tidy
-    clang-libraries
     clangd
+    modularize
+    pp-trace
+    clang-libraries
+    clang-resource-headers
     scan-build
     scan-view
+    # Others
     builtins
     runtimes
-    pp-trace
-    modularize
     opt-viewer
     ${LLVM_TOOLCHAIN_TOOLS}
     CACHE STRING "")

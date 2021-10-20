@@ -165,9 +165,9 @@ foreach(target aarch64-unknown-linux-gnu;armv7-unknown-linux-gnueabihf;i386-unkn
     set(RUNTIMES_${target}_CMAKE_MODULE_LINKER_FLAGS "-fuse-ld=lld" CACHE STRING "")
     set(RUNTIMES_${target}_CMAKE_EXE_LINKER_FLAGS "-fuse-ld=lld" CACHE STRING "")
     set(RUNTIMES_${target}_COMPILER_RT_USE_BUILTINS_LIBRARY ON CACHE BOOL "")
-    if("x86_64-unknown-linux-gnu" STREQUAL "${target}" AND NOT EXISTS "/usr/include/gnu/stubs-32.h")
-      set(RUNTIMES_${target}_COMPILER_RT_DEFAULT_TARGET_ONLY ON CACHE BOOL "") # Do not build i386 on x86_64
-    endif()
+    # if("x86_64-unknown-linux-gnu" STREQUAL "${target}" AND NOT EXISTS "/usr/include/gnu/stubs-32.h")
+    #   set(RUNTIMES_${target}_COMPILER_RT_DEFAULT_TARGET_ONLY ON CACHE BOOL "") # Do not build i386 on x86_64
+    # endif()
     set(RUNTIMES_${target}_LIBUNWIND_ENABLE_SHARED ON CACHE BOOL "")
     set(RUNTIMES_${target}_LIBUNWIND_USE_COMPILER_RT ON CACHE BOOL "")
     set(RUNTIMES_${target}_LIBUNWIND_INSTALL_LIBRARY ON CACHE BOOL "")
@@ -372,20 +372,20 @@ set(LLVM_RUNTIME_BUILD_ID_LINK_TARGETS "${RUNTIME_BUILD_ID_LINK}" CACHE STRING "
 
 # Setup toolchain.
 set(LLVM_INSTALL_TOOLCHAIN_ONLY ON CACHE BOOL "")
+# See <llvm-project>/llvm/test/CMakeLists.txt
 set(LLVM_TOOLCHAIN_TOOLS_SELECT
-    dsymutil
+    llvm-addr2line
     llvm-ar
     llvm-as
-    llvm-addr2line
-    llvm-cxxdump
     llvm-config
-    llvm-cxxmap
     llvm-cov
+    llvm-cxxdump
     llvm-cxxfilt
+    llvm-cxxmap
     llvm-dlltool
+    dsymutil
     llvm-dwarfdump
     llvm-dwp
-    llvm-elfabi
     llvm-gsymutil
     llvm-install-name-tool
     llvm-jitlink
@@ -401,8 +401,8 @@ set(LLVM_TOOLCHAIN_TOOLS_SELECT
     llvm-objdump
     llvm-pdbutil
     llvm-profdata
-    llvm-rc
     llvm-ranlib
+    llvm-rc
     llvm-readelf
     llvm-readobj
     llvm-size
@@ -412,9 +412,9 @@ set(LLVM_TOOLCHAIN_TOOLS_SELECT
     llvm-xray
     LLVM
     LTO
-    Remarks
     sancov
-    sanstats)
+    sanstats
+    Remarks)
 
 if(APPLE)
   list(APPEND LLVM_TOOLCHAIN_TOOLS_SELECT llvm-bitcode-strip llvm-ifs llvm-lipo llvm-libtool-darwin)
@@ -422,34 +422,41 @@ endif()
 set(LLVM_TOOLCHAIN_TOOLS ${LLVM_TOOLCHAIN_TOOLS_SELECT} CACHE STRING "")
 
 set(LLVM_DISTRIBUTION_COMPONENTS
-    clang
+    # add_lld_tool(...) in <llvm-project>/lld
     lld
+    # add_lldb_library(...) in <llvm-project>/lldb
     liblldb
+    # add_lldb_tool(...) in <llvm-project>/lldb
     lldb
     lldb-server
     lldb-python-scripts
     lldb-vscode
+    # clang
     libclang-headers
     libclang-python-bindings
     libclang
+    # add_clang_tool(xxx) in <llvm-project>/clang
+    clang
     clang-apply-replacements
+    clang-change-namespace
     clang-check
     clang-cpp
     clang-doc
     clang-format
-    clang-resource-headers
     clang-include-fixer
     clang-refactor
     clang-scan-deps
     clang-tidy
-    clang-libraries
     clangd
+    modularize
+    pp-trace
+    clang-libraries
+    clang-resource-headers
     scan-build
     scan-view
+    # Others
     builtins
     runtimes
-    pp-trace
-    modularize
     opt-viewer
     ${LLVM_TOOLCHAIN_TOOLS}
     CACHE STRING "")
