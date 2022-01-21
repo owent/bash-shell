@@ -4,29 +4,35 @@
 BUILD_TARGET_COMPOMENTS=""
 COMPOMENTS_M4_VERSION=latest
 COMPOMENTS_AUTOCONF_VERSION=latest
-COMPOMENTS_AUTOMAKE_VERSION=1.16.4
+COMPOMENTS_AUTOMAKE_VERSION=1.16.5
 COMPOMENTS_LIBTOOL_VERSION=2.4.6
 COMPOMENTS_PKGCONFIG_VERSION=0.29.2
 COMPOMENTS_GMP_VERSION=6.2.1
 COMPOMENTS_MPFR_VERSION=4.1.0
 COMPOMENTS_MPC_VERSION=1.2.1
-COMPOMENTS_ISL_VERSION=0.18
-COMPOMENTS_LIBATOMIC_OPS_VERSION=7.6.10
-COMPOMENTS_BDWGC_VERSION=8.0.4
+COMPOMENTS_ISL_VERSION=0.24
+COMPOMENTS_LIBATOMIC_OPS_VERSION=7.6.12
+COMPOMENTS_BDWGC_VERSION=8.0.6
 COMPOMENTS_GCC_VERSION=11.2.0
 COMPOMENTS_BINUTILS_VERSION=2.37
-COMPOMENTS_OPENSSL_VERSION=1.1.1l
+COMPOMENTS_OPENSSL_VERSION=3.0.1
 COMPOMENTS_ZLIB_VERSION=1.2.11
 COMPOMENTS_LIBFFI_VERSION=3.4.2
-COMPOMENTS_NCURSES_VERSION=6.2
-COMPOMENTS_LIBEXPAT_VERSION=2.4.1
-COMPOMENTS_LIBXCRYPT_VERSION=4.4.23
+COMPOMENTS_NCURSES_VERSION=6.3
+COMPOMENTS_LIBEXPAT_VERSION=2.4.3
+COMPOMENTS_LIBXCRYPT_VERSION=4.4.27
 COMPOMENTS_GDBM_VERSION=latest
-COMPOMENTS_PYTHON_VERSION=3.9.6
-COMPOMENTS_GDB_VERSION=10.2
-COMPOMENTS_GLOBAL_VERSION=6.6.7
-COMPOMENTS_ZSTD_VERSION=1.5.0
+COMPOMENTS_PYTHON_VERSION=3.10.2
+COMPOMENTS_GDB_VERSION=11.2
+COMPOMENTS_GLOBAL_VERSION=6.6.8
+COMPOMENTS_ZSTD_VERSION=1.5.2
 COMPOMENTS_LZ4_VERSION=1.9.3
+# 大多数发行版并没有开启 libssp , 开启会导致需要增加链接选项 -fstack-protector-all
+# 为了兼容性考虑我们默认也不开
+if [[ "x$COMPOMENTS_LIBSSP_ENABLE" == "x" ]]; then
+  COMPOMENTS_LIBSSP_ENABLE=0
+fi
+
 if [[ "owent$COMPOMENTS_GDB_STATIC_BUILD" == "owent" ]]; then
   COMPOMENTS_GDB_STATIC_BUILD=0
 fi
@@ -538,9 +544,13 @@ function build_bintuils() {
       BINUTILS_DIR=$(ls -d binutils-* | grep -v \.tar\.xz)
       cd $BINUTILS_DIR
       make clean || true
+      BUILD_BINUTILS_OPTIONS="--enable-build-with-cxx --enable-gold --enable-libada --enable-lto --enable-objc-gc --enable-vtable-verify --enable-plugins"
+      BUILD_BINUTILS_OPTIONS="$BUILD_BINUTILS_OPTIONS --enable-install-libiberty --disable-werror --enable-rpath"
+      if [[ $COMPOMENTS_LIBSSP_ENABLE -ne 0 ]]; then
+        BUILD_BINUTILS_OPTIONS="$BUILD_BINUTILS_OPTIONS --enable-libssp"
+      fi
       env LDFLAGS="${LDFLAGS//\$/\$\$}" ./configure --prefix=$INSTALL_PREFIX_PATH --with-gmp=$PREFIX_DIR --with-mpc=$PREFIX_DIR --with-mpfr=$PREFIX_DIR --with-isl=$PREFIX_DIR $BDWGC_PREBIUILT \
-        --enable-build-with-cxx --enable-gold --enable-libada --enable-libssp --enable-lto --enable-objc-gc --enable-vtable-verify --enable-plugins \
-        --enable-install-libiberty --disable-werror --enable-rpath $BUILD_TARGET_CONF_OPTION
+        $BUILD_BINUTILS_OPTIONS $BUILD_TARGET_CONF_OPTION
       env LDFLAGS="${LDFLAGS//\$/\$\$}" make $BUILD_THREAD_OPT O='$$$$O' || env LDFLAGS="${LDFLAGS//\$/\$\$}" make O='$$$$O'
       if [[ $? -ne 0 ]]; then
         echo -e "\\033[31;1mError: Build binutils failed - make.\\033[39;49;0m"
@@ -635,7 +645,10 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list gcc $BUILD_TARG
     # ======================= 这一行的最后一个参数请注意，如果要支持其他语言要安装依赖库并打开对该语言的支持 =======================
     GCC_CONF_OPTION_ALL="--prefix=$PREFIX_DIR --with-gmp=$PREFIX_DIR --with-mpc=$PREFIX_DIR --with-mpfr=$PREFIX_DIR --with-isl=$PREFIX_DIR --with-zstd=$PREFIX_DIR $BDWGC_PREBIUILT "
     GCC_CONF_OPTION_ALL="$GCC_CONF_OPTION_ALL --enable-shared --enable-static --enable-gnu-unique-object --enable-bootstrap --enable-build-with-cxx --disable-libjava-multilib --enable-checking=release"
-    GCC_CONF_OPTION_ALL="$GCC_CONF_OPTION_ALL --enable-gold --enable-ld --enable-libada --enable-libssp --enable-lto --enable-objc-gc --enable-vtable-verify"
+    GCC_CONF_OPTION_ALL="$GCC_CONF_OPTION_ALL --enable-gold --enable-ld --enable-libada --enable-lto --enable-objc-gc --enable-vtable-verify"
+    if [[ $COMPOMENTS_LIBSSP_ENABLE -ne 0 ]]; then
+      GCC_CONF_OPTION_ALL="$GCC_CONF_OPTION_ALL --enable-libssp"
+    fi
     GCC_CONF_OPTION_ALL="$GCC_CONF_OPTION_ALL --enable-linker-build-id --enable-rpath"
     GCC_CONF_OPTION_ALL="$GCC_CONF_OPTION_ALL $GCC_OPT_DISABLE_MULTILIB $BUILD_TARGET_CONF_OPTION"
     # See https://stackoverflow.com/questions/13334300/how-to-build-and-install-gcc-with-built-in-rpath
@@ -969,9 +982,12 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list gdb $BUILD_TARG
     mkdir -p build_jobs_dir
     cd build_jobs_dir
     make clean || true
+    if [[ $COMPOMENTS_LIBSSP_ENABLE -ne 0 ]]; then
+      GDB_DEPS_OPT=(${GDB_DEPS_OPT[@]} --enable-libssp)
+    fi
     env LDFLAGS="$COMPOMENTS_GDB_STATIC_BUILD_LDFLAGS" ../configure --prefix=$PREFIX_DIR --with-gmp=$PREFIX_DIR --with-mpc=$PREFIX_DIR --with-mpfr=$PREFIX_DIR \
       --with-isl=$PREFIX_DIR $BDWGC_PREBIUILT --enable-build-with-cxx --enable-gold --enable-libada \
-      --enable-objc-gc --enable-libssp --enable-lto --enable-vtable-verify --with-curses=$PREFIX_DIR \
+      --enable-objc-gc --enable-lto --enable-vtable-verify --with-curses=$PREFIX_DIR \
       ${GDB_DEPS_OPT[@]} $BUILD_TARGET_CONF_OPTION
     env LDFLAGS="$COMPOMENTS_GDB_STATIC_BUILD_LDFLAGS" make $BUILD_THREAD_OPT O='$$$$O' || env LDFLAGS="$COMPOMENTS_GDB_STATIC_BUILD_LDFLAGS" make O='$$$$O'
     if [[ $? -ne 0 ]]; then

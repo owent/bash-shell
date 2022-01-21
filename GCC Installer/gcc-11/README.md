@@ -119,3 +119,16 @@ CentOS 7
   > + libffi: 3.4.2
   > + binutils: 2.37
   > + automake: 1.16.4
++ 2021-01-21     Update
+  > + automake: 1.16.5
+  > + isl: 0.24
+  > + libatomic_ops: 7.6.12
+  > + bdwgc: 8.0.6
+  > + openssl: 3.0.1
+  > + ncurses: 6.3
+  > + libexpat: 2.4.3
+  > + libxcrypt: 4.4.27
+  > + python: 3.10.2
+  > + gdb: 11.2
+  > + global: 6.6.8
+  > + zstd: 1.5.2
