@@ -1,17 +1,31 @@
 # 常用命令集
 
 ## 通用
-#### 按行替换文件
-perl -p -i -e "s;匹配项(正则表达式);目标值;g" "文件路径";
 
-#### 删除过老的文件/目录
+### 按行替换文件
 
+`perl -p -i -e "s;匹配项(正则表达式);目标值;g" "文件路径";`
+
+### 删除过老的文件/目录
+
+```bash
 find 查找目录 -name "通配符表达式" -mtime +天数 -type f -delete;
 find 查找目录 -empty -type d -delete;
 
-```bash
+# Sample
 find $(readlink -f -n $HOME/logs) -name "*" -mtime +30 -type f -delete;
 find $(readlink -f -n $HOME/logs) -empty -type d -delete;
+```
+
+### SSH/OpenSSH兼容性设置
+
+```
+Host *
+    KexAlgorithms +diffie-hellman-group1-sha1
+    HostkeyAlgorithms +ssh-dss,ssh-rsa,ssh-ed25519
+    PubkeyAcceptedKeyTypes +ssh-dss,ssh-rsa,ssh-ed25519
+    # PubkeyAcceptedKeyTypes is renamed to PubkeyAcceptedAlgorithms in OpenSSH 8.5
+    # PubkeyAcceptedAlgorithms +ssh-dss,ssh-rsa,ssh-ed25519
 ```
 
 ## 代理
@@ -717,5 +731,23 @@ apm config set git "C:\Program Files\Git\bin\git.exe"
 
 ### SSH/SFTP
 
++ \(首选,推荐\)[Tabby](https://tabby.sh/)
++ \(推荐\)[Terminal](https://github.com/Microsoft/Terminal)+[OpenSSH](https://www.openssh.com/)
+  >
+  > + Source & Release - https://www.openssh.com/
+  > + Source - https://github.com/PowerShell/OpenSSH-Portable
+  > + Source - https://github.com/openssh/openssh-portable
+  > + Release - https://github.com/powershell/Win32-OpenSSH
+  >
+  > ```pwsh
+  > Get-WindowsCapability -Online | Where-Object Name -like 'OpenSSH*'
+  > Add-WindowsCapability -Online -Name OpenSSH.Client
+  > # Add-WindowsCapability -Online -Name OpenSSH.Server
+  > ```
+
 + [xshell/xftp](https://www.netsarang.com/download/software.html)
 + [mobaxterm](http://mobaxterm.mobatek.net/)
++ [Hyper](https://hyper.is/)
+  > *此工具暂时还缺失良好的可视化操作，可以后续再观察看看*
+  > + https://github.com/vercel/hyper
+  > + https://github.com/bnb/awesome-hyper
