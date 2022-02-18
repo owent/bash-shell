@@ -583,8 +583,8 @@ scoop bucket add extras
 ```
 
 ```ps
-sudo scoop install --global everything
-scoop install 7zip wox
+scoop install everything everything-cli
+scoop install 7zip ueli
 
 # These can be replaced by apps from **Windows Store**
 scoop install foobar2000 bitwarden screentogif snipaste draw.io pwsh
@@ -593,7 +593,7 @@ scoop install foobar2000 bitwarden screentogif snipaste draw.io pwsh
 scoop install pandoc graphviz hugo hugo-extended mdbook
 
 # dev
-scoop install tabby gitextensions
+scoop install tabby # gitextensions
 
 # dev - network
 sudo scoop install --global wireshark nmap-portable
