@@ -353,6 +353,19 @@ dirmngr 增加启动参数 ```--honor-http-proxy``` 或 ```pacman/yay --nopgpfet
 
 #### 中文输入
 
+##### 中文输入 - fcitx5
+
+```bash
+sudo pacman -Syy --noconfirm sudo pacman -S fcitx5 fcitx5-chinese-addons fcitx5-gtk fcitx5-qt kcm-fcitx5 fcitx5-material-color \
+  fcitx5-rime fcitx5-lua
+echo "
+INPUT_METHOD  DEFAULT=fcitx5
+GTK_IM_MODULE DEFAULT=fcitx5
+QT_IM_MODULE  DEFAULT=fcitx5
+XMODIFIERS    DEFAULT=@im=fcitx5
+" | tee ~/.pam_environment
+```
+
 ##### 中文输入 - ibus
 
 ```bash
