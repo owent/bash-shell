@@ -138,4 +138,4 @@ CentOS 7
   > + openssl: 3.0.2
   > + libexpat: 2.4.8
   > + libxcrypt: 4.4.28
-  > + python: 3.11.0
+  > + python: 3.10.4

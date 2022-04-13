@@ -75,7 +75,7 @@ CentOS 7
 + [x] libc++abi 14.0.0
 + [x] libunwind 14.0.0
 + [x] [libedit][2] 20210910-3.1
-+ [x] [Python][3] 3.11.0
++ [x] [Python][3] 3.10.4
 + [x] [swig][4] v4.0.2
 + [x] [zlib][5] 1.2.11
 + [x] [libffi][6] 3.4.2

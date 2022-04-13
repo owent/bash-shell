@@ -5,7 +5,7 @@ BUILD_TARGET_COMPOMENTS=""
 COMPOMENTS_M4_VERSION=latest
 COMPOMENTS_AUTOCONF_VERSION=latest
 COMPOMENTS_AUTOMAKE_VERSION=1.16.5
-COMPOMENTS_LIBTOOL_VERSION=2.4.6
+COMPOMENTS_LIBTOOL_VERSION=2.4.7
 COMPOMENTS_PKGCONFIG_VERSION=0.29.2
 COMPOMENTS_GMP_VERSION=6.2.1
 COMPOMENTS_MPFR_VERSION=4.1.0
@@ -22,7 +22,7 @@ COMPOMENTS_NCURSES_VERSION=6.3
 COMPOMENTS_LIBEXPAT_VERSION=2.4.8
 COMPOMENTS_LIBXCRYPT_VERSION=4.4.28
 COMPOMENTS_GDBM_VERSION=latest
-COMPOMENTS_PYTHON_VERSION=3.11.0
+COMPOMENTS_PYTHON_VERSION=3.10.4
 COMPOMENTS_GDB_VERSION=11.2
 COMPOMENTS_GLOBAL_VERSION=6.6.8
 COMPOMENTS_ZSTD_VERSION=1.5.2
@@ -378,7 +378,7 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list gmp $BUILD_TARG
     tar -axvf $GMP_PKG
     GMP_DIR=$(ls -d gmp-* | grep -v \.tar\.xz)
     cd $GMP_DIR
-    env CPPFLAGS=-fexceptions \
+    env CXXFLAGS=-fexceptions \
       LDFLAGS="${LDFLAGS//\$/\$\$}" \
       ./configure --prefix=$PREFIX_DIR --enable-cxx --enable-assert $BUILD_OTHER_CONF_OPTION
     make $BUILD_THREAD_OPT && make install
@@ -514,7 +514,7 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list bdw-gc $BUILD_T
     if [[ $SYS_LONG_BIT == "64" ]] && [[ "$GCC_OPT_DISABLE_MULTILIB" == "--enable-multilib" ]]; then
       make clean
       make distclean
-      env CFLAGS=-m32 CPPFLAGS=-m32 LDFLAGS="${LDFLAGS//\$/\$\$}" ./configure --prefix=$PREFIX_DIR/multilib/32 --enable-cplusplus --with-pic=yes --enable-shared=no --enable-static=yes --with-libatomic-ops=$BDWGC_LIBATOMIC_OPS
+      env CFLAGS=-m32 CXXFLAGS=-m32 LDFLAGS="${LDFLAGS//\$/\$\$}" ./configure --prefix=$PREFIX_DIR/multilib/32 --enable-cplusplus --with-pic=yes --enable-shared=no --enable-static=yes --with-libatomic-ops=$BDWGC_LIBATOMIC_OPS
 
       make $BUILD_THREAD_OPT && make install
       if [[ $? -ne 0 ]]; then
