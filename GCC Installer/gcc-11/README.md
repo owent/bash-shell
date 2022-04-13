@@ -132,3 +132,10 @@ CentOS 7
   > + gdb: 11.2
   > + global: 6.6.8
   > + zstd: 1.5.2
++ 2022-04-13     Update
+  > + libtool: 2.4.7
+  > + binutils: 2.38
+  > + openssl: 3.0.2
+  > + libexpat: 2.4.8
+  > + libxcrypt: 4.4.28
+  > + python: 3.11.0

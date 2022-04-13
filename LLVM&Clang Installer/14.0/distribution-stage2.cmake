@@ -1,6 +1,6 @@
 # This file sets up a CMakeCache for the second stage of a simple distribution
 # bootstrap build.
-# See https://github.com/llvm/llvm-project/blob/release/13.x/clang/cmake/caches/Fuchsia-stage2.cmake
+# See https://github.com/llvm/llvm-project/blob/release/14.x/clang/cmake/caches/Fuchsia-stage2.cmake
 
 # See LLVM_ALL_RUNTIMES in https://github.com/llvm/llvm-project/blob/main/runtimes/CMakeLists.txt See LLVM_ALL_PROJECTS
 # in https://github.com/llvm/llvm-project/blob/main/llvm/CMakeLists.txt
