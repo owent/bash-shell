@@ -85,7 +85,7 @@ CentOS 7
 
 + gcc 11.2.0
 + binutils 2.36.1
-+ python 3.9.6 *[按需]*
++ python 3.9.12 *[按需]*
 + gdb 10.2 (如果存在ncurses-devel包)
 + global 6.6.6
 + lz4 1.9.3 *[非必须]*
@@ -138,4 +138,4 @@ CentOS 7
   > + openssl: 3.0.2
   > + libexpat: 2.4.8
   > + libxcrypt: 4.4.28
-  > + python: 3.10.4
+  > + python: 3.9.12(distcc不支持3.10，回滚到3.9)
