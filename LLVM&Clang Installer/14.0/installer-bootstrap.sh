@@ -5,6 +5,7 @@ set -x
 
 # ======================================= 配置 =======================================
 LLVM_VERSION=14.0.1
+LLVM_INSTALLER_VERSION=${LLVM_VERSION%.*}
 COMPOMENTS_LIBEDIT_VERSION=20210910-3.1
 COMPOMENTS_PYTHON_VERSION=3.10.4
 COMPOMENTS_SWIG_VERSION=v4.0.2
@@ -282,12 +283,12 @@ if [[ ! -e "swig-$COMPOMENTS_SWIG_VERSION" ]]; then
   fi
 fi
 
-check_and_download "distribution-stage1.cmake" "distribution-stage1.cmake" "https://raw.githubusercontent.com/owent-utils/bash-shell/main/LLVM%26Clang%20Installer/13.0/distribution-stage1.cmake" "distribution-stage1.cmake"
+check_and_download "distribution-stage1.cmake" "distribution-stage1.cmake" "https://raw.githubusercontent.com/owent-utils/bash-shell/main/LLVM%26Clang%20Installer/$LLVM_INSTALLER_VERSION/distribution-stage1.cmake" "distribution-stage1.cmake"
 if [[ $? -ne 0 ]]; then
   exit 1
 fi
 
-check_and_download "distribution-stage2.cmake" "distribution-stage2.cmake" "https://raw.githubusercontent.com/owent-utils/bash-shell/main/LLVM%26Clang%20Installer/13.0/distribution-stage2.cmake" "distribution-stage2.cmake"
+check_and_download "distribution-stage2.cmake" "distribution-stage2.cmake" "https://raw.githubusercontent.com/owent-utils/bash-shell/main/LLVM%26Clang%20Installer/$LLVM_INSTALLER_VERSION/distribution-stage2.cmake" "distribution-stage2.cmake"
 if [[ $? -ne 0 ]]; then
   exit 1
 fi
