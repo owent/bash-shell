@@ -40,10 +40,10 @@ tail -f nohup.out;
 
 ### 发行注记
 
-+ llvm : http://llvm.org/releases/14.0.0/docs/ReleaseNotes.html
-+ clang : http://llvm.org/releases/14.0.0/tools/clang/docs/ReleaseNotes.html
-+ clang Extra : http://llvm.org/releases/14.0.0/tools/clang/tools/extra/docs/ReleaseNotes.html
-+ lld: http://llvm.org/releases/14.0.0/tools/lld/docs/ReleaseNotes.html
++ llvm : http://llvm.org/releases/14.0.1/docs/ReleaseNotes.html
++ clang : http://llvm.org/releases/14.0.1/tools/clang/docs/ReleaseNotes.html
++ clang Extra : http://llvm.org/releases/14.0.1/tools/clang/tools/extra/docs/ReleaseNotes.html
++ lld: http://llvm.org/releases/14.0.1/tools/lld/docs/ReleaseNotes.html
 
 ## 编译安装 LLVM + Clang 14.0
 
@@ -71,9 +71,9 @@ CentOS 7
 
 #### 编译的依赖项：
 
-+ [x] libc++ 14.0.0
-+ [x] libc++abi 14.0.0
-+ [x] libunwind 14.0.0
++ [x] libc++ 14.0.1
++ [x] libc++abi 14.0.1
++ [x] libunwind 14.0.1
 + [x] [libedit][2] 20210910-3.1
 + [x] [Python][3] 3.10.4
 + [x] [swig][4] v4.0.2
@@ -82,12 +82,12 @@ CentOS 7
 
 #### 默认编译目标：
 
-+ [x] llvm 14.0.0
-+ [x] clang 14.0.0
-+ [x] compiler-rt 14.0.0
-+ [x] clang-tools-extra 14.0.0
-+ [x] lldb 14.0.0
-+ [x] lld 14.0.0
++ [x] llvm 14.0.1
++ [x] clang 14.0.1
++ [x] compiler-rt 14.0.1
++ [x] clang-tools-extra 14.0.1
++ [x] lldb 14.0.1
++ [x] lld 14.0.1
 + [ ] libc (这个版本还是无法编译过，故而排除)
 + [x] libclc
 + [x] openmp

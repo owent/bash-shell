@@ -4,7 +4,7 @@
 set -x
 
 # ======================================= 配置 =======================================
-LLVM_VERSION=14.0.0
+LLVM_VERSION=14.0.1
 COMPOMENTS_LIBEDIT_VERSION=20210910-3.1
 COMPOMENTS_PYTHON_VERSION=3.10.4
 COMPOMENTS_SWIG_VERSION=v4.0.2

@@ -1,11 +1,12 @@
 # This file sets up a CMakeCache for a simple distribution bootstrap build.
-# See https://github.com/llvm/llvm-project/blob/release/12.x/clang/cmake/caches/Fuchsia.cmake
+# See https://github.com/llvm/llvm-project/blob/release/14.x/clang/cmake/caches/Fuchsia.cmake
 
 # See LLVM_ALL_RUNTIMES in https://github.com/llvm/llvm-project/blob/main/runtimes/CMakeLists.txt LLVM_ALL_PROJECTS in
 # https://github.com/llvm/llvm-project/blob/main/llvm/CMakeLists.txt
+# https://github.com/llvm/llvm-project/blob/main/llvm/docs/GettingStarted.rst#local-llvm-configuration
 
 # Enable LLVM projects and runtimes
-set(LLVM_ENABLE_PROJECTS "clang;clang-tools-extra;lld;llvm;lldb;libclc;parallel-libs;pstl" CACHE STRING "")
+set(LLVM_ENABLE_PROJECTS "clang;clang-tools-extra;lld;llvm;lldb;libclc;pstl" CACHE STRING "")
 
 # Only build the native target in stage1 since it is a throwaway build.
 set(LLVM_TARGETS_TO_BUILD Native CACHE STRING "") # X86;ARM;AArch64;RISCV
@@ -93,9 +94,8 @@ if(BOOTSTRAP_CMAKE_SYSTEM_NAME)
     set(RUNTIMES_${target}_CMAKE_BUILD_TYPE Release CACHE STRING "")
     set(RUNTIMES_${target}_CMAKE_SYSROOT ${STAGE2_LINUX_${target}_SYSROOT} CACHE STRING "")
     set(RUNTIMES_${target}_COMPILER_RT_USE_BUILTINS_LIBRARY ON CACHE BOOL "")
-    # if(NOT EXISTS "/usr/include/gnu/stubs-32.h")
-    #   set(RUNTIMES_${target}_COMPILER_RT_DEFAULT_TARGET_ONLY ON CACHE BOOL "")
-    # endif()
+    # if(NOT EXISTS "/usr/include/gnu/stubs-32.h") set(RUNTIMES_${target}_COMPILER_RT_DEFAULT_TARGET_ONLY ON CACHE BOOL
+    # "") endif()
     set(RUNTIMES_${target}_LLVM_ENABLE_ASSERTIONS ON CACHE BOOL "")
     set(RUNTIMES_${target}_LIBUNWIND_ENABLE_SHARED OFF CACHE BOOL "")
     set(RUNTIMES_${target}_LIBUNWIND_USE_COMPILER_RT ON CACHE BOOL "")
@@ -142,7 +142,7 @@ set(CLANG_BOOTSTRAP_TARGETS
     distribution
     install-distribution
     install-distribution-stripped
-    # install-distribution-toolchain
+    install-distribution-toolchain
     clang
     CACHE STRING "")
 

@@ -4,17 +4,18 @@
 
 # See LLVM_ALL_RUNTIMES in https://github.com/llvm/llvm-project/blob/main/runtimes/CMakeLists.txt See LLVM_ALL_PROJECTS
 # in https://github.com/llvm/llvm-project/blob/main/llvm/CMakeLists.txt
+# https://github.com/llvm/llvm-project/blob/main/llvm/docs/GettingStarted.rst#local-llvm-configuration
 
 # 未来版本测试polly, 12.0 版本编译不过
 
 # 这个版本的libc适配有点问题，这个版本增加了thread模块，对 ```stdatomic.h``` 的适配有问题，故而排除
 
 # set(LLVM_ENABLE_PROJECTS
-# "clang;clang-tools-extra;compiler-rt;libc;libclc;libcxx;libcxxabi;libunwind;lld;lldb;mlir;openmp;parallel-libs;polly;pstl"
-# CACHE STRING "")
+# "clang;clang-tools-extra;compiler-rt;libc;libclc;libcxx;libcxxabi;libunwind;lld;lldb;mlir;openmp;polly;pstl" CACHE
+# STRING "")
 
-set(LLVM_ENABLE_PROJECTS "clang;clang-tools-extra;lld;llvm;lldb;libclc;parallel-libs;pstl" CACHE STRING "")
-set(LLVM_ENABLE_RUNTIMES "compiler-rt;libcxx;libcxxabi;libunwind" CACHE STRING "")
+set(LLVM_ENABLE_PROJECTS "clang;clang-tools-extra;lld;llvm;lldb;libclc;mlir;polly;pstl" CACHE STRING "")
+set(LLVM_ENABLE_RUNTIMES "compiler-rt;libc;libcxx;libcxxabi;libunwind;openmp" CACHE STRING "")
 
 set(LLVM_TARGETS_TO_BUILD Native CACHE STRING "") # X86;ARM;AArch64;RISCV
 

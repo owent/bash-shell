@@ -1,5 +1,5 @@
 # This file sets up a CMakeCache for a simple distribution bootstrap build.
-# See https://github.com/llvm/llvm-project/blob/release/12.x/clang/cmake/caches/Fuchsia.cmake
+# See https://github.com/llvm/llvm-project/blob/release/13.x/clang/cmake/caches/Fuchsia.cmake
 
 # See LLVM_ALL_RUNTIMES in https://github.com/llvm/llvm-project/blob/main/runtimes/CMakeLists.txt LLVM_ALL_PROJECTS in
 # https://github.com/llvm/llvm-project/blob/main/llvm/CMakeLists.txt
@@ -93,9 +93,8 @@ if(BOOTSTRAP_CMAKE_SYSTEM_NAME)
     set(RUNTIMES_${target}_CMAKE_BUILD_TYPE Release CACHE STRING "")
     set(RUNTIMES_${target}_CMAKE_SYSROOT ${STAGE2_LINUX_${target}_SYSROOT} CACHE STRING "")
     set(RUNTIMES_${target}_COMPILER_RT_USE_BUILTINS_LIBRARY ON CACHE BOOL "")
-    # if(NOT EXISTS "/usr/include/gnu/stubs-32.h")
-    #   set(RUNTIMES_${target}_COMPILER_RT_DEFAULT_TARGET_ONLY ON CACHE BOOL "")
-    # endif()
+    # if(NOT EXISTS "/usr/include/gnu/stubs-32.h") set(RUNTIMES_${target}_COMPILER_RT_DEFAULT_TARGET_ONLY ON CACHE BOOL
+    # "") endif()
     set(RUNTIMES_${target}_LLVM_ENABLE_ASSERTIONS ON CACHE BOOL "")
     set(RUNTIMES_${target}_LIBUNWIND_ENABLE_SHARED OFF CACHE BOOL "")
     set(RUNTIMES_${target}_LIBUNWIND_USE_COMPILER_RT ON CACHE BOOL "")
