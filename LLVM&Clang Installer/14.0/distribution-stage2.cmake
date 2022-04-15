@@ -14,7 +14,7 @@
 # "clang;clang-tools-extra;compiler-rt;libc;libclc;libcxx;libcxxabi;libunwind;lld;lldb;mlir;openmp;polly;pstl" CACHE
 # STRING "")
 
-set(LLVM_ENABLE_PROJECTS "clang;clang-tools-extra;lld;llvm;lldb;libclc;mlir;polly;pstl" CACHE STRING "")
+set(LLVM_ENABLE_PROJECTS "bolt;clang;clang-tools-extra;lld;llvm;lldb;libclc;mlir;polly;pstl" CACHE STRING "")
 set(LLVM_ENABLE_RUNTIMES "compiler-rt;libc;libcxx;libcxxabi;libunwind;openmp" CACHE STRING "")
 
 set(LLVM_TARGETS_TO_BUILD Native CACHE STRING "") # X86;ARM;AArch64;RISCV
@@ -24,6 +24,7 @@ set(PACKAGE_VENDOR OWenT CACHE STRING "")
 
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH OFF CACHE BOOL "")
 set(CMAKE_BUILD_WITH_INSTALL_RPATH ON CACHE BOOL "")
+set(CMAKE_POSITION_INDEPENDENT_CODE ON CACHE BOOL "")
 set(CMAKE_BUILD_RPATH_USE_ORIGIN ON CACHE BOOL "")
 set(LLVM_BUILD_EXAMPLES OFF CACHE BOOL "")
 set(LLVM_BUILD_TESTS OFF CACHE BOOL "")
@@ -39,6 +40,7 @@ set(LIBCXX_USE_COMPILER_RT ON CACHE BOOL "")
 set(LIBCXXABI_USE_COMPILER_RT ON CACHE BOOL "")
 set(LIBCXXABI_USE_LLVM_UNWINDER ON CACHE BOOL "")
 set(LLVM_ENABLE_LIBCXX ON CACHE BOOL "")
+set(COMPILER_RT_INCLUDE_TESTS OFF CACHE BOOL "")
 if(NOT APPLE)
   # TODO: Remove this once we switch to ld64.lld.
   set(LLVM_ENABLE_LLD ON CACHE BOOL "")
@@ -454,6 +456,8 @@ set(LLVM_DISTRIBUTION_COMPONENTS
     clang-resource-headers
     scan-build
     scan-view
+    # bolt
+    bolt_rt
     # Others
     builtins
     runtimes
