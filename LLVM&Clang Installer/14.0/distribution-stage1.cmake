@@ -6,6 +6,8 @@
 # https://github.com/llvm/llvm-project/blob/main/llvm/docs/GettingStarted.rst#local-llvm-configuration
 
 # Enable LLVM projects and runtimes
+
+# bolt can not be compiled in 14.0.1, the directory of __config_site is not included by now
 set(LLVM_ENABLE_PROJECTS "clang;clang-tools-extra;lld;llvm;lldb;libclc;pstl" CACHE STRING "")
 
 # Only build the native target in stage1 since it is a throwaway build.
@@ -32,7 +34,7 @@ if(MSVC)
   set(LLVM_USE_CRT_RELEASE "MT" CACHE STRING "")
 endif()
 
-# set(CLANG_DEFAULT_CXX_STDLIB libc++ CACHE STRING "")
+set(CLANG_DEFAULT_CXX_STDLIB libc++ CACHE STRING "")
 if(NOT APPLE)
   set(CLANG_DEFAULT_LINKER lld CACHE STRING "")
   set(CLANG_DEFAULT_OBJCOPY llvm-objcopy CACHE STRING "")
@@ -59,13 +61,11 @@ endif()
 
 set(LIBUNWIND_ENABLE_SHARED OFF CACHE BOOL "")
 set(LIBUNWIND_INSTALL_LIBRARY OFF CACHE BOOL "")
-set(LIBUNWIND_USE_COMPILER_RT ON CACHE BOOL "")
 set(LIBCXXABI_ENABLE_SHARED OFF CACHE BOOL "")
 set(LIBCXXABI_ENABLE_STATIC_UNWINDER ON CACHE BOOL "")
 set(LIBCXXABI_INSTALL_LIBRARY OFF CACHE BOOL "")
-set(LIBCXXABI_USE_COMPILER_RT ON CACHE BOOL "")
 set(LIBCXXABI_USE_LLVM_UNWINDER ON CACHE BOOL "")
-set(LIBCXX_ABI_VERSION 2 CACHE STRING "")
+# set(LIBCXX_ABI_VERSION 2 CACHE STRING "") # ABI 2 is not stable now
 set(LIBCXX_ENABLE_SHARED OFF CACHE BOOL "")
 if(WIN32)
   set(LIBCXX_HAS_WIN32_THREAD_API ON CACHE BOOL "")
@@ -80,6 +80,14 @@ else()
   set(LIBCXX_ENABLE_STATIC_ABI_LIBRARY ON CACHE BOOL "")
   set(LLVM_ENABLE_RUNTIMES "compiler-rt;libcxx;libcxxabi;libunwind" CACHE STRING "")
 endif()
+
+# compiler-rt ,see compiler-rt/CMakeLists.txt, this may changes in the future
+set(COMPILER_RT_BUILD_SANITIZERS OFF CACHE BOOL "")
+set(COMPILER_RT_INCLUDE_TESTS OFF CACHE BOOL "")
+set(SANITIZER_TEST_CXX "libc++" CACHE STRING "")
+set(SANITIZER_CXX_ABI "libc++" CACHE STRING "")
+set(SANITIZER_CXX_ABI_LIBNAME "libc++" CACHE STRING "")
+set(SANITIZER_TEST_CXX_LIBNAME "libc++" CACHE STRING "")
 
 if(BOOTSTRAP_CMAKE_SYSTEM_NAME)
   set(target "${BOOTSTRAP_CMAKE_CXX_COMPILER_TARGET}")
@@ -108,7 +116,7 @@ if(BOOTSTRAP_CMAKE_SYSTEM_NAME)
     set(RUNTIMES_${target}_LIBCXX_USE_COMPILER_RT ON CACHE BOOL "")
     set(RUNTIMES_${target}_LIBCXX_ENABLE_SHARED OFF CACHE BOOL "")
     set(RUNTIMES_${target}_LIBCXX_ENABLE_STATIC_ABI_LIBRARY ON CACHE BOOL "")
-    set(RUNTIMES_${target}_LIBCXX_ABI_VERSION 2 CACHE STRING "")
+    # set(RUNTIMES_${target}_LIBCXX_ABI_VERSION 2 CACHE STRING "") # ABI 2 is not stable now
     set(RUNTIMES_${target}_LLVM_ENABLE_RUNTIMES "compiler-rt;libcxx;libcxxabi;libunwind" CACHE STRING "")
     set(RUNTIMES_${target}_SANITIZER_CXX_ABI "libc++" CACHE STRING "")
     set(RUNTIMES_${target}_SANITIZER_CXX_ABI_INTREE ON CACHE BOOL "")

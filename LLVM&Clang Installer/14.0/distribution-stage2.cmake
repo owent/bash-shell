@@ -40,7 +40,7 @@ set(LIBCXX_USE_COMPILER_RT ON CACHE BOOL "")
 set(LIBCXXABI_USE_COMPILER_RT ON CACHE BOOL "")
 set(LIBCXXABI_USE_LLVM_UNWINDER ON CACHE BOOL "")
 set(LLVM_ENABLE_LIBCXX ON CACHE BOOL "")
-set(COMPILER_RT_INCLUDE_TESTS OFF CACHE BOOL "")
+
 if(NOT APPLE)
   # TODO: Remove this once we switch to ld64.lld.
   set(LLVM_ENABLE_LLD ON CACHE BOOL "")
@@ -89,7 +89,7 @@ if(APPLE)
   set(LIBCXX_USE_COMPILER_RT ON CACHE BOOL "")
   set(LIBCXX_ENABLE_SHARED OFF CACHE BOOL "")
   set(LIBCXX_ENABLE_STATIC_ABI_LIBRARY ON CACHE BOOL "")
-  set(LIBCXX_ABI_VERSION 2 CACHE STRING "")
+  # set(LIBCXX_ABI_VERSION 2 CACHE STRING "") # ABI 2 is not stable now
   set(DARWIN_ios_ARCHS armv7;armv7s;arm64 CACHE STRING "")
   set(DARWIN_iossim_ARCHS i386;x86_64 CACHE STRING "")
   set(DARWIN_osx_ARCHS arm64;x86_64 CACHE STRING "")
@@ -106,13 +106,22 @@ if(WIN32)
   list(APPEND RUNTIME_TARGETS "${target}")
   set(RUNTIMES_${target}_CMAKE_SYSTEM_NAME Windows CACHE STRING "")
   set(RUNTIMES_${target}_CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING "")
-  set(RUNTIMES_${target}_LIBCXX_ABI_VERSION 2 CACHE STRING "")
+  # set(RUNTIMES_${target}_LIBCXX_ABI_VERSION 2 CACHE STRING "") # ABI 2 is not stable now
   set(RUNTIMES_${target}_LIBCXX_ENABLE_EXPERIMENTAL_LIBRARY OFF CACHE BOOL "")
   set(RUNTIMES_${target}_LIBCXX_ENABLE_FILESYSTEM OFF CACHE BOOL "")
   set(RUNTIMES_${target}_LIBCXX_ENABLE_ABI_LINKER_SCRIPT OFF CACHE BOOL "")
   set(RUNTIMES_${target}_LIBCXX_ENABLE_SHARED OFF CACHE BOOL "")
   set(RUNTIMES_${target}_LLVM_ENABLE_RUNTIMES "compiler-rt;libcxx" CACHE STRING "")
 endif()
+
+# compiler-rt ,see compiler-rt/CMakeLists.txt, this may changes in the future
+set(LLVM_BUILD_EXTERNAL_COMPILER_RT ON CACHE BOOL "Build Compiler-RT with just-built clang")
+set(COMPILER_RT_BUILD_SANITIZERS ON CACHE BOOL "")
+set(COMPILER_RT_INCLUDE_TESTS OFF CACHE BOOL "")
+set(SANITIZER_TEST_CXX "libc++" CACHE STRING "")
+set(SANITIZER_CXX_ABI "libc++" CACHE STRING "")
+set(SANITIZER_CXX_ABI_LIBNAME "libc++" CACHE STRING "")
+set(SANITIZER_TEST_CXX_LIBNAME "libc++" CACHE STRING "")
 
 # Cross compiling
 if("${LLVM_TARGETS_TO_BUILD}" MATCHES "Native|X86")
@@ -181,7 +190,7 @@ foreach(target aarch64-unknown-linux-gnu;armv7-unknown-linux-gnueabihf;i386-unkn
     set(RUNTIMES_${target}_LIBCXX_USE_COMPILER_RT ON CACHE BOOL "")
     set(RUNTIMES_${target}_LIBCXX_ENABLE_SHARED ON CACHE BOOL "")
     set(RUNTIMES_${target}_LIBCXX_ENABLE_STATIC_ABI_LIBRARY ON CACHE BOOL "")
-    set(RUNTIMES_${target}_LIBCXX_ABI_VERSION 2 CACHE STRING "")
+    # set(RUNTIMES_${target}_LIBCXX_ABI_VERSION 2 CACHE STRING "") # ABI 2 is not stable now
     set(RUNTIMES_${target}_LLVM_ENABLE_ASSERTIONS ON CACHE BOOL "")
     set(RUNTIMES_${target}_SANITIZER_CXX_ABI "libc++" CACHE STRING "")
     set(RUNTIMES_${target}_SANITIZER_CXX_ABI_INTREE ON CACHE BOOL "")
@@ -301,7 +310,7 @@ if(FUCHSIA_SDK)
     set(RUNTIMES_${target}-unknown-fuchsia_LIBCXX_ENABLE_STATIC_ABI_LIBRARY ON CACHE BOOL "")
     set(RUNTIMES_${target}-unknown-fuchsia_LIBCXX_HERMETIC_STATIC_LIBRARY ON CACHE BOOL "")
     set(RUNTIMES_${target}-unknown-fuchsia_LIBCXX_STATICALLY_LINK_ABI_IN_SHARED_LIBRARY OFF CACHE BOOL "")
-    set(RUNTIMES_${target}-unknown-fuchsia_LIBCXX_ABI_VERSION 2 CACHE STRING "")
+    # set(RUNTIMES_${target}-unknown-fuchsia_LIBCXX_ABI_VERSION 2 CACHE STRING "") # ABI 2 is not stable now
     set(RUNTIMES_${target}-unknown-fuchsia_LLVM_ENABLE_ASSERTIONS ON CACHE BOOL "")
     set(RUNTIMES_${target}-unknown-fuchsia_LLVM_ENABLE_RUNTIMES "compiler-rt;libcxx;libcxxabi;libunwind" CACHE STRING
                                                                                                                "")
@@ -456,8 +465,6 @@ set(LLVM_DISTRIBUTION_COMPONENTS
     clang-resource-headers
     scan-build
     scan-view
-    # bolt
-    bolt_rt
     # Others
     builtins
     runtimes
