@@ -744,6 +744,37 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list openssl $BUILD_
           rsync -rL "$COPY_SSL_DIR/certs/"* "$OPENSSL_INSTALL_DIR/ssl/certs/"
         fi
       done
+
+      # Some build system use <PREFIX>/lib to link openssl, but openssl 3.0 install files to <PREFIX>/lib64
+      # We need patch these files to support legacy tools(Such as cmake and Python)
+      if [[ -e "$PREFIX_DIR/internal-packages/lib64" ]]; then
+        mkdir -p "$PREFIX_DIR/internal-packages/lib/pkgconfig"
+        if [[ -e "$PREFIX_DIR/internal-packages/lib64/ossl-modules" ]] && [[ ! -e "$PREFIX_DIR/internal-packages/lib/ossl-modules" ]]; then
+          ln -s "$PREFIX_DIR/internal-packages/lib64/ossl-modules" "$PREFIX_DIR/internal-packages/lib/ossl-modules"
+        fi
+        for OPENSSL_ALIAS_PATH in "$PREFIX_DIR/internal-packages/lib64/engines-"*; do
+          OPENSSL_ALIAS_BASENAME="$(basename "$OPENSSL_ALIAS_PATH")"
+          if [[ ! -e "$PREFIX_DIR/internal-packages/lib/$OPENSSL_ALIAS_BASENAME" ]]; then
+            ln -s "$PREFIX_DIR/internal-packages/lib64/$OPENSSL_ALIAS_BASENAME" "$PREFIX_DIR/internal-packages/lib/$OPENSSL_ALIAS_BASENAME"
+          fi
+        done
+        for OPENSSL_ALIAS_PATH in "$PREFIX_DIR/internal-packages/lib64/"*crypto.* \
+          "$PREFIX_DIR/internal-packages/lib64/"*ssl.* \
+          "$PREFIX_DIR/internal-packages/lib64/"*openssl.*; do
+          OPENSSL_ALIAS_BASENAME="$(basename "$OPENSSL_ALIAS_PATH")"
+          if [[ ! -e "$PREFIX_DIR/internal-packages/lib/$OPENSSL_ALIAS_BASENAME" ]]; then
+            ln "$PREFIX_DIR/internal-packages/lib64/$OPENSSL_ALIAS_BASENAME" "$PREFIX_DIR/internal-packages/lib/$OPENSSL_ALIAS_BASENAME"
+          fi
+        done
+        for OPENSSL_ALIAS_PATH in "$PREFIX_DIR/internal-packages/lib64/pkgconfig/"*crypto.* \
+          "$PREFIX_DIR/internal-packages/lib64/pkgconfig/"*ssl.* \
+          "$PREFIX_DIR/internal-packages/lib64/pkgconfig/"*openssl.*; do
+          OPENSSL_ALIAS_BASENAME="$(basename "$OPENSSL_ALIAS_PATH")"
+          if [[ ! -e "$PREFIX_DIR/internal-packages/lib/pkgconfig/$OPENSSL_ALIAS_BASENAME" ]]; then
+            ln "$PREFIX_DIR/internal-packages/lib64/pkgconfig/$OPENSSL_ALIAS_BASENAME" "$PREFIX_DIR/internal-packages/lib/pkgconfig/$OPENSSL_ALIAS_BASENAME"
+          fi
+        done
+      fi
     fi
     cd "$WORKING_DIR"
   fi
