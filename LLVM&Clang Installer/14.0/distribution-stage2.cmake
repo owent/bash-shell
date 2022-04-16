@@ -175,6 +175,7 @@ foreach(target aarch64-unknown-linux-gnu;armv7-unknown-linux-gnueabihf;i386-unkn
     set(RUNTIMES_${target}_CMAKE_MODULE_LINKER_FLAGS "-fuse-ld=lld" CACHE STRING "")
     set(RUNTIMES_${target}_CMAKE_EXE_LINKER_FLAGS "-fuse-ld=lld" CACHE STRING "")
     set(RUNTIMES_${target}_COMPILER_RT_USE_BUILTINS_LIBRARY ON CACHE BOOL "")
+    set(RUNTIMES_${target}_COMPILER_RT_INCLUDE_TESTS OFF CACHE BOOL "")
     # if("x86_64-unknown-linux-gnu" STREQUAL "${target}" AND NOT EXISTS "/usr/include/gnu/stubs-32.h")
     # set(RUNTIMES_${target}_COMPILER_RT_DEFAULT_TARGET_ONLY ON CACHE BOOL "") # Do not build i386 on x86_64 endif()
     set(RUNTIMES_${target}_LIBUNWIND_ENABLE_SHARED ON CACHE BOOL "")
@@ -192,7 +193,7 @@ foreach(target aarch64-unknown-linux-gnu;armv7-unknown-linux-gnueabihf;i386-unkn
     set(RUNTIMES_${target}_LLVM_ENABLE_ASSERTIONS ON CACHE BOOL "")
     set(RUNTIMES_${target}_SANITIZER_CXX_ABI "libc++" CACHE STRING "")
     set(RUNTIMES_${target}_SANITIZER_CXX_ABI_INTREE ON CACHE BOOL "")
-    set(RUNTIMES_${target}_LLVM_ENABLE_RUNTIMES "compiler-rt;libcxx;libcxxabi;libunwind" CACHE STRING "")
+    set(RUNTIMES_${target}_LLVM_ENABLE_RUNTIMES "compiler-rt;libc;libcxx;libcxxabi;libunwind;openmp" CACHE STRING "")
 
     # Use .build-id link.
     list(APPEND RUNTIME_BUILD_ID_LINK "${target}")
@@ -310,7 +311,7 @@ if(FUCHSIA_SDK)
     set(RUNTIMES_${target}-unknown-fuchsia_LIBCXX_STATICALLY_LINK_ABI_IN_SHARED_LIBRARY OFF CACHE BOOL "")
     # set(RUNTIMES_${target}-unknown-fuchsia_LIBCXX_ABI_VERSION 2 CACHE STRING "") # ABI 2 is not stable now
     set(RUNTIMES_${target}-unknown-fuchsia_LLVM_ENABLE_ASSERTIONS ON CACHE BOOL "")
-    set(RUNTIMES_${target}-unknown-fuchsia_LLVM_ENABLE_RUNTIMES "compiler-rt;libcxx;libcxxabi;libunwind" CACHE STRING
+    set(RUNTIMES_${target}-unknown-fuchsia_LLVM_ENABLE_RUNTIMES "compiler-rt;libc;libcxx;libcxxabi;libunwind;openmp" CACHE STRING
                                                                                                                "")
 
     set(RUNTIMES_${target}-unknown-fuchsia+asan_LLVM_BUILD_COMPILER_RT OFF CACHE BOOL "")
