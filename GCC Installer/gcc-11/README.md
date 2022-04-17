@@ -113,13 +113,16 @@ CentOS 7
   + libxcrypt: 4.4.23
   + zstd: 1.5.0
 + 2021-07-28     Update
+  >
   > + gcc: 11.2.0
   > + python: 3.9.6
   > + global: 6.6.7
   > + libffi: 3.4.2
   > + binutils: 2.37
   > + automake: 1.16.4
+  >
 + 2021-01-21     Update
+  >
   > + automake: 1.16.5
   > + isl: 0.24
   > + libatomic_ops: 7.6.12
@@ -132,10 +135,15 @@ CentOS 7
   > + gdb: 11.2
   > + global: 6.6.8
   > + zstd: 1.5.2
+  >
 + 2022-04-13     Update
+  >
   > + libtool: 2.4.7
   > + binutils: 2.38
   > + openssl: 3.0.2
   > + libexpat: 2.4.8
   > + libxcrypt: 4.4.28
   > + python: 3.9.12(distcc不支持3.10，回滚到3.9)
+  >
++ 2022-04-17     软链接 openssl 库的输出目录。
+  > 某些工具写死了用 `<PREFIX>/lib` 来查找库。但是openssl 3.0 开始输出目录为 `<PREFIX>/lib64` 。

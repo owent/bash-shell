@@ -1,45 +1,55 @@
-# This file sets up a CMakeCache for a Fuchsia toolchain build.
+# This file sets up a CMakeCache for a simple distribution bootstrap build.
+# See https://github.com/llvm/llvm-project/blob/release/14.x/clang/cmake/caches/Fuchsia.cmake
 
+# See LLVM_ALL_RUNTIMES in https://github.com/llvm/llvm-project/blob/main/runtimes/CMakeLists.txt LLVM_ALL_PROJECTS in
+# https://github.com/llvm/llvm-project/blob/main/llvm/CMakeLists.txt
+# https://github.com/llvm/llvm-project/blob/main/llvm/docs/GettingStarted.rst#local-llvm-configuration
+
+# Enable LLVM projects and runtimes
+
+# bolt can not be compiled in 14.0.1, the directory of __config_site is not included by now
+set(LLVM_ENABLE_PROJECTS "clang;clang-tools-extra;lld;llvm;lldb;libclc;pstl" CACHE STRING "")
+
+# Only build the native target in stage1 since it is a throwaway build.
 set(LLVM_TARGETS_TO_BUILD Native CACHE STRING "") # X86;ARM;AArch64;RISCV
 
+# Setup vendor-specific settings.
 set(PACKAGE_VENDOR OWenT CACHE STRING "")
 
-set(LLVM_ENABLE_PROJECTS "clang;clang-tools-extra;lld;llvm;libclc;polly;pstl" CACHE STRING "")
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH ON CACHE BOOL "")
+set(CMAKE_BUILD_WITH_INSTALL_RPATH OFF CACHE BOOL "")
+set(CMAKE_BUILD_RPATH_USE_ORIGIN OFF CACHE BOOL "")
+set(LLVM_BUILD_EXAMPLES OFF CACHE BOOL "")
+set(LLVM_BUILD_TESTS OFF CACHE BOOL "")
+set(LLVM_TEMPORARILY_ALLOW_OLD_TOOLCHAIN ON CACHE BOOL "")
+set(LLVM_ENABLE_EH ON CACHE BOOL "")
+set(LLVM_ENABLE_RTTI ON CACHE BOOL "")
+set(LLVM_ENABLE_PIC ON CACHE BOOL "")
+set(LLVM_USE_INTEL_JITEVENTS ON CACHE BOOL "")
+set(CLANG_LINK_CLANG_DYLIB ON CACHE BOOL "")
+set(LLVM_BUILD_LLVM_DYLIB ON CACHE BOOL "")
+set(LLVM_LINK_LLVM_DYLIB ON CACHE BOOL "")
 
-set(LLVM_ENABLE_BACKTRACES OFF CACHE BOOL "")
-set(LLVM_ENABLE_DIA_SDK OFF CACHE BOOL "")
-set(LLVM_ENABLE_PER_TARGET_RUNTIME_DIR ON CACHE BOOL "")
-set(LLVM_ENABLE_TERMINFO OFF CACHE BOOL "")
-set(LLVM_ENABLE_UNWIND_TABLES OFF CACHE BOOL "")
-set(LLVM_ENABLE_Z3_SOLVER OFF CACHE BOOL "")
-set(LLVM_ENABLE_ZLIB OFF CACHE BOOL "")
-set(LLVM_INCLUDE_DOCS OFF CACHE BOOL "")
-set(LLVM_INCLUDE_EXAMPLES OFF CACHE BOOL "")
-set(LLVM_INCLUDE_GO_TESTS OFF CACHE BOOL "")
-
-if(WIN32)
+if(MSVC)
   set(LLVM_USE_CRT_RELEASE "MT" CACHE STRING "")
 endif()
 
 set(CLANG_DEFAULT_CXX_STDLIB libc++ CACHE STRING "")
 if(NOT APPLE)
-  # TODO: Remove this once we switch to ld64.lld.
   set(CLANG_DEFAULT_LINKER lld CACHE STRING "")
   set(CLANG_DEFAULT_OBJCOPY llvm-objcopy CACHE STRING "")
 endif()
 set(CLANG_DEFAULT_RTLIB compiler-rt CACHE STRING "")
-set(CLANG_ENABLE_ARCMT OFF CACHE BOOL "")
 set(CLANG_ENABLE_STATIC_ANALYZER ON CACHE BOOL "")
-set(CLANG_PLUGIN_SUPPORT OFF CACHE BOOL "")
 
+set(ENABLE_EXPERIMENTAL_NEW_PASS_MANAGER ON CACHE BOOL "")
 set(ENABLE_LINKER_BUILD_ID ON CACHE BOOL "")
 set(ENABLE_X86_RELAX_RELOCATIONS ON CACHE BOOL "")
 
-set(LLVM_ENABLE_ASSERTIONS ON CACHE BOOL "")
 set(CMAKE_BUILD_TYPE Release CACHE STRING "")
 if(APPLE)
-  set(CMAKE_OSX_DEPLOYMENT_TARGET "10.13" CACHE STRING "")
-elseif(WIN32)
+  set(MACOSX_DEPLOYMENT_TARGET 10.7 CACHE STRING "")
+elseif(MSVC)
   set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded" CACHE STRING "")
 endif()
 
@@ -49,29 +59,34 @@ if(APPLE)
   set(COMPILER_RT_ENABLE_WATCHOS OFF CACHE BOOL "")
 endif()
 
+set(LIBUNWIND_ENABLE_SHARED OFF CACHE BOOL "")
+set(LIBUNWIND_INSTALL_LIBRARY OFF CACHE BOOL "")
+set(LIBCXXABI_ENABLE_SHARED OFF CACHE BOOL "")
+set(LIBCXXABI_ENABLE_STATIC_UNWINDER ON CACHE BOOL "")
+set(LIBCXXABI_INSTALL_LIBRARY OFF CACHE BOOL "")
+set(LIBCXXABI_USE_LLVM_UNWINDER ON CACHE BOOL "")
+# set(LIBCXX_ABI_VERSION 2 CACHE STRING "") # ABI 2 is not stable now
+set(LIBCXX_ENABLE_SHARED OFF CACHE BOOL "")
 if(WIN32)
-  # set(LIBCXX_ABI_VERSION 2 CACHE STRING "")
+  set(LIBCXX_HAS_WIN32_THREAD_API ON CACHE BOOL "")
   set(LIBCXX_ENABLE_EXPERIMENTAL_LIBRARY OFF CACHE BOOL "")
   set(LIBCXX_ENABLE_FILESYSTEM OFF CACHE BOOL "")
   set(LIBCXX_ENABLE_ABI_LINKER_SCRIPT OFF CACHE BOOL "")
-  set(LIBCXX_ENABLE_SHARED OFF CACHE BOOL "")
+  set(LIBCXX_ENABLE_STATIC_ABI_LIBRARY OFF CACHE BOOL "")
   set(BUILTINS_CMAKE_ARGS -DCMAKE_SYSTEM_NAME=Windows CACHE STRING "")
   set(RUNTIMES_CMAKE_ARGS -DCMAKE_SYSTEM_NAME=Windows CACHE STRING "")
   set(LLVM_ENABLE_RUNTIMES "compiler-rt;libcxx" CACHE STRING "")
 else()
-  set(LIBUNWIND_ENABLE_SHARED OFF CACHE BOOL "")
-  set(LIBUNWIND_INSTALL_LIBRARY OFF CACHE BOOL "")
-  set(LIBUNWIND_USE_COMPILER_RT ON CACHE BOOL "")
-  set(LIBCXXABI_ENABLE_SHARED OFF CACHE BOOL "")
-  set(LIBCXXABI_ENABLE_STATIC_UNWINDER ON CACHE BOOL "")
-  set(LIBCXXABI_INSTALL_LIBRARY OFF CACHE BOOL "")
-  set(LIBCXXABI_USE_COMPILER_RT ON CACHE BOOL "")
-  set(LIBCXXABI_USE_LLVM_UNWINDER ON CACHE BOOL "")
-  # set(LIBCXX_ABI_VERSION 2 CACHE STRING "")
-  set(LIBCXX_ENABLE_SHARED OFF CACHE BOOL "")
   set(LIBCXX_ENABLE_STATIC_ABI_LIBRARY ON CACHE BOOL "")
   set(LLVM_ENABLE_RUNTIMES "compiler-rt;libcxx;libcxxabi;libunwind" CACHE STRING "")
 endif()
+
+# compiler-rt ,see compiler-rt/CMakeLists.txt, this may changes in the future
+set(LLVM_BUILD_EXTERNAL_COMPILER_RT ON CACHE BOOL "Build Compiler-RT with just-built clang")
+set(COMPILER_RT_BUILD_SANITIZERS OFF CACHE BOOL "")
+set(COMPILER_RT_INCLUDE_TESTS OFF CACHE BOOL "")
+# set(SANITIZER_TEST_CXX "libc++" CACHE STRING "") set(SANITIZER_CXX_ABI "libc++" CACHE STRING "")
+# set(SANITIZER_CXX_ABI_LIBNAME "libc++" CACHE STRING "") set(SANITIZER_TEST_CXX_LIBNAME "libc++" CACHE STRING "")
 
 if(BOOTSTRAP_CMAKE_SYSTEM_NAME)
   set(target "${BOOTSTRAP_CMAKE_CXX_COMPILER_TARGET}")
@@ -86,6 +101,9 @@ if(BOOTSTRAP_CMAKE_SYSTEM_NAME)
     set(RUNTIMES_${target}_CMAKE_BUILD_TYPE Release CACHE STRING "")
     set(RUNTIMES_${target}_CMAKE_SYSROOT ${STAGE2_LINUX_${target}_SYSROOT} CACHE STRING "")
     set(RUNTIMES_${target}_COMPILER_RT_USE_BUILTINS_LIBRARY ON CACHE BOOL "")
+    # if(NOT EXISTS "/usr/include/gnu/stubs-32.h") set(RUNTIMES_${target}_COMPILER_RT_DEFAULT_TARGET_ONLY ON CACHE BOOL
+    # "") endif()
+    set(RUNTIMES_${target}_LLVM_ENABLE_ASSERTIONS ON CACHE BOOL "")
     set(RUNTIMES_${target}_LIBUNWIND_ENABLE_SHARED OFF CACHE BOOL "")
     set(RUNTIMES_${target}_LIBUNWIND_USE_COMPILER_RT ON CACHE BOOL "")
     set(RUNTIMES_${target}_LIBUNWIND_INSTALL_LIBRARY OFF CACHE BOOL "")
@@ -97,13 +115,13 @@ if(BOOTSTRAP_CMAKE_SYSTEM_NAME)
     set(RUNTIMES_${target}_LIBCXX_USE_COMPILER_RT ON CACHE BOOL "")
     set(RUNTIMES_${target}_LIBCXX_ENABLE_SHARED OFF CACHE BOOL "")
     set(RUNTIMES_${target}_LIBCXX_ENABLE_STATIC_ABI_LIBRARY ON CACHE BOOL "")
-    # set(RUNTIMES_${target}_LIBCXX_ABI_VERSION 2 CACHE STRING "")
-    set(RUNTIMES_${target}_LLVM_ENABLE_ASSERTIONS OFF CACHE BOOL "")
+    # set(RUNTIMES_${target}_LIBCXX_ABI_VERSION 2 CACHE STRING "") # ABI 2 is not stable now
     set(RUNTIMES_${target}_LLVM_ENABLE_RUNTIMES "compiler-rt;libcxx;libcxxabi;libunwind" CACHE STRING "")
     set(RUNTIMES_${target}_SANITIZER_CXX_ABI "libc++" CACHE STRING "")
     set(RUNTIMES_${target}_SANITIZER_CXX_ABI_INTREE ON CACHE BOOL "")
   endif()
 endif()
+message(STATUS "Stage1: BOOTSTRAP_CMAKE_SYSTEM_NAME=${BOOTSTRAP_CMAKE_SYSTEM_NAME}")
 
 if(UNIX)
   set(BOOTSTRAP_CMAKE_SHARED_LINKER_FLAGS "-ldl -lpthread" CACHE STRING "")
@@ -113,22 +131,21 @@ endif()
 
 set(BOOTSTRAP_LLVM_ENABLE_LTO ON CACHE BOOL "")
 if(NOT APPLE)
-  # TODO: Remove this once we switch to ld64.lld.
   set(BOOTSTRAP_LLVM_ENABLE_LLD ON CACHE BOOL "")
 endif()
 
+# Expose stage2 targets through the stage1 build configuration.
 set(CLANG_BOOTSTRAP_TARGETS
     check-all
+    check-llvm
     check-clang
     check-lld
-    check-llvm
-    check-polly
     llvm-config
-    clang-test-depends
-    lld-test-depends
-    llvm-test-depends
     test-suite
     test-depends
+    llvm-test-depends
+    clang-test-depends
+    lld-test-depends
     distribution
     install-distribution
     install-distribution-stripped
