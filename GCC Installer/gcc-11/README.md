@@ -145,5 +145,7 @@ CentOS 7
   > + libxcrypt: 4.4.28
   > + python: 3.9.12(distcc不支持3.10，回滚到3.9)
   >
-+ 2022-04-17     软链接 openssl 库的输出目录。
-  > 某些工具写死了用 `<PREFIX>/lib` 来查找库。但是openssl 3.0 开始输出目录为 `<PREFIX>/lib64` 。
++ 2022-04-17     Update
+  + 软链接 openssl 库的输出目录。
+    > 某些工具写死了用 `<PREFIX>/lib` 来查找库。但是openssl 3.0 开始输出目录为 `<PREFIX>/lib64` 。
+  + 允许指定GNU源镜像

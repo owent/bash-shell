@@ -37,6 +37,11 @@ if [[ "owent$COMPOMENTS_GDB_STATIC_BUILD" == "owent" ]]; then
   COMPOMENTS_GDB_STATIC_BUILD=0
 fi
 
+if [[ -z "$REPOSITORY_MIRROR_URL_GNU" ]]; then
+  REPOSITORY_MIRROR_URL_GNU="https://ftp.gnu.org/gnu"
+  # REPOSITORY_MIRROR_URL_GNU=http://mirrors.tencent.com/gnu/
+fi
+
 PREFIX_DIR=/usr/local/gcc-$COMPOMENTS_GCC_VERSION
 # ======================= 非交叉编译 =======================
 BUILD_TARGET_CONF_OPTION=""
@@ -263,7 +268,7 @@ swapoff -a
 
 # install m4
 if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list m4 $BUILD_TARGET_COMPOMENTS) ]]; then
-  M4_PKG=$(check_and_download "m4" "m4-*.tar.gz" "https://ftp.gnu.org/gnu/m4/m4-${COMPOMENTS_M4_VERSION}.tar.gz")
+  M4_PKG=$(check_and_download "m4" "m4-*.tar.gz" "$REPOSITORY_MIRROR_URL_GNU/m4/m4-${COMPOMENTS_M4_VERSION}.tar.gz")
   if [ $? -ne 0 ]; then
     echo -e "$M4_PKG"
     exit 1
@@ -285,7 +290,7 @@ fi
 
 # install autoconf
 if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list autoconf $BUILD_TARGET_COMPOMENTS) ]]; then
-  AUTOCONF_PKG=$(check_and_download "autoconf" "autoconf-*.tar.gz" "https://ftp.gnu.org/gnu/autoconf/autoconf-${COMPOMENTS_AUTOCONF_VERSION}.tar.gz")
+  AUTOCONF_PKG=$(check_and_download "autoconf" "autoconf-*.tar.gz" "$REPOSITORY_MIRROR_URL_GNU/autoconf/autoconf-${COMPOMENTS_AUTOCONF_VERSION}.tar.gz")
   if [ $? -ne 0 ]; then
     echo -e "$AUTOCONF_PKG"
     exit 1
@@ -306,7 +311,7 @@ fi
 
 # install automake
 if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list automake $BUILD_TARGET_COMPOMENTS) ]]; then
-  AUTOMAKE_PKG=$(check_and_download "automake" "automake-*.tar.gz" "https://ftp.gnu.org/gnu/automake/automake-${COMPOMENTS_AUTOMAKE_VERSION}.tar.gz")
+  AUTOMAKE_PKG=$(check_and_download "automake" "automake-*.tar.gz" "$REPOSITORY_MIRROR_URL_GNU/automake/automake-${COMPOMENTS_AUTOMAKE_VERSION}.tar.gz")
   if [ $? -ne 0 ]; then
     echo -e "$AUTOMAKE_PKG"
     exit 1
@@ -327,7 +332,7 @@ fi
 
 # install libtool
 if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list libtool $BUILD_TARGET_COMPOMENTS) ]]; then
-  LIBTOOL_PKG=$(check_and_download "libtool" "libtool-*.tar.gz" "https://ftp.gnu.org/gnu/libtool/libtool-${COMPOMENTS_LIBTOOL_VERSION}.tar.gz")
+  LIBTOOL_PKG=$(check_and_download "libtool" "libtool-*.tar.gz" "$REPOSITORY_MIRROR_URL_GNU/libtool/libtool-${COMPOMENTS_LIBTOOL_VERSION}.tar.gz")
   if [ $? -ne 0 ]; then
     echo -e "$LIBTOOL_PKG"
     exit 1
@@ -369,7 +374,7 @@ fi
 
 # install gmp
 if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list gmp $BUILD_TARGET_COMPOMENTS) ]]; then
-  GMP_PKG=$(check_and_download "gmp" "gmp-*.tar.xz" "https://ftp.gnu.org/gnu/gmp/gmp-$COMPOMENTS_GMP_VERSION.tar.xz")
+  GMP_PKG=$(check_and_download "gmp" "gmp-*.tar.xz" "$REPOSITORY_MIRROR_URL_GNU/gmp/gmp-$COMPOMENTS_GMP_VERSION.tar.xz")
   if [ $? -ne 0 ]; then
     echo -e "$GMP_PKG"
     exit 1
@@ -392,7 +397,7 @@ fi
 
 # install mpfr
 if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list mpfr $BUILD_TARGET_COMPOMENTS) ]]; then
-  MPFR_PKG=$(check_and_download "mpfr" "mpfr-*.tar.xz" "https://ftp.gnu.org/gnu/mpfr/mpfr-$COMPOMENTS_MPFR_VERSION.tar.xz")
+  MPFR_PKG=$(check_and_download "mpfr" "mpfr-*.tar.xz" "$REPOSITORY_MIRROR_URL_GNU/mpfr/mpfr-$COMPOMENTS_MPFR_VERSION.tar.xz")
   if [[ $? -ne 0 ]]; then
     echo -e "$MPFR_PKG"
     exit 1
@@ -413,7 +418,7 @@ fi
 
 # install mpc
 if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list mpc $BUILD_TARGET_COMPOMENTS) ]]; then
-  MPC_PKG=$(check_and_download "mpc" "mpc-*.tar.gz" "https://ftp.gnu.org/gnu/mpc/mpc-$COMPOMENTS_MPC_VERSION.tar.gz")
+  MPC_PKG=$(check_and_download "mpc" "mpc-*.tar.gz" "$REPOSITORY_MIRROR_URL_GNU/mpc/mpc-$COMPOMENTS_MPC_VERSION.tar.gz")
   if [[ $? -ne 0 ]]; then
     echo -e "$MPC_PKG"
     exit 1
@@ -533,7 +538,7 @@ fi
 function build_bintuils() {
   INSTALL_PREFIX_PATH="$1"
   if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list binutils $BUILD_TARGET_COMPOMENTS) ]]; then
-    BINUTILS_PKG=$(check_and_download "binutils" "binutils-*.tar.xz" "https://ftp.gnu.org/gnu/binutils/binutils-$COMPOMENTS_BINUTILS_VERSION.tar.xz")
+    BINUTILS_PKG=$(check_and_download "binutils" "binutils-*.tar.xz" "$REPOSITORY_MIRROR_URL_GNU/binutils/binutils-$COMPOMENTS_BINUTILS_VERSION.tar.xz")
     if [[ $? -ne 0 ]]; then
       echo -e "$BINUTILS_PKG"
       exit 1
@@ -828,7 +833,7 @@ fi
 
 # ======================= install ncurses =======================
 if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list ncurses $BUILD_TARGET_COMPOMENTS) ]]; then
-  NCURSES_PKG=$(check_and_download "ncurses" "ncurses-*.tar.gz" "https://invisible-mirror.net/archives/ncurses/ncurses-$COMPOMENTS_NCURSES_VERSION.tar.gz")
+  NCURSES_PKG=$(check_and_download "ncurses" "ncurses-*.tar.gz" "$REPOSITORY_MIRROR_URL_GNU/ncurses/ncurses-$COMPOMENTS_NCURSES_VERSION.tar.gz")
   if [[ $? -ne 0 ]]; then
     echo -e "$NCURSES_PKG"
     exit 1
@@ -925,7 +930,7 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list libxcrypt $BUIL
 fi
 
 if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list gdbm $BUILD_TARGET_COMPOMENTS) ]]; then
-  GDBM_PKG=$(check_and_download "gdbm" "gdbm-*.tar.gz" "https://ftp.gnu.org/gnu/gdbm/gdbm-$COMPOMENTS_GDBM_VERSION.tar.gz")
+  GDBM_PKG=$(check_and_download "gdbm" "gdbm-*.tar.gz" "$REPOSITORY_MIRROR_URL_GNU/gdbm/gdbm-$COMPOMENTS_GDBM_VERSION.tar.gz")
   if [[ $? -ne 0 ]]; then
     echo -e "$GDBM_PKG"
     exit 1
@@ -992,7 +997,7 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list gdb $BUILD_TARG
   fi
 
   # ======================= 正式安装GDB =======================
-  GDB_PKG=$(check_and_download "gdb" "gdb-*.tar.xz" "https://ftp.gnu.org/gnu/gdb/gdb-$COMPOMENTS_GDB_VERSION.tar.xz")
+  GDB_PKG=$(check_and_download "gdb" "gdb-*.tar.xz" "$REPOSITORY_MIRROR_URL_GNU/gdb/gdb-$COMPOMENTS_GDB_VERSION.tar.xz")
   if [[ $? -ne 0 ]]; then
     echo -e "$GDB_PKG"
     exit 1
@@ -1036,7 +1041,7 @@ fi
 
 # ======================= install global tool =======================
 if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list global $BUILD_TARGET_COMPOMENTS) ]]; then
-  GLOBAL_PKG=$(check_and_download "global" "global-*.tar.gz" "https://ftp.gnu.org/gnu/global/global-$COMPOMENTS_GLOBAL_VERSION.tar.gz")
+  GLOBAL_PKG=$(check_and_download "global" "global-*.tar.gz" "$REPOSITORY_MIRROR_URL_GNU/global/global-$COMPOMENTS_GLOBAL_VERSION.tar.gz")
   if [ $? -ne 0 ]; then
     echo -e "$GLOBAL_PKG"
     exit 1
