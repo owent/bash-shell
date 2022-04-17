@@ -116,7 +116,7 @@ if(BOOTSTRAP_CMAKE_SYSTEM_NAME)
     set(RUNTIMES_${target}_LIBCXX_ENABLE_SHARED OFF CACHE BOOL "")
     set(RUNTIMES_${target}_LIBCXX_ENABLE_STATIC_ABI_LIBRARY ON CACHE BOOL "")
     # set(RUNTIMES_${target}_LIBCXX_ABI_VERSION 2 CACHE STRING "") # ABI 2 is not stable now
-    set(RUNTIMES_${target}_LLVM_ENABLE_RUNTIMES "compiler-rt;libc;libcxx;libcxxabi;libunwind;openmp" CACHE STRING "")
+    set(RUNTIMES_${target}_LLVM_ENABLE_RUNTIMES "compiler-rt;libcxx;libcxxabi;libunwind;openmp" CACHE STRING "")
     set(RUNTIMES_${target}_SANITIZER_CXX_ABI "libc++" CACHE STRING "")
     set(RUNTIMES_${target}_SANITIZER_CXX_ABI_INTREE ON CACHE BOOL "")
   endif()
