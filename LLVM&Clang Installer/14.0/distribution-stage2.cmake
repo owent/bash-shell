@@ -94,18 +94,12 @@ if(WIN32)
 endif()
 
 # Intel JIT API support
-if(CMAKE_SYSTEM_NAME MATCHES "Linux|Windows")
+if(CMAKE_HOST_SYSTEM_NAME MATCHES "Linux|Windows")
   set(LLVM_USE_INTEL_JITEVENTS ON CACHE BOOL "")
 endif()
 # Cross compiling
 if("${LLVM_TARGETS_TO_BUILD}" MATCHES "Native|X86")
-  if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-    if(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64")
-      set(LINUX_NATIVE_TARGET x86_64-unknown-linux-gnu)
-    elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "i386|i686|x86")
-      set(LINUX_NATIVE_TARGET i386-unknown-linux-gnu)
-    endif()
-  elseif(CMAKE_HOST_SYSTEM_NAME STREQUAL "Linux")
+  if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Linux")
     cmake_host_system_information(RESULT LINUX_NATIVE_IS_64BIT QUERY IS_64BIT)
     if(CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "x86_64" OR ("${CMAKE_HOST_SYSTEM_PROCESSOR}" STREQUAL ""
                                                         AND LINUX_NATIVE_IS_64BIT))
@@ -115,9 +109,6 @@ if("${LLVM_TARGETS_TO_BUILD}" MATCHES "Native|X86")
     endif()
   endif()
 endif()
-message(STATUS "Stage2: CMAKE_SYSTEM_NAME=${CMAKE_SYSTEM_NAME}")
-message(STATUS "Stage2: CMAKE_SYSTEM_PROCESSOR=${CMAKE_SYSTEM_PROCESSOR}")
-message(STATUS "Stage2: CMAKE_SYSTEM_VERSION=${CMAKE_SYSTEM_VERSION}")
 message(STATUS "Stage2: CMAKE_HOST_SYSTEM_NAME=${CMAKE_HOST_SYSTEM_NAME}")
 message(STATUS "Stage2: CMAKE_HOST_SYSTEM_PROCESSOR=${CMAKE_HOST_SYSTEM_PROCESSOR}")
 message(STATUS "Stage2: CMAKE_HOST_SYSTEM_VERSION=${CMAKE_HOST_SYSTEM_VERSION}")
@@ -126,7 +117,7 @@ message(STATUS "Stage2: LINUX_NATIVE_IS_64BIT=${LINUX_NATIVE_IS_64BIT}")
 message(STATUS "Stage2: LINUX_NATIVE_TARGET=${LINUX_NATIVE_TARGET}")
 
 foreach(target aarch64-unknown-linux-gnu;armv7-unknown-linux-gnueabihf;i386-unknown-linux-gnu;x86_64-unknown-linux-gnu)
-  if(LINUX_${target}_SYSROOT)
+  if(LINUX_${target}_SYSROOT OR target STREQUAL "${LINUX_NATIVE_TARGET}")
     # Set the per-target builtins options.
     list(APPEND BUILTIN_TARGETS "${target}")
     set(BUILTINS_${target}_CMAKE_SYSTEM_NAME Linux CACHE STRING "")
@@ -345,7 +336,7 @@ if(APPLE)
     llvm-libtool-darwin
     llvm-otool)
 endif()
-if(CMAKE_SYSTEM_NAME MATCHES "Linux|Windows")
+if(CMAKE_HOST_SYSTEM_NAME MATCHES "Linux|Windows")
   list(APPEND LLVM_TOOLCHAIN_TOOLS_SELECT llvm-jitlink llvm-jitlistener)
 endif()
 set(LLVM_TOOLCHAIN_TOOLS ${LLVM_TOOLCHAIN_TOOLS_SELECT} CACHE STRING "")
@@ -374,16 +365,20 @@ set(LLVM_DISTRIBUTION_ADDTIONAL_COMPONENTS
     opt-viewer
     # From <llvm-project>/clang/cmake/caches/Apple-stage2.cmake
     Remarks
-    # From <llvm-project>/clang/cmake/caches/MultiDistributionExample.cmake
+    # From <llvm-project>/clang/cmake/caches/MultiDistributionExample.cmake . These targets are development targets, and
+    # them will only available when LLVM_INSTALL_TOOLCHAIN_ONLY=OFF
     cmake-exports
     llvm-headers
     llvm-libraries
     clang-cmake-exports
     clang-headers
     clang-libraries)
+#[[
+# clang-cpp is a development library, and linking it will cost alot memory, we ignore it.
 if(UNIX OR (MINGW AND LLVM_LINK_LLVM_DYLIB))
   list(APPEND LLVM_DISTRIBUTION_ADDTIONAL_COMPONENTS clang-cpp)
 endif()
+]]
 if(NOT WIN32)
   list(APPEND LLVM_DISTRIBUTION_ADDTIONAL_COMPONENTS lldb-python-scripts)
 endif()
