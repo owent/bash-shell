@@ -123,7 +123,7 @@ CentOS 7&CentOS 8
   > endif()
   > ```
   >
-+ [`distribution-stage1.cmake`][11]: `LLVM_ENABLE_PROJECTS` 增加 `libclc;mlir;pstl`
++ [`distribution-stage1.cmake`][11]: `LLVM_ENABLE_PROJECTS` 增加 `lldb;libclc;mlir;pstl`
   > 注意顺序要参考 [llvm/CMakeLists.txt][10] 内的 `LLVM_ALL_PROJECTS`
 + [`distribution-stage2.cmake`][12]: `LLVM_ENABLE_PROJECTS` 增加 `lldb;libclc;mlir;pstl`
   > 注意顺序要参考 [llvm/CMakeLists.txt][10] 内的 `LLVM_ALL_PROJECTS`
@@ -180,8 +180,6 @@ CentOS 7&CentOS 8
     + llvm-link
     + llvm-ml
     + llvm-strings
-    + LLVM
-    + Remarks
   + 最后添加
     >
     > ```cmake
@@ -220,12 +218,19 @@ set(LLVM_DISTRIBUTION_ADDTIONAL_COMPONENTS
     clang-extdef-mapping
     clang-rename
     clang-repl
-    clang-cmake-exports
     diagtool
     modularize
     pp-trace
-    clang-libraries
-    opt-viewer)
+    opt-viewer
+    # From <llvm-project>/clang/cmake/caches/Apple-stage2.cmake
+    Remarks
+    # From <llvm-project>/clang/cmake/caches/MultiDistributionExample.cmake
+    cmake-exports
+    llvm-headers
+    llvm-libraries
+    clang-cmake-exports
+    clang-headers
+    clang-libraries)
 if(NOT WIN32)
   list(APPEND LLVM_DISTRIBUTION_ADDTIONAL_COMPONENTS lldb-python-scripts)
 endif()

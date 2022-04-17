@@ -332,9 +332,7 @@ set(LLVM_TOOLCHAIN_TOOLS_SELECT
     llvm-jitlistener
     llvm-link
     llvm-ml
-    llvm-strings
-    LLVM
-    Remarks)
+    llvm-strings)
 if(APPLE)
   list(
     APPEND
@@ -366,12 +364,19 @@ set(LLVM_DISTRIBUTION_ADDTIONAL_COMPONENTS
     clang-extdef-mapping
     clang-rename
     clang-repl
-    clang-cmake-exports
     diagtool
     modularize
     pp-trace
-    clang-libraries
-    opt-viewer)
+    opt-viewer
+    # From <llvm-project>/clang/cmake/caches/Apple-stage2.cmake
+    Remarks
+    # From <llvm-project>/clang/cmake/caches/MultiDistributionExample.cmake
+    cmake-exports
+    llvm-headers
+    llvm-libraries
+    clang-cmake-exports
+    clang-headers
+    clang-libraries)
 if(NOT WIN32)
   list(APPEND LLVM_DISTRIBUTION_ADDTIONAL_COMPONENTS lldb-python-scripts)
 endif()
