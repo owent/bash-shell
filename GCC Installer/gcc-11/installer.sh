@@ -39,7 +39,7 @@ fi
 
 if [[ -z "$REPOSITORY_MIRROR_URL_GNU" ]]; then
   REPOSITORY_MIRROR_URL_GNU="https://ftp.gnu.org/gnu"
-  # REPOSITORY_MIRROR_URL_GNU=http://mirrors.tencent.com/gnu/
+  # REPOSITORY_MIRROR_URL_GNU=http://mirrors.tencent.com/gnu
 fi
 
 PREFIX_DIR=/usr/local/gcc-$COMPOMENTS_GCC_VERSION
