@@ -93,6 +93,10 @@ if(WIN32)
   set(RUNTIMES_${target}_LLVM_ENABLE_RUNTIMES "compiler-rt;libcxx" CACHE STRING "")
 endif()
 
+# Intel JIT API support
+if(CMAKE_SYSTEM_NAME MATCHES "Linux|Windows")
+  set(LLVM_USE_INTEL_JITEVENTS ON CACHE BOOL "")
+endif()
 # Cross compiling
 if("${LLVM_TARGETS_TO_BUILD}" MATCHES "Native|X86")
   if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
@@ -291,7 +295,7 @@ set(LLVM_BUILTIN_TARGETS "${BUILTIN_TARGETS}" CACHE STRING "")
 set(LLVM_RUNTIME_TARGETS "${RUNTIME_TARGETS}" CACHE STRING "")
 
 # Setup toolchain.
-set(LLVM_INSTALL_TOOLCHAIN_ONLY ON CACHE BOOL "")
+set(LLVM_INSTALL_TOOLCHAIN_ONLY OFF CACHE BOOL "")
 # See <llvm-project>/llvm/test/CMakeLists.txt
 set(LLVM_TOOLCHAIN_TOOLS_SELECT
     dsymutil
@@ -328,8 +332,6 @@ set(LLVM_TOOLCHAIN_TOOLS_SELECT
     llvm-cxxdump
     llvm-cxxmap
     llvm-install-name-tool
-    llvm-jitlink
-    llvm-jitlistener
     llvm-link
     llvm-ml
     llvm-strings)
@@ -342,6 +344,9 @@ if(APPLE)
     llvm-lipo
     llvm-libtool-darwin
     llvm-otool)
+endif()
+if(CMAKE_SYSTEM_NAME MATCHES "Linux|Windows")
+  list(APPEND LLVM_TOOLCHAIN_TOOLS_SELECT llvm-jitlink llvm-jitlistener)
 endif()
 set(LLVM_TOOLCHAIN_TOOLS ${LLVM_TOOLCHAIN_TOOLS_SELECT} CACHE STRING "")
 
@@ -360,7 +365,6 @@ set(LLVM_DISTRIBUTION_ADDTIONAL_COMPONENTS
     # add_clang_tool(xxx) in <llvm-project>/clang
     clang-change-namespace
     clang-check
-    clang-cpp
     clang-extdef-mapping
     clang-rename
     clang-repl
@@ -377,6 +381,9 @@ set(LLVM_DISTRIBUTION_ADDTIONAL_COMPONENTS
     clang-cmake-exports
     clang-headers
     clang-libraries)
+if(UNIX OR (MINGW AND LLVM_LINK_LLVM_DYLIB))
+  list(APPEND LLVM_DISTRIBUTION_ADDTIONAL_COMPONENTS clang-cpp)
+endif()
 if(NOT WIN32)
   list(APPEND LLVM_DISTRIBUTION_ADDTIONAL_COMPONENTS lldb-python-scripts)
 endif()

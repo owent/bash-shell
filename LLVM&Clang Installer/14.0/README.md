@@ -113,6 +113,7 @@ CentOS 7&CentOS 8
 + All: `set(PACKAGE_VENDOR OWenT CACHE STRING "")`
 + All: `set(LLVM_TARGETS_TO_BUILD Native CACHE STRING "") # X86;ARM;AArch64;RISCV`
 + All: 注释掉所有的`set(*LIBCXX_ABI_VERSION 2*)` , ABI 2还未稳定
++ [`distribution-stage2.cmake`][12]: `set(LLVM_INSTALL_TOOLCHAIN_ONLY OFF CACHE BOOL "")` ，我们需要开发包
 + [`distribution-stage1.cmake`][11]: `CLANG_BOOTSTRAP_CMAKE_ARGS` 改为
   >
   > ```cmake
@@ -130,6 +131,10 @@ CentOS 7&CentOS 8
 + [`distribution-stage2.cmake`][12]: `foreach(target *-linux-*)` 前插入适配脚本
   >
   > ```cmake
+  > # Intel JIT API support
+  > if(CMAKE_SYSTEM_NAME MATCHES "Linux|Windows")
+  >   set(LLVM_USE_INTEL_JITEVENTS ON CACHE BOOL "")
+  > endif()
   > # Cross compiling
   > if("${LLVM_TARGETS_TO_BUILD}" MATCHES "Native|X86")
   >   if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
@@ -193,54 +198,56 @@ CentOS 7&CentOS 8
     >     llvm-libtool-darwin
     >     llvm-otool)
     > endif()
+    > if(CMAKE_SYSTEM_NAME MATCHES "Linux|Windows")
+    >   list(APPEND LLVM_TOOLCHAIN_TOOLS_SELECT llvm-jitlink llvm-jitlistener)
+    > endif()
     > set(LLVM_TOOLCHAIN_TOOLS ${LLVM_TOOLCHAIN_TOOLS_SELECT} CACHE STRING "")
     > ```
     >
 + [`distribution-stage2.cmake`][12]: `LLVM_DISTRIBUTION_COMPONENTS` 增加 `${LLVM_DISTRIBUTION_ADDTIONAL_COMPONENTS}`
-
-```cmake
-set(LLVM_DISTRIBUTION_ADDTIONAL_COMPONENTS
-    # add_lldb_library(...) in <llvm-project>/lldb
-    liblldb
-    # add_lldb_tool(...) in <llvm-project>/lldb
-    lldb
-    lldb-server
-    lldb-instr
-    lldb-vscode
-    # add_llvm_install_targets(xxx) in <llvm-project>/clang
-    libclang-headers
-    libclang-python-bindings
-    libclang
-    # add_clang_tool(xxx) in <llvm-project>/clang
-    clang-change-namespace
-    clang-check
-    clang-cpp
-    clang-extdef-mapping
-    clang-rename
-    clang-repl
-    diagtool
-    modularize
-    pp-trace
-    opt-viewer
-    # From <llvm-project>/clang/cmake/caches/Apple-stage2.cmake
-    Remarks
-    # From <llvm-project>/clang/cmake/caches/MultiDistributionExample.cmake
-    cmake-exports
-    llvm-headers
-    llvm-libraries
-    clang-cmake-exports
-    clang-headers
-    clang-libraries)
-if(NOT WIN32)
-  list(APPEND LLVM_DISTRIBUTION_ADDTIONAL_COMPONENTS lldb-python-scripts)
-endif()
-
-set(LLVM_DISTRIBUTION_COMPONENTS
-    # ============ Additional tools begin ============
-    ${LLVM_DISTRIBUTION_ADDTIONAL_COMPONENTS}
-    # ============ Additional tools end ============
-)    
-```
+  >
+  > ```cmake
+  > set(LLVM_DISTRIBUTION_ADDTIONAL_COMPONENTS
+  >     # add_lldb_library(...) in <llvm-project>/lldb
+  >     liblldb
+  >     # add_lldb_tool(...) in <llvm-project>/lldb
+  >     lldb
+  >     lldb-server
+  >     lldb-instr
+  >     lldb-vscode
+  >     # add_llvm_install_targets(xxx) in <llvm-project>/clang
+  >     libclang-headers
+  >     libclang-python-bindings
+  >     libclang
+  >     # add_clang_tool(xxx) in <llvm-project>/clang
+  >     clang-change-namespace
+  >     clang-check
+  >     clang-extdef-mapping
+  >     clang-rename
+  >     clang-repl
+  >     diagtool
+  >     modularize
+  >     pp-trace
+  >     opt-viewer
+  >     # From <llvm-project>/clang/cmake/caches/Apple-stage2.cmake
+  >     Remarks
+  >     # From <llvm-project>/clang/cmake/caches/MultiDistributionExample.cmake
+  >     cmake-exports
+  >     llvm-headers
+  >     llvm-libraries
+  >     clang-cmake-exports
+  >     clang-headers
+  >     clang-libraries)
+  > if(NOT WIN32)
+  >   list(APPEND LLVM_DISTRIBUTION_ADDTIONAL_COMPONENTS lldb-python-scripts)
+  > endif()
+  > 
+  > set(LLVM_DISTRIBUTION_COMPONENTS
+  >     # ============ Additional tools begin ============
+  >     ${LLVM_DISTRIBUTION_ADDTIONAL_COMPONENTS}
+  >     # ============ Additional tools end ============
+  > )    
+  > ```
 
 ## 参考文献
 
