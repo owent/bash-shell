@@ -2,8 +2,6 @@
 
 LLVM + Clang 14.0 发布啦，本脚本在之前LLVM + Clang 13.0 的构建脚本的基础上修改而来。
 
-> 因为自举编译阶段会失败，临时关闭 ```polly``` 的编译。
-
 如果在一些比较老的系统上，自带的gcc版本过低（比如CentOS 7）.可以先用 https://github.com/owent-utils/bash-shell/tree/master/GCC%20Installer/gcc-11 编译出新版gcc，再用这个gcc来编译llvm+clang工具链。
 
 ## 编译脚本使用示例
@@ -19,23 +17,22 @@ tail -f nohup.out;
 
 ## NOTICE
 
-1. 第二次自举编译完成后，不再依赖libstdc++，转而依赖编译出来的libc++和libc++abi,但是仍然会依赖libgcc_s.so
-2. 现在采用了git拉取[llvm-project][1]仓库，额外编译[libedit][2]时使用wger下载
-3. CentOS 7下测试通过, 本地测试过的编译命令如下
+1. 现在采用了git拉取[llvm-project][1]仓库，额外编译[libedit][2]时使用 `curl` 下载
+2. CentOS 7下测试通过, 本地测试过的编译命令如下
 
 > ```bash
 > clang -O0 -g -ggdb -std=c++11 -stdlib=libstdc++ -lstdc++ [源文件...]
 > clang++ -O0 -g -ggdb -std=c++11 -stdlib=libstdc++ [源文件...]
-> clang -O0 -g -ggdb -std=c++11 -stdlib=libc++ -lc++ -lc++abi [源文件...]
-> clang -O0 -g -ggdb -std=c++14 -stdlib=libc++ -lc++ -lc++abi [源文件...]
-> clang++ -O0 -g -ggdb -std=c++11 -stdlib=libc++ -lc++abi [源文件...]
-> clang++ -O0 -g -ggdb -std=c++14 -stdlib=libc++ -lc++abi [源文件...]
+> clang -O0 -g -ggdb -std=c++11 -stdlib=libc++ -lc++ -lc++abi -lunwind [源文件...]
+> clang -O0 -g -ggdb -std=c++14 -stdlib=libc++ -lc++ -lc++abi -lunwind [源文件...]
+> clang++ -O0 -g -ggdb -std=c++11 -lunwind [源文件...]
+> clang++ -O0 -g -ggdb -std=c++14 -lunwind [源文件...]
 > 其他选项参见: llvm-config --cflags ; llvm-config --cxxflags ; llvm-config --ldflags
 > ```
 
-+ 如果使用***clang -stdlib=libc++***则需要加上***-lc++ -lc++abi***的链接选项,或者使用***clang++ -stdlib=libc++ -lc++abi***。（无论如何-lc++abi都要手动加链接符号）
-+ 如果使用***clang -stdlib=libstdc++***则需要加上***-lstdc++***的链接选项,或者使用***clang++ -stdlib=libstdc++***
-+ 建议使用**llvm-config --cflags**,**llvm-config --cxxflags**和**llvm-config --ldflags**来查看需要附加的编译选项
++ 如果使用 `clang -stdlib=libc++` 则需要加上 `-lc++ -lc++abi -lunwind` 的链接选项，或者使用 `clang++  -stdlib=libc++ -lunwind`。我们剥离了对 `libgcc_s` 的依赖，但是需要使用 `libunwind` 代替相关功能。
++ 如果使用 `clang -stdlib=libstdc++` 则需要加上 `-lstdc++` 的链接选项，或使用 `clang++ -stdlib=libstdc++` 。
++ 建议使用 `llvm-config --cflags` , `llvm-config --cxxflags` 和 `llvm-config --ldflags` 来查看需要附加的编译选项。
 
 ## 发行注记
 
