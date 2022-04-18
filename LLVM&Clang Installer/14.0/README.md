@@ -110,7 +110,12 @@ CentOS 7&CentOS 8
 + All: `set(PACKAGE_VENDOR OWenT CACHE STRING "")`
 + All: `set(LLVM_TARGETS_TO_BUILD Native CACHE STRING "") # X86;ARM;AArch64;RISCV`
 + All: 注释掉所有的`set(*LIBCXX_ABI_VERSION 2*)` , ABI 2还未稳定
-+ [`distribution-stage2.cmake`][12]: `set(LLVM_INSTALL_TOOLCHAIN_ONLY OFF CACHE BOOL "")` ，我们需要开发包
++ All: `LLVM_ENABLE_PROJECTS` 增加 `lldb;libclc;mlir;pstl`
+  > 注意顺序要参考 [llvm/CMakeLists.txt][10] 内的 `LLVM_ALL_PROJECTS`
++ ~[`distribution-stage2.cmake`][12]: `set(LLVM_INSTALL_TOOLCHAIN_ONLY OFF CACHE BOOL "")` ，我们需要开发包~
++ [`distribution-stage1.cmake`][11] 的 `BOOTSTRAP_CMAKE_SYSTEM_NAME` 内和 [`distribution-stage2.cmake`][12]
+  + `*LIBCXXABI_INSTALL_LIBRARY` 改为 `ON`
+  + `*LIBUNWIND_INSTALL_LIBRARY` 改为 `ON`
 + [`distribution-stage1.cmake`][11]: `CLANG_BOOTSTRAP_CMAKE_ARGS` 改为
   >
   > ```cmake
@@ -121,10 +126,6 @@ CentOS 7&CentOS 8
   > endif()
   > ```
   >
-+ [`distribution-stage1.cmake`][11]: `LLVM_ENABLE_PROJECTS` 增加 `lldb;libclc;mlir;pstl`
-  > 注意顺序要参考 [llvm/CMakeLists.txt][10] 内的 `LLVM_ALL_PROJECTS`
-+ [`distribution-stage2.cmake`][12]: `LLVM_ENABLE_PROJECTS` 增加 `lldb;libclc;mlir;pstl`
-  > 注意顺序要参考 [llvm/CMakeLists.txt][10] 内的 `LLVM_ALL_PROJECTS`
 + [`distribution-stage2.cmake`][12]: `foreach(target *-linux-*)` 后的 `if(LINUX_${target}_SYSROOT)` 改为 `if(LINUX_${target}_SYSROOT OR target STREQUAL "${LINUX_NATIVE_TARGET}")` ，并在前面插入适配脚本
   >
   > ```cmake
