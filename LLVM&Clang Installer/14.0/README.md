@@ -219,6 +219,7 @@ CentOS 7&CentOS 8
   >     opt-viewer
   >     # From <llvm-project>/clang/cmake/caches/Apple-stage2.cmake
   >     Remarks
+  >     #[[
   >     # From <llvm-project>/clang/cmake/caches/MultiDistributionExample.cmake . These targets are development targets, and
   >     # them will only available when LLVM_INSTALL_TOOLCHAIN_ONLY=OFF
   >     cmake-exports
@@ -226,9 +227,12 @@ CentOS 7&CentOS 8
   >     llvm-libraries
   >     clang-cmake-exports
   >     clang-headers
-  >     clang-libraries)
+  >     clang-libraries
+  >     ]]
+  > )
   > #[[
-  > # clang-cpp is a development library, and linking it will cost alot memory, we ignore it.
+  > # clang-cpp is a development library, and linking it will cost a lot memory.It will only available when
+  > # LLVM_INSTALL_TOOLCHAIN_ONLY=OFF
   > if(UNIX OR (MINGW AND LLVM_LINK_LLVM_DYLIB))
   >   list(APPEND LLVM_DISTRIBUTION_ADDTIONAL_COMPONENTS clang-cpp)
   > endif()

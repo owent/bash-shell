@@ -286,7 +286,7 @@ set(LLVM_BUILTIN_TARGETS "${BUILTIN_TARGETS}" CACHE STRING "")
 set(LLVM_RUNTIME_TARGETS "${RUNTIME_TARGETS}" CACHE STRING "")
 
 # Setup toolchain.
-set(LLVM_INSTALL_TOOLCHAIN_ONLY OFF CACHE BOOL "")
+set(LLVM_INSTALL_TOOLCHAIN_ONLY ON CACHE BOOL "")
 # See <llvm-project>/llvm/test/CMakeLists.txt
 set(LLVM_TOOLCHAIN_TOOLS_SELECT
     dsymutil
@@ -365,6 +365,7 @@ set(LLVM_DISTRIBUTION_ADDTIONAL_COMPONENTS
     opt-viewer
     # From <llvm-project>/clang/cmake/caches/Apple-stage2.cmake
     Remarks
+    #[[
     # From <llvm-project>/clang/cmake/caches/MultiDistributionExample.cmake . These targets are development targets, and
     # them will only available when LLVM_INSTALL_TOOLCHAIN_ONLY=OFF
     cmake-exports
@@ -372,13 +373,17 @@ set(LLVM_DISTRIBUTION_ADDTIONAL_COMPONENTS
     llvm-libraries
     clang-cmake-exports
     clang-headers
-    clang-libraries)
+    clang-libraries
+    ]]
+)
 
-# clang-cpp is a development library, and linking it will cost a lot memory. But whether we install it, it will be
-# created and linked.
+#[[
+# clang-cpp is a development library, and linking it will cost a lot memory.It will only available when
+# LLVM_INSTALL_TOOLCHAIN_ONLY=OFF
 if(UNIX OR (MINGW AND LLVM_LINK_LLVM_DYLIB))
   list(APPEND LLVM_DISTRIBUTION_ADDTIONAL_COMPONENTS clang-cpp)
 endif()
+]]
 
 if(NOT WIN32)
   list(APPEND LLVM_DISTRIBUTION_ADDTIONAL_COMPONENTS lldb-python-scripts)
