@@ -315,8 +315,8 @@ set(LLVM_TOOLCHAIN_TOOLS_SELECT
     sancov
     scan-build-py
     # Additional
-    scan-build
-    scan-view
+    llc
+    lli
     llvm-addr2line
     llvm-as
     llvm-config
@@ -324,8 +324,13 @@ set(LLVM_TOOLCHAIN_TOOLS_SELECT
     llvm-cxxmap
     llvm-install-name-tool
     llvm-link
+    llvm-lto
+    llvm-lto2
+    llvm-mc
     llvm-ml
-    llvm-strings)
+    llvm-strings
+    scan-build
+    scan-view)
 if(APPLE)
   list(
     APPEND
@@ -363,6 +368,7 @@ set(LLVM_DISTRIBUTION_ADDTIONAL_COMPONENTS
     modularize
     pp-trace
     opt-viewer
+    # unwind, cxx, cxxabi are already included in runtimes
     # From <llvm-project>/clang/cmake/caches/Apple-stage2.cmake
     Remarks
     #[[

@@ -218,6 +218,7 @@ CentOS 7&CentOS 8
   >     modularize
   >     pp-trace
   >     opt-viewer
+  >     # unwind, cxx, cxxabi are already included in runtimes
   >     # From <llvm-project>/clang/cmake/caches/Apple-stage2.cmake
   >     Remarks
   >     #[[
