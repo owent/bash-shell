@@ -373,12 +373,13 @@ set(LLVM_DISTRIBUTION_ADDTIONAL_COMPONENTS
     clang-cmake-exports
     clang-headers
     clang-libraries)
-#[[
-# clang-cpp is a development library, and linking it will cost alot memory, we ignore it.
+
+# clang-cpp is a development library, and linking it will cost a lot memory. But whether we install it, it will be
+# created and linked.
 if(UNIX OR (MINGW AND LLVM_LINK_LLVM_DYLIB))
   list(APPEND LLVM_DISTRIBUTION_ADDTIONAL_COMPONENTS clang-cpp)
 endif()
-]]
+
 if(NOT WIN32)
   list(APPEND LLVM_DISTRIBUTION_ADDTIONAL_COMPONENTS lldb-python-scripts)
 endif()
