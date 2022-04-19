@@ -1104,7 +1104,7 @@ import os
 import glob
 
 for stdcxx_path in glob.glob('$PREFIX_DIR/share/gcc-*/python'):
-dir_ = os.path.expanduser(stdcxx_path)
+    dir_ = os.path.expanduser(stdcxx_path)
 if os.path.exists(dir_) and not dir_ in sys.path:
     sys.path.insert(0, dir_)
     from libstdcxx.v6.printers import register_libstdcxx_printers
