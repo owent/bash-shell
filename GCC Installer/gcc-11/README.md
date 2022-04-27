@@ -1,5 +1,4 @@
-Linux 编译安装 GCC 11
-======
+# Linux 编译安装 GCC 11
 
 GCC 11发布啦，本脚本在之前GCC 10的基础上做了稍许更新 。增加了用于rpmbuild的打包文件。
 
@@ -56,55 +55,56 @@ GCC 11的大致(C/C++)内容如下：
 23. gperf
 24. cmake
 
-### 我编译的环境
+## 我编译的环境
 
-#### 系统
+### 系统
 
-CentOS 7
+CentOS 7 & CentOS 8
 
-#### 编译的依赖库和工具
+### 编译的依赖库和工具
 
 + m4 latest
 + autoconf latest
-+ automake 1.16.3
-+ libtool 2.4.6
++ automake 1.16.5
++ libtool 2.4.7
 + pkgconfig 0.29.2
 + gmp 6.2.1
 + mpfr 4.1.0
 + mpc 1.2.1
 + isl 0.18
-+ libatomic_ops 7.6.10
-+ bdw-gc 8.0.4
-+ zstd 1.5.0
-+ openssl 1.1.1k
-+ libexpat 2.4.1
-+ libxcrypt 4.4.23
++ libatomic_ops 7.6.12
++ bdw-gc 8.0.6
++ zstd 1.5.2
++ openssl 3.0.2
++ libexpat 2.4.8
++ libxcrypt 4.4.28
 + gdbm latest
++ readline 8.1.2
 
-#### 编译目标
+### 编译目标
 
-+ gcc 11.2.0
-+ binutils 2.36.1
++ gcc 11.3.0
++ binutils 2.38
 + python 3.9.12 *[按需]*
-+ gdb 10.2 (如果存在ncurses-devel包)
-+ global 6.6.6
++ gdb 11.2
++ global 6.6.8
 + lz4 1.9.3 *[非必须]*
 + zlib 1.2.11 *[非必须]*
-+ libffi 3.3 *[非必须]*
-+ ncurses 6.2 *[非必须]*
++ libffi 3.4.2 *[非必须]*
++ ncurses 6.3 *[非必须]*
 
-#### 注
+### 注
 
 + (所有的库都会被安装在**$PREFEX_DIR**里)
 
-#### 额外建议
+### 额外建议
 
 给特定用户安装 gdb的pretty-printer 用以友好打印stdc++的stl容器
 
 1. 在执行 install.sh 脚本前安装 ncurses-devel 和 python-devel， 用于编译gdb和开启python功能
 2. gdb载入后可使用 ```so [安装目录]/load-libstdc++-gdb-printers.py``` 手动加载gdb的pretty printers
 
-#### History
+### History
 
 + 2021-05-06    Created
 + 2021-06-23    Update
@@ -149,3 +149,8 @@ CentOS 7
   + 软链接 openssl 库的输出目录。
     > 某些工具写死了用 `<PREFIX>/lib` 来查找库。但是openssl 3.0 开始输出目录为 `<PREFIX>/lib64` 。
   + 允许指定GNU源镜像
++ 2022-04-27     Update
+  >
+  > + gcc: 11.3.0
+  >
+  + 增加 readline: 8.1.2 (python 内置模块依赖项)

@@ -13,7 +13,7 @@ COMPOMENTS_MPC_VERSION=1.2.1
 COMPOMENTS_ISL_VERSION=0.24
 COMPOMENTS_LIBATOMIC_OPS_VERSION=7.6.12
 COMPOMENTS_BDWGC_VERSION=8.0.6
-COMPOMENTS_GCC_VERSION=11.2.0
+COMPOMENTS_GCC_VERSION=11.3.0
 COMPOMENTS_BINUTILS_VERSION=2.38
 COMPOMENTS_OPENSSL_VERSION=3.0.2
 COMPOMENTS_ZLIB_VERSION=1.2.11
@@ -22,6 +22,7 @@ COMPOMENTS_NCURSES_VERSION=6.3
 COMPOMENTS_LIBEXPAT_VERSION=2.4.8
 COMPOMENTS_LIBXCRYPT_VERSION=4.4.28
 COMPOMENTS_GDBM_VERSION=latest
+COMPOMENTS_READLINE_VERSION=8.1.2
 COMPOMENTS_PYTHON_VERSION=3.9.12
 COMPOMENTS_GDB_VERSION=11.2
 COMPOMENTS_GLOBAL_VERSION=6.6.8
@@ -87,7 +88,7 @@ while getopts "dp:cht:d:g:n" OPTION; do
       echo "-c                          clean build cache."
       echo "-d                          download only."
       echo "-h                          help message."
-      echo "-t [build target]           set build target(m4 autoconf automake libtool pkgconfig gmp mpfr mpc isl zstd lz4 zlib libffi gcc binutils openssl ncurses libexpat libxcrypt gdbm gdb libatomic_ops bdw-gc global)."
+      echo "-t [build target]           set build target(m4 autoconf automake libtool pkgconfig gmp mpfr mpc isl zstd lz4 zlib libffi gcc binutils openssl readline ncurses libexpat libxcrypt gdbm gdb libatomic_ops bdw-gc global)."
       echo "-d [compoment option]       add dependency compoments build options."
       echo "-g [gnu option]             add gcc,binutils,gdb build options."
       echo "-n                          print toolchain version and exit."
@@ -953,6 +954,30 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list gdbm $BUILD_TAR
   fi
 fi
 
+if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list readline $BUILD_TARGET_COMPOMENTS) ]]; then
+  READLINE_PKG=$(check_and_download "readline" "readline-*.tar.gz" "$REPOSITORY_MIRROR_URL_GNU/readline/readline-$COMPOMENTS_READLINE_VERSION.tar.gz")
+  if [[ $? -ne 0 ]]; then
+    echo -e "$READLINE_PKG"
+    exit 1
+  fi
+  if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
+    tar -axvf "$READLINE_PKG"
+    READLINE_DIR=$(ls -d readline-* | grep -v \.tar\.gz)
+    cd "$READLINE_DIR"
+    make clean || true
+    env LDFLAGS="${LDFLAGS//\$/\$\$} -static" ./configure "--prefix=$PREFIX_DIR" --with-pic=yes --enable-static=yes --enable-shared=no \
+      --enable-multibyte --with-curses
+    env LDFLAGS="${LDFLAGS//\$/\$\$} -static" make $BUILD_THREAD_OPT || env LDFLAGS="${LDFLAGS//\$/\$\$} -static" make
+    if [[ $? -ne 0 ]]; then
+      echo -e "\\033[31;1mError: Build readline failed.\\033[39;49;0m"
+      exit 1
+    fi
+    env LDFLAGS="${LDFLAGS//\$/\$\$} -static" make install
+
+    cd "$WORKING_DIR"
+  fi
+fi
+
 # ------------------------ patch for global 6.6.5/Python linking error ------------------------
 echo "int main() { return 0; }" | gcc -x c -ltinfow -o /dev/null - 2>/dev/null
 if [[ $? -eq 0 ]]; then
@@ -977,7 +1002,7 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list gdb $BUILD_TARG
 
   if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
     tar -axvf $PYTHON_PKG
-    PYTHON_DIR=$(ls -d Python-* | grep -v \.tar.xz)
+    PYTHON_DIR=$(ls -d Python-* | grep -v \.tar\.xz)
     cd $PYTHON_DIR
     # --enable-optimizations require gcc 8.1.0 or later
     PYTHON_CONFIGURE_OPTIONS=("--prefix=$PREFIX_DIR" "--enable-optimizations" "--with-ensurepip=install" "--enable-shared" "--with-system-expat" "--with-dbmliborder=gdbm:ndbm:bdb")
