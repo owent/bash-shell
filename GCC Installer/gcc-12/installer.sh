@@ -26,6 +26,8 @@ COMPOMENTS_READLINE_VERSION=8.1.2
 COMPOMENTS_PYTHON_VERSION=3.9.12
 COMPOMENTS_GDB_VERSION=12.1
 COMPOMENTS_GLOBAL_VERSION=6.6.8
+COMPOMENTS_LIBICONV_VERSION=1.17
+COMPOMENTS_XZ_VERSION=5.2.5
 COMPOMENTS_ZSTD_VERSION=1.5.2
 COMPOMENTS_LZ4_VERSION=1.9.3
 # 大多数发行版并没有开启 libssp , 开启会导致需要增加链接选项 -fstack-protector-all
@@ -88,7 +90,7 @@ while getopts "dp:cht:d:g:n" OPTION; do
       echo "-c                          clean build cache."
       echo "-d                          download only."
       echo "-h                          help message."
-      echo "-t [build target]           set build target(m4 autoconf automake libtool pkgconfig gmp mpfr mpc isl zstd lz4 zlib libffi gcc binutils openssl readline ncurses libexpat libxcrypt gdbm gdb libatomic_ops bdw-gc global)."
+      echo "-t [build target]           set build target(m4 autoconf automake libtool pkgconfig gmp mpfr mpc isl xz zstd lz4 zlib libiconv libffi gcc binutils openssl readline ncurses libexpat libxcrypt gdbm gdb libatomic_ops bdw-gc global)."
       echo "-d [compoment option]       add dependency compoments build options."
       echo "-g [gnu option]             add gcc,binutils,gdb build options."
       echo "-n                          print toolchain version and exit."
@@ -576,6 +578,33 @@ function build_bintuils() {
 build_bintuils "$WORKING_DIR/tmp-tools"
 export PATH="$WORKING_DIR/tmp-tools/bin:$PATH"
 
+# install xz utils
+if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list xz $BUILD_TARGET_COMPOMENTS) ]]; then
+  XZ_PKG=$(check_and_download "xz" "xz-*.tar.gz" "https://tukaani.org/xz/xz-$COMPOMENTS_XZ_VERSION.tar.gz" "xz-$COMPOMENTS_XZ_VERSION.tar.gz")
+  if [[ $? -ne 0 ]]; then
+    echo -e "$XZ_PKG"
+    exit 1
+  fi
+  if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
+    tar -axvf $XZ_PKG
+    XZ_DIR=$(ls -d xz-* | grep -v \.tar\.gz)
+    cd $XZ_DIR
+
+    if [[ -e Makefile ]]; then
+      make clean
+    fi
+
+    env LDFLAGS="${LDFLAGS//\$/\$\$}" ./configure --prefix=$INSTALL_PREFIX_PATH --with-pic=yes
+    make $BUILD_THREAD_OPT && make install
+    if [[ $? -ne 0 ]]; then
+      echo -e "\\033[31;1mError: build xz failed.\\033[39;49;0m"
+      exit 1
+    fi
+
+    cd "$WORKING_DIR"
+  fi
+fi
+
 # install zstd
 if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list zstd $BUILD_TARGET_COMPOMENTS) ]]; then
   ZSTD_PKG=$(check_and_download "zstd" "zstd-*.tar.gz" "https://github.com/facebook/zstd/releases/download/v$COMPOMENTS_ZSTD_VERSION/zstd-$COMPOMENTS_ZSTD_VERSION.tar.gz" "zstd-$COMPOMENTS_ZSTD_VERSION.tar.gz")
@@ -632,10 +661,31 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list lz4 $BUILD_TARG
   fi
 fi
 
+# install libiconv
+if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list libiconv $BUILD_TARGET_COMPOMENTS) ]]; then
+  LIBICONV_PKG=$(check_and_download "libiconv" "libiconv-*.tar.gz" "$REPOSITORY_MIRROR_URL_GNU/libiconv/libiconv-$COMPOMENTS_LIBICONV_VERSION.tar.gz")
+  if [[ $? -ne 0 ]]; then
+    echo -e "$LIBICONV_PKG"
+    exit 1
+  fi
+  if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
+    tar -axvf $LIBICONV_PKG
+    LIBICONV=$(ls -d libiconv-* | grep -v \.tar\.gz)
+    cd $LIBICONV
+    env LDFLAGS="${LDFLAGS//\$/\$\$}" ./configure --prefix=$PREFIX_DIR --with-pic=yes
+    make $BUILD_THREAD_OPT && make install
+    if [[ $? -ne 0 ]]; then
+      echo -e "\\033[31;1mError: build libiconv failed.\\033[39;49;0m"
+      exit 1
+    fi
+    cd "$WORKING_DIR"
+  fi
+fi
+
 # ======================= install gcc =======================
 if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list gcc $BUILD_TARGET_COMPOMENTS) ]]; then
   # ======================= gcc包 =======================
-  GCC_PKG=$(check_and_download "gcc" "gcc-*.tar.xz" "https://gcc.gnu.org/pub/gcc/releases/gcc-$COMPOMENTS_GCC_VERSION/gcc-$COMPOMENTS_GCC_VERSION.tar.xz")
+  GCC_PKG=$(check_and_download "gcc" "gcc-*.tar.xz" "$REPOSITORY_MIRROR_URL_GNU/gcc/gcc-$COMPOMENTS_GCC_VERSION/gcc-$COMPOMENTS_GCC_VERSION.tar.xz")
   if [[ $? -ne 0 ]]; then
     echo -e "$GCC_PKG"
     exit 1
@@ -1046,9 +1096,11 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list gdb $BUILD_TARG
     if [[ $COMPOMENTS_LIBSSP_ENABLE -ne 0 ]]; then
       GDB_DEPS_OPT=(${GDB_DEPS_OPT[@]} --enable-libssp)
     fi
+
     env LDFLAGS="$COMPOMENTS_GDB_STATIC_BUILD_LDFLAGS" ../configure --prefix=$PREFIX_DIR --with-gmp=$PREFIX_DIR --with-mpc=$PREFIX_DIR --with-mpfr=$PREFIX_DIR \
       --with-isl=$PREFIX_DIR $BDWGC_PREBIUILT --enable-build-with-cxx --enable-gold --enable-libada \
-      --enable-objc-gc --enable-lto --enable-vtable-verify --with-curses=$PREFIX_DIR \
+      --enable-objc-gc --enable-lto --enable-vtable-verify --with-curses=$PREFIX_DIR $BDWGC_PREBIUILT \
+      --with-liblzma-prefix=$PREFIX_DIR --with-libexpat-prefix=$PREFIX_DIR --with-libiconv-prefix=$PREFIX_DIR \
       ${GDB_DEPS_OPT[@]} $BUILD_TARGET_CONF_OPTION
     env LDFLAGS="$COMPOMENTS_GDB_STATIC_BUILD_LDFLAGS" make $BUILD_THREAD_OPT O='$$$$O' || env LDFLAGS="$COMPOMENTS_GDB_STATIC_BUILD_LDFLAGS" make O='$$$$O'
     if [[ $? -ne 0 ]]; then
