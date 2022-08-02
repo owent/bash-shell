@@ -66,7 +66,7 @@ CentOS 7 & CentOS 8
 + libatomic_ops 7.6.12
 + bdw-gc 8.0.6
 + zstd 1.5.2
-+ openssl 3.0.3
++ openssl 3.0.5
 + libexpat 2.4.8
 + libxcrypt 4.4.28
 + gdbm latest
@@ -76,7 +76,7 @@ CentOS 7 & CentOS 8
 
 + gcc 12.1.0
 + binutils 2.38
-+ python 3.9.12 *[按需]*
++ python 3.9.13 *[按需]*
 + gdb 12.1
 + global 6.6.8
 + lz4 1.9.3 *[非必须]*
@@ -98,3 +98,6 @@ CentOS 7 & CentOS 8
 ### History
 
 + 2021-05-06    Created
++ 2022-08-02     Update
+  + python -> 3.9.13
+  + openssl -> 3.0.5

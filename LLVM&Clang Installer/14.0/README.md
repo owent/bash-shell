@@ -36,10 +36,10 @@ tail -f nohup.out;
 
 ## 发行注记
 
-+ llvm : http://llvm.org/releases/14.0.3/docs/ReleaseNotes.html
-+ clang : http://llvm.org/releases/14.0.3/tools/clang/docs/ReleaseNotes.html
-+ clang Extra : http://llvm.org/releases/14.0.3/tools/clang/tools/extra/docs/ReleaseNotes.html
-+ lld: http://llvm.org/releases/14.0.3/tools/lld/docs/ReleaseNotes.html
++ llvm : http://llvm.org/releases/14.0.6/docs/ReleaseNotes.html
++ clang : http://llvm.org/releases/14.0.6/tools/clang/docs/ReleaseNotes.html
++ clang Extra : http://llvm.org/releases/14.0.6/tools/clang/tools/extra/docs/ReleaseNotes.html
++ lld: http://llvm.org/releases/14.0.6/tools/lld/docs/ReleaseNotes.html
 
 ## 编译安装 LLVM + Clang 14.0
 
@@ -67,23 +67,23 @@ CentOS 7&CentOS 8
 
 #### 编译的依赖项
 
-+ [x] libc++ 14.0.3
-+ [x] libc++abi 14.0.3
-+ [x] libunwind 14.0.3
++ [x] libc++ 14.0.6
++ [x] libc++abi 14.0.6
++ [x] libunwind 14.0.6
 + [x] [libedit][2] 20210910-3.1
-+ [x] [Python][3] 3.9.12
++ [x] [Python][3] 3.9.13
 + [x] [swig][4] v4.0.2
 + [x] [zlib][5] 1.2.12
 + [x] [libffi][6] 3.4.2
 
 #### 默认编译目标
 
-+ [x] llvm 14.0.3
-+ [x] clang 14.0.3
-+ [x] compiler-rt 14.0.3
-+ [x] clang-tools-extra 14.0.3
-+ [x] lldb 14.0.3
-+ [x] lld 14.0.3
++ [x] llvm 14.0.6
++ [x] clang 14.0.6
++ [x] compiler-rt 14.0.6
++ [x] clang-tools-extra 14.0.6
++ [x] lldb 14.0.6
++ [x] lld 14.0.6
 + [ ] libc: 提示不支持
 + [x] libclc
 + [x] openmp
@@ -102,6 +102,9 @@ CentOS 7&CentOS 8
 + 2022-05-12     Update
   + LLVM -> 14.0.3
   + zlib -> 1.2.12
++ 2022-08-02     Update
+  + LLVM -> 14.0.6
+  + python -> 3.9.13
 
 ## [`distribution-stage1.cmake`][11] 和 [`distribution-stage2.cmake`][12] 编译选项
 
