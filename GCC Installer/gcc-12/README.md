@@ -75,6 +75,7 @@ CentOS 7 & CentOS 8
 ### 编译目标
 
 + gcc 12.2.0
++ bison 3.8.2
 + binutils 2.39
 + python 3.11.0 *[按需]*
 + gdb 12.1
@@ -107,6 +108,7 @@ CentOS 7 & CentOS 8
   + libatomic_ops -> 7.6.14
   + bdw-gc -> 8.2.2
   + binutils -> 2.39
+    + Patch: 移除 gprofng 组件的文档,有资源错误
   + libffi -> 3.4.3
   + libexpat -> 2.4.9
   + python -> 3.11.0

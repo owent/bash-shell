@@ -14,6 +14,7 @@ COMPOMENTS_ISL_VERSION=0.24
 COMPOMENTS_LIBATOMIC_OPS_VERSION=7.6.14
 COMPOMENTS_BDWGC_VERSION=8.2.2
 COMPOMENTS_GCC_VERSION=12.2.0
+COMPOMENTS_BISON_VERSION=3.8.2
 COMPOMENTS_BINUTILS_VERSION=2.39
 COMPOMENTS_OPENSSL_VERSION=3.0.5
 COMPOMENTS_ZLIB_VERSION=1.2.12
@@ -90,7 +91,7 @@ while getopts "dp:cht:d:g:n" OPTION; do
       echo "-c                          clean build cache."
       echo "-d                          download only."
       echo "-h                          help message."
-      echo "-t [build target]           set build target(m4 autoconf automake libtool pkgconfig gmp mpfr mpc isl xz zstd lz4 zlib libiconv libffi gcc binutils openssl readline ncurses libexpat libxcrypt gdbm gdb libatomic_ops bdw-gc global)."
+      echo "-t [build target]           set build target(m4 autoconf automake libtool pkgconfig gmp mpfr mpc isl xz zstd lz4 zlib libiconv libffi gcc bison binutils openssl readline ncurses libexpat libxcrypt gdbm gdb libatomic_ops bdw-gc global)."
       echo "-d [compoment option]       add dependency compoments build options."
       echo "-g [gnu option]             add gcc,binutils,gdb build options."
       echo "-n                          print toolchain version and exit."
@@ -537,6 +538,39 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list bdw-gc $BUILD_T
   fi
 fi
 
+# binutils 2.39+ requires bison 3.0.4+
+function build_bison() {
+  INSTALL_PREFIX_PATH="$1"
+  if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list bison $BUILD_TARGET_COMPOMENTS) ]]; then
+    BISON_PKG=$(check_and_download "bison" "bison-*.tar.xz" "$REPOSITORY_MIRROR_URL_GNU/bison/bison-$COMPOMENTS_BISON_VERSION.tar.xz")
+    if [[ $? -ne 0 ]]; then
+      echo -e "$BISON_PKG"
+      exit 1
+    fi
+    if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
+      find . -name "bison-*" -type d | xargs -r rm -rf
+      tar -axvf $BISON_PKG
+      BISON_DIR=$(ls -d bison-* | grep -v \.tar\.xz)
+      cd $BISON_DIR
+      make clean || true
+      env LDFLAGS="${LDFLAGS//\$/\$\$}" ./configure --prefix=$INSTALL_PREFIX_PATH
+      env LDFLAGS="${LDFLAGS//\$/\$\$}" make $BUILD_THREAD_OPT || env LDFLAGS="${LDFLAGS//\$/\$\$}" make
+      if [[ $? -ne 0 ]]; then
+        echo -e "\\033[31;1mError: Build bison failed - make.\\033[39;49;0m"
+        exit 1
+      fi
+
+      env LDFLAGS="${LDFLAGS//\$/\$\$}" make install
+
+      if [[ $? -ne 0 ]] || [[ ! -e "$INSTALL_PREFIX_PATH/bin/bison" ]]; then
+        echo -e "\\033[31;1mError: Build bison failed - install.\\033[39;49;0m"
+        exit 1
+      fi
+      cd "$WORKING_DIR"
+    fi
+  fi
+}
+
 # Build new version of binutils to support new version of dwarf
 function build_bintuils() {
   INSTALL_PREFIX_PATH="$1"
@@ -552,20 +586,27 @@ function build_bintuils() {
       BINUTILS_DIR=$(ls -d binutils-* | grep -v \.tar\.xz)
       cd $BINUTILS_DIR
       make clean || true
-      BUILD_BINUTILS_OPTIONS="--enable-build-with-cxx --enable-gold --enable-libada --enable-lto --enable-objc-gc --enable-vtable-verify --enable-plugins"
-      BUILD_BINUTILS_OPTIONS="$BUILD_BINUTILS_OPTIONS --enable-install-libiberty --disable-werror --enable-rpath"
+      BUILD_BINUTILS_OPTIONS="--with-bugurl=https://github.com/owent-utils/bash-shell/issues --enable-build-with-cxx --enable-gold "
+      BUILD_BINUTILS_OPTIONS="$BUILD_BINUTILS_OPTIONS --enable-libada --enable-lto --enable-objc-gc --enable-vtable-verify --enable-plugins"
+      BUILD_BINUTILS_OPTIONS="$BUILD_BINUTILS_OPTIONS --enable-relro --enable-threads --enable-install-libiberty --disable-werror --enable-rpath"
       if [[ $COMPOMENTS_LIBSSP_ENABLE -ne 0 ]]; then
         BUILD_BINUTILS_OPTIONS="$BUILD_BINUTILS_OPTIONS --enable-libssp"
       fi
-      env LDFLAGS="${LDFLAGS//\$/\$\$}" ./configure --prefix=$INSTALL_PREFIX_PATH --with-gmp=$PREFIX_DIR --with-mpc=$PREFIX_DIR --with-mpfr=$PREFIX_DIR --with-isl=$PREFIX_DIR $BDWGC_PREBIUILT \
+      # Patch for binutils 2.39(gprofng's documents have some error when building)
+      sed -i.bak 's/[[:space:]]doc$//g' gprofng/Makefile.in
+
+      env LDFLAGS="${LDFLAGS//\$/\$\$}" PATH="$INSTALL_PREFIX_PATH/bin:$PATH" ./configure --prefix=$INSTALL_PREFIX_PATH \
+        --with-gmp=$PREFIX_DIR --with-mpc=$PREFIX_DIR --with-mpfr=$PREFIX_DIR --with-isl=$PREFIX_DIR $BDWGC_PREBIUILT \
         $BUILD_BINUTILS_OPTIONS $BUILD_TARGET_CONF_OPTION
-      env LDFLAGS="${LDFLAGS//\$/\$\$}" make $BUILD_THREAD_OPT O='$$$$O' || env LDFLAGS="${LDFLAGS//\$/\$\$}" make O='$$$$O'
+
+      env LDFLAGS="${LDFLAGS//\$/\$\$}" PATH="$INSTALL_PREFIX_PATH/bin:$PATH" make $BUILD_THREAD_OPT O='$$$$O' \
+        || env LDFLAGS="${LDFLAGS//\$/\$\$}" PATH="$INSTALL_PREFIX_PATH/bin:$PATH" make O='$$$$O'
       if [[ $? -ne 0 ]]; then
         echo -e "\\033[31;1mError: Build binutils failed - make.\\033[39;49;0m"
         exit 1
       fi
 
-      env LDFLAGS="${LDFLAGS//\$/\$\$}" make install O='$$$$O'
+      env LDFLAGS="${LDFLAGS//\$/\$\$}" PATH="$INSTALL_PREFIX_PATH/bin:$PATH" make install O='$$$$O'
 
       if [[ $? -ne 0 ]] || [[ ! -e "$INSTALL_PREFIX_PATH/bin/ld" ]]; then
         echo -e "\\033[31;1mError: Build binutils failed - install.\\033[39;49;0m"
@@ -575,6 +616,8 @@ function build_bintuils() {
     fi
   fi
 }
+
+build_bison "$WORKING_DIR/tmp-tools"
 build_bintuils "$WORKING_DIR/tmp-tools"
 export PATH="$WORKING_DIR/tmp-tools/bin:$PATH"
 
@@ -765,6 +808,7 @@ else
 fi
 
 # ======================= install binutils(ar,as,ld and etc.) =======================
+build_bison "$PREFIX_DIR"
 build_bintuils "$PREFIX_DIR"
 
 # ======================= install openssl [后面有些组件依赖] =======================
@@ -1027,6 +1071,9 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list readline $BUILD
     cd "$WORKING_DIR"
   fi
 fi
+
+# bootstrap bison, because it may depend on readline and libiconv
+build_bison "$PREFIX_DIR"
 
 # ------------------------ patch for global 6.6.5/Python linking error ------------------------
 echo "int main() { return 0; }" | gcc -x c -ltinfow -o /dev/null - 2>/dev/null
