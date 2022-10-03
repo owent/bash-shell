@@ -302,7 +302,6 @@ set(LLVM_TOOLCHAIN_TOOLS_SELECT
     llvm-nm
     llvm-objcopy
     llvm-objdump
-    llvm-opt-fuzzer
     llvm-opt-report
     llvm-pdbutil
     llvm-profdata
@@ -320,14 +319,11 @@ set(LLVM_TOOLCHAIN_TOOLS_SELECT
     llvm-stress
     llvm-strip
     llvm-symbolizer
-    llvm-tblgen
     llvm-tapi-diff
     llvm-tli-checker
     llvm-undname
     llvm-windres
     llvm-xray
-    not
-    obj2yaml
     opt
     sancov
     sanstats
