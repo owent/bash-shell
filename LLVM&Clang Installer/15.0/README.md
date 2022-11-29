@@ -99,7 +99,7 @@ CentOS 7&CentOS 8
 + 2022-11-29    Update
   + LLVM -> 15.0.4
   + Python -> 3.10.8
-  + swig -> 4.1.0
+  + swig -> 4.0.2
   + zlib -> 1.2.13
   + libffi -> 3.4.4
   + libedit -> 20221030-3.1
