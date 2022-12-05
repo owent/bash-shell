@@ -15,6 +15,7 @@ COMPOMENTS_LIBATOMIC_OPS_VERSION=7.6.14
 COMPOMENTS_BDWGC_VERSION=8.2.2
 COMPOMENTS_GCC_VERSION=12.2.0
 COMPOMENTS_BISON_VERSION=3.8.2
+# binutils 2.40+ add --with-zstd=$INSTALL_PREFIX_PATH, maybe need env CXXFLAGS="-fpermissive"
 COMPOMENTS_BINUTILS_VERSION=2.39
 COMPOMENTS_OPENSSL_VERSION=3.0.7
 COMPOMENTS_ZLIB_VERSION=1.2.13
@@ -128,6 +129,7 @@ if [[ -z "$CC" ]]; then
   export CC=gcc
   export CXX=g++
 fi
+BUILD_STAGE1_INSTALLPREFIX="$WORKING_DIR/stage1-prebuilt"
 
 # ======================= 如果是64位系统且没安装32位的开发包，则编译要gcc加上 --disable-multilib 参数, 不生成32位库 =======================
 SYS_LONG_BIT=$(getconf LONG_BIT)
@@ -247,7 +249,7 @@ if [[ "x$LD_LIBRARY_PATH" == "x" ]]; then
 else
   export LD_LIBRARY_PATH="$PREFIX_DIR/lib:$PREFIX_DIR/lib64:$LD_LIBRARY_PATH"
 fi
-export PATH=$PREFIX_DIR/bin:$PATH
+export PATH=$PREFIX_DIR/bin:$BUILD_STAGE1_INSTALLPREFIX/bin:$PATH
 
 echo -e "\\033[32;1mnotice: reset env LD_LIBRARY_PATH=$LD_LIBRARY_PATH\\033[39;49;0m"
 echo -e "\\033[32;1mnotice: reset env PATH=$PATH\\033[39;49;0m"
@@ -538,6 +540,148 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list bdw-gc $BUILD_T
   fi
 fi
 
+# install zlib
+function build_zlib() {
+  INSTALL_PREFIX_PATH="$1"
+  if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list zlib $BUILD_TARGET_COMPOMENTS) ]]; then
+    ZLIB_PKG=$(check_and_download "zlib" "zlib-*.tar.gz" "https://github.com/madler/zlib/archive/refs/tags/v$COMPOMENTS_ZLIB_VERSION.tar.gz" "zlib-$COMPOMENTS_ZLIB_VERSION.tar.gz")
+    if [[ $? -ne 0 ]]; then
+      echo -e "$ZLIB_PKG"
+      exit 1
+    fi
+    if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
+      tar -axvf $ZLIB_PKG
+      ZLIB_DIR=$(ls -d zlib-* | grep -v \.tar\.gz)
+      cd "$ZLIB_DIR"
+      make clean || true
+      env LDFLAGS="${LDFLAGS//\$/\$\$}" ./configure --prefix=$INSTALL_PREFIX_PATH --static
+      make $BUILD_THREAD_OPT || make
+      if [[ $? -ne 0 ]]; then
+        echo -e "\\033[31;1mError: Build zlib failed.\\033[39;49;0m"
+        exit 1
+      fi
+      make install
+      cd "$WORKING_DIR"
+    fi
+  fi
+}
+
+# install xz utils
+function build_xz() {
+  INSTALL_PREFIX_PATH="$1"
+  if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list xz $BUILD_TARGET_COMPOMENTS) ]]; then
+    XZ_PKG=$(check_and_download "xz" "xz-*.tar.gz" "https://tukaani.org/xz/xz-$COMPOMENTS_XZ_VERSION.tar.gz" "xz-$COMPOMENTS_XZ_VERSION.tar.gz")
+    if [[ $? -ne 0 ]]; then
+      echo -e "$XZ_PKG"
+      exit 1
+    fi
+    if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
+      tar -axvf $XZ_PKG
+      XZ_DIR=$(ls -d xz-* | grep -v \.tar\.gz)
+      cd $XZ_DIR
+
+      if [[ -e Makefile ]]; then
+        make clean
+      fi
+
+      env LDFLAGS="${LDFLAGS//\$/\$\$}" ./configure --prefix=$INSTALL_PREFIX_PATH --with-pic=yes
+      make $BUILD_THREAD_OPT && make install
+      if [[ $? -ne 0 ]]; then
+        echo -e "\\033[31;1mError: build xz failed.\\033[39;49;0m"
+        exit 1
+      fi
+
+      cd "$WORKING_DIR"
+    fi
+  fi
+}
+
+# install zstd
+function build_zstd() {
+  INSTALL_PREFIX_PATH="$1"
+  if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list zstd $BUILD_TARGET_COMPOMENTS) ]]; then
+    ZSTD_PKG=$(check_and_download "zstd" "zstd-*.tar.gz" "https://github.com/facebook/zstd/releases/download/v$COMPOMENTS_ZSTD_VERSION/zstd-$COMPOMENTS_ZSTD_VERSION.tar.gz" "zstd-$COMPOMENTS_ZSTD_VERSION.tar.gz")
+    if [[ $? -ne 0 ]]; then
+      echo -e "$ZSTD_PKG"
+      exit 1
+    fi
+    if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
+      tar -axvf $ZSTD_PKG
+      ZSTD_DIR=$(ls -d zstd-* | grep -v \.tar\.gz)
+      cd $ZSTD_DIR
+
+      if [[ -e Makefile ]]; then
+        make clean
+      fi
+
+      # mkdir build_jobs_dir;
+      # cd build_jobs_dir;
+      # cmake ../build/cmake "-DCMAKE_INSTALL_PREFIX=$INSTALL_PREFIX_PATH" -DZSTD_BUILD_PROGRAMS=ON -DZSTD_BUILD_TESTS=OFF
+      # cmake --build . -j -- install
+      env LDFLAGS="${LDFLAGS//\$/\$\$}" make $BUILD_THREAD_OPT PREFIX=$INSTALL_PREFIX_PATH install O='$$O'
+      if [[ $? -ne 0 ]]; then
+        echo -e "\\033[31;1mError: build zstd failed.\\033[39;49;0m"
+        exit 1
+      fi
+
+      cd "$WORKING_DIR"
+    fi
+  fi
+}
+
+# install lz4
+function build_lz4() {
+  INSTALL_PREFIX_PATH="$1"
+  if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list lz4 $BUILD_TARGET_COMPOMENTS) ]]; then
+    LZ4_PKG=$(check_and_download "lz4" "lz4-*.tar.gz" "https://github.com/lz4/lz4/archive/v$COMPOMENTS_LZ4_VERSION.tar.gz" "lz4-$COMPOMENTS_LZ4_VERSION.tar.gz")
+    if [[ $? -ne 0 ]]; then
+      echo -e "$LZ4_PKG"
+      exit 1
+    fi
+    if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
+      tar -axvf $LZ4_PKG
+      LZ4_DIR=$(ls -d lz4-* | grep -v \.tar\.gz)
+      cd $LZ4_DIR
+
+      if [[ -e Makefile ]]; then
+        make clean
+      fi
+
+      env LDFLAGS="${LDFLAGS//\$/\$\$}" make $BUILD_THREAD_OPT PREFIX=$INSTALL_PREFIX_PATH install
+      if [[ $? -ne 0 ]]; then
+        echo -e "\\033[31;1mError: build lz4 failed.\\033[39;49;0m"
+        # exit 1;
+      fi
+
+      cd "$WORKING_DIR"
+    fi
+  fi
+}
+
+# install libiconv
+function build_libiconv() {
+  INSTALL_PREFIX_PATH="$1"
+  if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list libiconv $BUILD_TARGET_COMPOMENTS) ]]; then
+    LIBICONV_PKG=$(check_and_download "libiconv" "libiconv-*.tar.gz" "$REPOSITORY_MIRROR_URL_GNU/libiconv/libiconv-$COMPOMENTS_LIBICONV_VERSION.tar.gz")
+    if [[ $? -ne 0 ]]; then
+      echo -e "$LIBICONV_PKG"
+      exit 1
+    fi
+    if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
+      tar -axvf $LIBICONV_PKG
+      LIBICONV=$(ls -d libiconv-* | grep -v \.tar\.gz)
+      cd $LIBICONV
+      env LDFLAGS="${LDFLAGS//\$/\$\$}" ./configure --prefix=$INSTALL_PREFIX_PATH --with-pic=yes
+      make $BUILD_THREAD_OPT && make install
+      if [[ $? -ne 0 ]]; then
+        echo -e "\\033[31;1mError: build libiconv failed.\\033[39;49;0m"
+        exit 1
+      fi
+      cd "$WORKING_DIR"
+    fi
+  fi
+}
+
 # binutils 2.39+ requires bison 3.0.4+
 function build_bison() {
   INSTALL_PREFIX_PATH="$1"
@@ -586,6 +730,7 @@ function build_bintuils() {
       BINUTILS_DIR=$(ls -d binutils-* | grep -v \.tar\.xz)
       cd $BINUTILS_DIR
       make clean || true
+      find . -name config.cache | xargs -r rm || true
       BUILD_BINUTILS_OPTIONS="--with-bugurl=https://github.com/owent-utils/bash-shell/issues --enable-build-with-cxx --enable-gold "
       BUILD_BINUTILS_OPTIONS="$BUILD_BINUTILS_OPTIONS --enable-libada --enable-lto --enable-objc-gc --enable-vtable-verify --enable-plugins"
       BUILD_BINUTILS_OPTIONS="$BUILD_BINUTILS_OPTIONS --enable-relro --enable-threads --enable-install-libiberty --disable-werror --enable-rpath"
@@ -617,113 +762,21 @@ function build_bintuils() {
   fi
 }
 
-build_bison "$WORKING_DIR/tmp-tools"
-build_bintuils "$WORKING_DIR/tmp-tools"
-export PATH="$WORKING_DIR/tmp-tools/bin:$PATH"
-
-# install xz utils
-if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list xz $BUILD_TARGET_COMPOMENTS) ]]; then
-  XZ_PKG=$(check_and_download "xz" "xz-*.tar.gz" "https://tukaani.org/xz/xz-$COMPOMENTS_XZ_VERSION.tar.gz" "xz-$COMPOMENTS_XZ_VERSION.tar.gz")
-  if [[ $? -ne 0 ]]; then
-    echo -e "$XZ_PKG"
-    exit 1
-  fi
-  if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
-    tar -axvf $XZ_PKG
-    XZ_DIR=$(ls -d xz-* | grep -v \.tar\.gz)
-    cd $XZ_DIR
-
-    if [[ -e Makefile ]]; then
-      make clean
-    fi
-
-    env LDFLAGS="${LDFLAGS//\$/\$\$}" ./configure --prefix=$INSTALL_PREFIX_PATH --with-pic=yes
-    make $BUILD_THREAD_OPT && make install
-    if [[ $? -ne 0 ]]; then
-      echo -e "\\033[31;1mError: build xz failed.\\033[39;49;0m"
-      exit 1
-    fi
-
-    cd "$WORKING_DIR"
-  fi
+# Build stage1 libraries and tools
+BUILD_BACKUP_PKG_CONFIG_PATH="$PKG_CONFIG_PATH"
+if [[ "x$BUILD_BACKUP_PKG_CONFIG_PATH" == "x" ]]; then
+  export PKG_CONFIG_PATH="$PREFIX_DIR/lib/pkgconfig"
+else
+  export PKG_CONFIG_PATH="$PREFIX_DIR/lib/pkgconfig:$BUILD_BACKUP_PKG_CONFIG_PATH"
 fi
 
-# install zstd
-if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list zstd $BUILD_TARGET_COMPOMENTS) ]]; then
-  ZSTD_PKG=$(check_and_download "zstd" "zstd-*.tar.gz" "https://github.com/facebook/zstd/releases/download/v$COMPOMENTS_ZSTD_VERSION/zstd-$COMPOMENTS_ZSTD_VERSION.tar.gz" "zstd-$COMPOMENTS_ZSTD_VERSION.tar.gz")
-  if [[ $? -ne 0 ]]; then
-    echo -e "$ZSTD_PKG"
-    exit 1
-  fi
-  if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
-    tar -axvf $ZSTD_PKG
-    ZSTD_DIR=$(ls -d zstd-* | grep -v \.tar\.gz)
-    cd $ZSTD_DIR
-
-    if [[ -e Makefile ]]; then
-      make clean
-    fi
-
-    # mkdir build_jobs_dir;
-    # cd build_jobs_dir;
-    # cmake ../build/cmake "-DCMAKE_INSTALL_PREFIX=$PREFIX_DIR" -DZSTD_BUILD_PROGRAMS=ON -DZSTD_BUILD_TESTS=OFF
-    # cmake --build . -j -- install
-    env LDFLAGS="${LDFLAGS//\$/\$\$}" make $BUILD_THREAD_OPT PREFIX=$PREFIX_DIR install O='$$O'
-    if [[ $? -ne 0 ]]; then
-      echo -e "\\033[31;1mError: build zstd failed.\\033[39;49;0m"
-      exit 1
-    fi
-
-    cd "$WORKING_DIR"
-  fi
-fi
-
-# install lz4
-if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list lz4 $BUILD_TARGET_COMPOMENTS) ]]; then
-  LZ4_PKG=$(check_and_download "lz4" "lz4-*.tar.gz" "https://github.com/lz4/lz4/archive/v$COMPOMENTS_LZ4_VERSION.tar.gz" "lz4-$COMPOMENTS_LZ4_VERSION.tar.gz")
-  if [[ $? -ne 0 ]]; then
-    echo -e "$LZ4_PKG"
-    exit 1
-  fi
-  if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
-    tar -axvf $LZ4_PKG
-    LZ4_DIR=$(ls -d lz4-* | grep -v \.tar\.gz)
-    cd $LZ4_DIR
-
-    if [[ -e Makefile ]]; then
-      make clean
-    fi
-
-    env LDFLAGS="${LDFLAGS//\$/\$\$}" make $BUILD_THREAD_OPT PREFIX=$PREFIX_DIR install
-    if [[ $? -ne 0 ]]; then
-      echo -e "\\033[31;1mError: build lz4 failed.\\033[39;49;0m"
-      # exit 1;
-    fi
-
-    cd "$WORKING_DIR"
-  fi
-fi
-
-# install libiconv
-if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list libiconv $BUILD_TARGET_COMPOMENTS) ]]; then
-  LIBICONV_PKG=$(check_and_download "libiconv" "libiconv-*.tar.gz" "$REPOSITORY_MIRROR_URL_GNU/libiconv/libiconv-$COMPOMENTS_LIBICONV_VERSION.tar.gz")
-  if [[ $? -ne 0 ]]; then
-    echo -e "$LIBICONV_PKG"
-    exit 1
-  fi
-  if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
-    tar -axvf $LIBICONV_PKG
-    LIBICONV=$(ls -d libiconv-* | grep -v \.tar\.gz)
-    cd $LIBICONV
-    env LDFLAGS="${LDFLAGS//\$/\$\$}" ./configure --prefix=$PREFIX_DIR --with-pic=yes
-    make $BUILD_THREAD_OPT && make install
-    if [[ $? -ne 0 ]]; then
-      echo -e "\\033[31;1mError: build libiconv failed.\\033[39;49;0m"
-      exit 1
-    fi
-    cd "$WORKING_DIR"
-  fi
-fi
+build_zlib "$PREFIX_DIR"
+build_xz "$PREFIX_DIR"
+build_zstd "$PREFIX_DIR"
+build_lz4 "$PREFIX_DIR"
+build_libiconv "$PREFIX_DIR"
+build_bison "$BUILD_STAGE1_INSTALLPREFIX"
+build_bintuils "$BUILD_STAGE1_INSTALLPREFIX"
 
 # ======================= install gcc =======================
 if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list gcc $BUILD_TARGET_COMPOMENTS) ]]; then
@@ -782,10 +835,10 @@ fi
 
 export CC=$PREFIX_DIR/bin/gcc
 export CXX=$PREFIX_DIR/bin/g++
-if [[ "x$PKG_CONFIG_PATH" == "x" ]]; then
+if [[ "x$BUILD_BACKUP_PKG_CONFIG_PATH" == "x" ]]; then
   export PKG_CONFIG_PATH="$PREFIX_DIR/internal-packages/lib/pkgconfig"
 else
-  export PKG_CONFIG_PATH="$PREFIX_DIR/internal-packages/lib/pkgconfig:$PKG_CONFIG_PATH"
+  export PKG_CONFIG_PATH="$PREFIX_DIR/internal-packages/lib/pkgconfig:$BUILD_BACKUP_PKG_CONFIG_PATH"
 fi
 for ADDITIONAL_PKGCONFIG_PATH in $(find $PREFIX_DIR -name pkgconfig); do
   export PKG_CONFIG_PATH="$ADDITIONAL_PKGCONFIG_PATH:$PKG_CONFIG_PATH"
@@ -902,6 +955,13 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list zlib $BUILD_TAR
     cd "$WORKING_DIR"
   fi
 fi
+
+# bootstrap
+build_zlib "$PREFIX_DIR"
+build_xz "$PREFIX_DIR"
+build_zstd "$PREFIX_DIR"
+build_lz4 "$PREFIX_DIR"
+build_libiconv "$PREFIX_DIR"
 
 # ======================= install libffi [后面有些组件依赖] =======================
 if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list libffi $BUILD_TARGET_COMPOMENTS) ]]; then
