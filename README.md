@@ -155,7 +155,7 @@ Server = http://repo.msys2.org/mingw/x86_64" > /etc/pacman.d/mirrorlist.mingw64 
 #### Ubuntu
 
 ```bash
-if [[ ! -e  /etc/apt/sources.list.bak ]]; then mv /etc/apt/sources.list /etc/apt/sources.list.bak ; fi
+if [[ ! -e  /etc/apt/sources.list.bak ]]; then cp /etc/apt/sources.list /etc/apt/sources.list.bak ; fi
 
 sed -i -r 's;#?https?://security.ubuntu.com/ubuntu/?[[:space:]];http://mirrors.tencent.com/ubuntu/ ;g' /etc/apt/sources.list ;
 sed -i -r 's;#?https?://archive.ubuntu.com/ubuntu/?[[:space:]];http://mirrors.tencent.com/ubuntu/ ;g' /etc/apt/sources.list ;
