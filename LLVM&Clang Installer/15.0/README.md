@@ -1,5 +1,8 @@
 # Linux 编译安装 LLVM + Clang 15.0
 
+**注意: 使用 `./installer.sh` 前请先将文件Copy到外层，确保路径上没有特殊字符和空格。**
+> 某些第三方组件的构建脚本适配不是很好，特殊字符和空格会导致编译不过。
+
 LLVM + Clang 15.0 发布啦，本脚本在之前LLVM + Clang 15.0 的构建脚本的基础上修改而来。
 
 如果在一些比较老的系统上，自带的gcc版本过低（比如CentOS 7）.可以先用 https://github.com/owent-utils/bash-shell/tree/master/GCC%20Installer/gcc-12 编译出新版gcc，再用这个gcc来编译llvm+clang工具链。
