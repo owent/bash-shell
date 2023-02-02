@@ -67,23 +67,23 @@ CentOS 7&CentOS 8
 
 #### 编译的依赖项
 
-+ [x] libc++ 15.0.5
-+ [x] libc++abi 15.0.5
-+ [x] libunwind 15.0.5
++ [x] libc++ 15.0.7
++ [x] libc++abi 15.0.7
++ [x] libunwind 15.0.7
 + [x] [libedit][2] 20221030-3.1
-+ [x] [Python][3] 3.10.8
++ [x] [Python][3] 3.10.9
 + [x] [swig][4] v4.1.0
 + [x] [zlib][5] 1.2.13
 + [x] [libffi][6] 3.4.4
 
 #### 默认编译目标
 
-+ [x] llvm 15.0.5
-+ [x] clang 15.0.5
-+ [x] compiler-rt 15.0.5
-+ [x] clang-tools-extra 15.0.5
-+ [x] lldb 15.0.5
-+ [x] lld 15.0.5
++ [x] llvm 15.0.7
++ [x] clang 15.0.7
++ [x] compiler-rt 15.0.7
++ [x] clang-tools-extra 15.0.7
++ [x] lldb 15.0.7
++ [x] lld 15.0.7
 + [ ] libc: 提示不支持
 + [x] libclc
 + [x] openmp
@@ -106,6 +106,9 @@ CentOS 7&CentOS 8
   + zlib -> 1.2.13
   + libffi -> 3.4.4
   + libedit -> 20221030-3.1
++ 2023-02-02    Update
+  + python -> 3.10.9
+  + LLVM -> 15.0.7
 
 ## [`distribution-stage1.cmake`][11] 和 [`distribution-stage2.cmake`][12] 编译选项
 

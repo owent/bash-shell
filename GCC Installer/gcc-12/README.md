@@ -80,7 +80,7 @@ CentOS 7 & CentOS 8
 + gcc 12.2.0
 + bison 3.8.2
 + binutils 2.39
-+ python 3.10.8 *[按需]*
++ python 3.10.9 *[按需]*
 + gdb 12.1
 + global 6.6.8
 + lz4 1.9.4 *[非必须]*
@@ -126,3 +126,6 @@ CentOS 7 & CentOS 8
   + libexpat -> 2.5.0
   + libxcrypt -> 4.4.33
   + xz -> 5.2.8
++ 2023-02-02    Update
+  + python -> 3.10.9
+  + openssl -> 3.0.7+quic1
