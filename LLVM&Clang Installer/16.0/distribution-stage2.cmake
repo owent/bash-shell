@@ -327,7 +327,6 @@ set(LLVM_TOOLCHAIN_TOOLS_SELECT
     opt
     sancov
     sanstats
-    split-file
     scan-build-py
     # Additional
     llc
@@ -380,7 +379,6 @@ set(LLVM_DISTRIBUTION_ADDTIONAL_COMPONENTS
     clang-check
     clang-extdef-mapping
     clang-rename
-    clang-repl
     find-all-symbols
     diagtool
     modularize
