@@ -29,7 +29,7 @@ COMPOMENTS_PYTHON_VERSION=3.11.3 # 3.10.9
 COMPOMENTS_GDB_VERSION=13.1
 COMPOMENTS_GLOBAL_VERSION=6.6.9
 COMPOMENTS_LIBICONV_VERSION=1.17
-COMPOMENTS_XZ_VERSION=5.2.11 # 5.4.2 will failed
+COMPOMENTS_XZ_VERSION=5.4.2
 COMPOMENTS_ZSTD_VERSION=1.5.5
 COMPOMENTS_LZ4_VERSION=1.9.4
 # 大多数发行版并没有开启 libssp , 开启会导致需要增加链接选项 -fstack-protector-all
@@ -585,7 +585,7 @@ function build_xz() {
         make clean
       fi
 
-      env LDFLAGS="${LDFLAGS//\$/\$\$}" ./configure --prefix=$INSTALL_PREFIX_PATH --with-pic=yes
+      env LDFLAGS="${LDFLAGS//\$/\$\$}" ./configure --prefix=$INSTALL_PREFIX_PATH --with-pic=yes --disable-static
       make $BUILD_THREAD_OPT && make install
       if [[ $? -ne 0 ]]; then
         echo -e "\\033[31;1mError: build xz failed.\\033[39;49;0m"
