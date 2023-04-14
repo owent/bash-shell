@@ -29,7 +29,7 @@ COMPOMENTS_PYTHON_VERSION=3.11.3 # 3.10.9
 COMPOMENTS_GDB_VERSION=13.1
 COMPOMENTS_GLOBAL_VERSION=6.6.9
 COMPOMENTS_LIBICONV_VERSION=1.17
-COMPOMENTS_XZ_VERSION=5.4.2
+COMPOMENTS_XZ_VERSION=5.2.11 # 5.4.2 will failed
 COMPOMENTS_ZSTD_VERSION=1.5.5
 COMPOMENTS_LZ4_VERSION=1.9.4
 # 大多数发行版并没有开启 libssp , 开启会导致需要增加链接选项 -fstack-protector-all
@@ -271,6 +271,7 @@ sleep $CHECK_INFO_SLEEP
 
 # ======================= 关闭交换分区，否则就爽死了 =======================
 swapoff -a
+set -x
 
 # install m4
 if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list m4 $BUILD_TARGET_COMPOMENTS) ]]; then
