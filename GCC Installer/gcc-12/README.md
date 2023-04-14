@@ -63,13 +63,13 @@ CentOS 7 & CentOS 8
 + libtool 2.4.7
 + pkgconfig 0.29.2
 + gmp 6.2.1
-+ mpfr 4.1.1
-+ mpc 1.2.1
++ mpfr 4.2.0
++ mpc 1.3.1
 + isl 0.24
-+ libatomic_ops 7.6.14
++ libatomic_ops 7.8.0
 + bdw-gc 8.2.2
-+ zstd 1.5.2
-+ openssl 3.0.7
++ zstd 1.5.5
++ openssl 3.0.8
 + libexpat 2.5.0
 + libxcrypt 4.4.33
 + gdbm latest
@@ -79,15 +79,15 @@ CentOS 7 & CentOS 8
 
 + gcc 12.2.0
 + bison 3.8.2
-+ binutils 2.39
-+ python 3.10.9 *[按需]*
-+ gdb 12.1
-+ global 6.6.8
++ binutils 2.40
++ python 3.11.3 *[按需]*
++ gdb 13.1
++ global 6.6.9
 + lz4 1.9.4 *[非必须]*
 + zlib 1.2.13 *[非必须]*
 + libffi 3.4.4 *[非必须]*
-+ ncurses 6.3 *[非必须]*
-+ xz 5.2.8 *[非必须]*
++ ncurses 6.4 *[非必须]*
++ xz 5.4.2 *[非必须]*
 
 ### 注
 
@@ -129,3 +129,15 @@ CentOS 7 & CentOS 8
 + 2023-02-02    Update
   + python -> 3.10.9
   + openssl -> 3.0.7+quic1
++ 2023-04-14    Update
+  + python -> 3.11.3
+  + mpfr -> 4.2.0
+  + mpc -> 1.3.1
+  + libatomic_ops -> 7.8.0
+  + binutils -> 2.40
+  + openssl -> 3.0.8
+  + ncurses -> 6.4
+  + gdb -> 13.1
+  + global -> 6.6.9
+  + xz -> 5.4.2
+  + zstd -> 1.5.5
