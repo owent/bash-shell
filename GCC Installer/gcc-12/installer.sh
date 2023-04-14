@@ -868,7 +868,7 @@ build_bintuils "$PREFIX_DIR"
 # openssl的依赖太广泛了，所以不放进默认的查找目录，以防外部使用者会使用到这里的版本。如果需要使用，可以手动导入这里的openssl
 if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list openssl $BUILD_TARGET_COMPOMENTS) ]]; then
   # OPENSSL_PKG=$(check_and_download "openssl" "openssl-*.tar.gz" "https://www.openssl.org/source/openssl-$COMPOMENTS_OPENSSL_VERSION.tar.gz")
-  OPENSSL_PKG=$(check_and_download "openssl" "openssl-*.tar.gz" "https://github.com/quictls/openssl/archive/refs/tags/openssl-$COMPOMENTS_OPENSSL_VERSION+quic1.tar.gz" "openssl-$COMPOMENTS_OPENSSL_VERSION-quic1.tar.gz")
+  OPENSSL_PKG=$(check_and_download "openssl" "openssl-*.tar.gz" "https://github.com/quictls/openssl/archive/refs/tags/openssl-$COMPOMENTS_OPENSSL_VERSION-quic1.tar.gz" "openssl-$COMPOMENTS_OPENSSL_VERSION-quic1.tar.gz")
   if [[ $? -ne 0 ]]; then
     echo -e "$OPENSSL_PKG"
     exit 1
