@@ -741,18 +741,20 @@ function build_bintuils() {
       # Patch for binutils 2.39(gprofng's documents have some error when building)
       sed -i.bak 's/[[:space:]]doc$//g' gprofng/Makefile.in
 
-      env LDFLAGS="${LDFLAGS//\$/\$\$}" PATH="$INSTALL_PREFIX_PATH/bin:$PATH" ./configure --prefix=$INSTALL_PREFIX_PATH \
+      BINUTILS_LDFLAGS="$LDFLAGS -Wl,-rpath=\$ORIGIN/../../lib64:\$ORIGIN/../../lib"
+
+      env LDFLAGS="${BINUTILS_LDFLAGS//\$/\$\$}" PATH="$INSTALL_PREFIX_PATH/bin:$PATH" ./configure --prefix=$INSTALL_PREFIX_PATH \
         --with-gmp=$PREFIX_DIR --with-mpc=$PREFIX_DIR --with-mpfr=$PREFIX_DIR --with-isl=$PREFIX_DIR $BDWGC_PREBIUILT \
         $BUILD_BINUTILS_OPTIONS $BUILD_TARGET_CONF_OPTION
 
-      env LDFLAGS="${LDFLAGS//\$/\$\$}" PATH="$INSTALL_PREFIX_PATH/bin:$PATH" make $BUILD_THREAD_OPT O='$$$$O' \
-        || env LDFLAGS="${LDFLAGS//\$/\$\$}" PATH="$INSTALL_PREFIX_PATH/bin:$PATH" make O='$$$$O'
+      env LDFLAGS="${BINUTILS_LDFLAGS//\$/\$\$}" PATH="$INSTALL_PREFIX_PATH/bin:$PATH" make $BUILD_THREAD_OPT O='$$$$O' \
+        || env LDFLAGS="${BINUTILS_LDFLAGS//\$/\$\$}" PATH="$INSTALL_PREFIX_PATH/bin:$PATH" make O='$$$$O'
       if [[ $? -ne 0 ]]; then
         echo -e "\\033[31;1mError: Build binutils failed - make.\\033[39;49;0m"
         exit 1
       fi
 
-      env LDFLAGS="${LDFLAGS//\$/\$\$}" PATH="$INSTALL_PREFIX_PATH/bin:$PATH" make install O='$$$$O'
+      env LDFLAGS="${BINUTILS_LDFLAGS//\$/\$\$}" PATH="$INSTALL_PREFIX_PATH/bin:$PATH" make install O='$$$$O'
 
       if [[ $? -ne 0 ]] || [[ ! -e "$INSTALL_PREFIX_PATH/bin/ld" ]]; then
         echo -e "\\033[31;1mError: Build binutils failed - install.\\033[39;49;0m"
