@@ -39,7 +39,7 @@ tail -f nohup.out;
 
 ## 发行注记
 
-+ llvm : https://discourse.llvm.org/t/llvm-15-0-1-released/65380
++ llvm : https://discourse.llvm.org/t/llvm-16-0-1-released/65380
 
 ## 编译安装 LLVM + Clang 14.0
 
