@@ -4,7 +4,7 @@
 set -x
 
 # ======================================= 配置 =======================================
-LLVM_VERSION=16.0.1
+LLVM_VERSION=16.0.3
 LLVM_INSTALLER_VERSION=${LLVM_VERSION%.*}
 COMPOMENTS_LIBEDIT_VERSION=20221030-3.1
 COMPOMENTS_PYTHON_VERSION=3.11.3 # 3.10.9

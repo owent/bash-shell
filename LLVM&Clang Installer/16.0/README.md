@@ -67,9 +67,9 @@ CentOS 7&CentOS 8
 
 #### 编译的依赖项
 
-+ [x] libc++ 16.0.1
-+ [x] libc++abi 16.0.1
-+ [x] libunwind 16.0.1
++ [x] libc++ 16.0.3
++ [x] libc++abi 16.0.3
++ [x] libunwind 16.0.3
 + [x] [libedit][2] 20221030-3.1
 + [x] [Python][3] 3.11.3
 + [x] [swig][4] v4.1.1
@@ -78,12 +78,12 @@ CentOS 7&CentOS 8
 
 #### 默认编译目标
 
-+ [x] llvm 16.0.1
-+ [x] clang 16.0.1
-+ [x] compiler-rt 16.0.1
-+ [x] clang-tools-extra 16.0.1
-+ [x] lldb 16.0.1
-+ [x] lld 16.0.1
++ [x] llvm 16.0.3
++ [x] clang 16.0.3
++ [x] compiler-rt 16.0.3
++ [x] clang-tools-extra 16.0.3
++ [x] lldb 16.0.3
++ [x] lld 16.0.3
 + [ ] libc: 提示不支持
 + [x] libclc
 + [x] openmp
@@ -244,6 +244,11 @@ CentOS 7&CentOS 8
 
 1. [llvm官网][7]
 2. [llvm-project][1]
+
+### History
+
++ 2023-04-14    Created
++ 2023-05-09    Upgrade llvm to 16.0.3
 
 [1]: https://github.com/llvm/llvm-project.git
 [2]: http://thrysoee.dk/editline/
