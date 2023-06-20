@@ -606,7 +606,7 @@ scoop install foobar2000 bitwarden screentogif snipaste draw.io pwsh
 scoop install pandoc graphviz hugo hugo-extended mdbook
 
 # dev
-scoop install tabby # gitextensions
+scoop install tabby git git-lfs # gitextensions
 
 # dev - network
 sudo scoop install --global wireshark nmap-portable
