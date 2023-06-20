@@ -600,7 +600,7 @@ scoop install everything everything-cli
 scoop install 7zip ueli
 
 # These can be replaced by apps from **Windows Store**
-scoop install foobar2000 bitwarden screentogif snipaste draw.io pwsh
+scoop install foobar2000 bitwarden screentogif snipaste draw.io pwsh typora
 
 # Document
 scoop install pandoc graphviz hugo hugo-extended mdbook
@@ -628,6 +628,7 @@ scoop install go
 scoop install rustup
 
 # java
+scoop bucket add java
 scoop install gradle maven microsoft-lts-jdk
 
 # msys2
