@@ -589,8 +589,8 @@ https://scoop.sh/
 Add ```%USERPROFILE%\scoop\shims``` to PATH.
 
 ```ps
-Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://get.scoop.sh')
 Set-ExecutionPolicy RemoteSigned -scope CurrentUser
+Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://get.scoop.sh')
 scoop install git git-lfs sudo
 scoop bucket add extras
 ```
@@ -613,7 +613,7 @@ sudo scoop install --global wireshark nmap-portable
 scoop install connect
 
 # c & c++
-scoop install cmake bazel doxygen llvm ninja global
+scoop install cmake bazel doxygen llvm ninja global perl
 
 # nodejs
 scoop install nodejs-lts
@@ -628,7 +628,7 @@ scoop install go
 scoop install rustup
 
 # java
-scoop install gradle maven
+scoop install gradle maven microsoft-lts-jdk
 
 # msys2
 scoop install msys2
