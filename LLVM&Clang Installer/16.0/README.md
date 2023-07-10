@@ -249,6 +249,7 @@ CentOS 7&CentOS 8
 
 + 2023-04-14    Created
 + 2023-05-09    Upgrade llvm to 16.0.3
++ 2023-07-10    Upgrade llvm to 16.0.6
 
 [1]: https://github.com/llvm/llvm-project.git
 [2]: http://thrysoee.dk/editline/
