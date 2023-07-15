@@ -71,7 +71,7 @@ CentOS 7&CentOS 8
 + [x] libc++abi 16.0.3
 + [x] libunwind 16.0.3
 + [x] [libedit][2] 20221030-3.1
-+ [x] [Python][3] 3.11.3
++ [x] [Python][3] 3.11.4
 + [x] [swig][4] v4.1.1
 + [x] [zlib][5] 1.2.13
 + [x] [libffi][6] 3.4.4
@@ -249,7 +249,11 @@ CentOS 7&CentOS 8
 
 + 2023-04-14    Created
 + 2023-05-09    Upgrade llvm to 16.0.3
-+ 2023-07-10    Upgrade llvm to 16.0.6, patch bolt
++ 2023-07-15    Update
+  + llvm -> 16.0.6
+  + Python -> 3.11.4
+  + Patch bolt
+  + Fix gcc toolchain settings
 
 [1]: https://github.com/llvm/llvm-project.git
 [2]: http://thrysoee.dk/editline/
