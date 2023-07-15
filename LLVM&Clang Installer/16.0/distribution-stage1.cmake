@@ -17,6 +17,12 @@ set(LLVM_ENABLE_ZLIB OFF CACHE BOOL "")
 set(LLVM_INCLUDE_DOCS OFF CACHE BOOL "")
 set(LLVM_INCLUDE_EXAMPLES OFF CACHE BOOL "")
 set(LLVM_INCLUDE_GO_TESTS OFF CACHE BOOL "")
+#[[
+# https://github.com/llvm/llvm-project/issues/57545
+# ld.gold: internal error in do_layout
+]]
+set(LLVM_LLVM_INCLUDE_TESTS OFF CACHE BOOL "")
+set(BOLT_INCLUDE_TESTS OFF CACHE BOOL "")
 
 if(WIN32)
   set(LLVM_USE_CRT_RELEASE "MT" CACHE STRING "")
@@ -154,6 +160,12 @@ endif()
 
 set(BOOTSTRAP_LLVM_ENABLE_LLD ON CACHE BOOL "")
 set(BOOTSTRAP_LLVM_ENABLE_LTO ON CACHE BOOL "")
+#[[
+# https://github.com/llvm/llvm-project/issues/57545
+# ld.gold: internal error in do_layout
+]]
+set(BOOTSTRAP_LLVM_LLVM_INCLUDE_TESTS OFF CACHE BOOL "")
+set(BOOTSTRAP_BOLT_INCLUDE_TESTS OFF CACHE BOOL "")
 
 set(CLANG_BOOTSTRAP_TARGETS
     check-all

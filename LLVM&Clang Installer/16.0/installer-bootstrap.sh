@@ -6,6 +6,9 @@ set -x
 # ======================================= 配置 =======================================
 LLVM_VERSION=16.0.6
 LLVM_INSTALLER_VERSION=${LLVM_VERSION%.*}
+LLVM_PATCH_FILES=(
+  "https://raw.githubusercontent.com/owent-utils/bash-shell/main/LLVM%26Clang%20Installer/$LLVM_INSTALLER_VERSION.0/bolt-disable-emit-relocs.patch"
+)
 COMPOMENTS_LIBEDIT_VERSION=20221030-3.1
 COMPOMENTS_PYTHON_VERSION=3.11.3 # 3.10.9
 COMPOMENTS_SWIG_VERSION=v4.1.1
@@ -246,6 +249,17 @@ fi
 # ======================= 统一的包检查和下载函数 =======================
 if [[ ! -e "llvm-project-$LLVM_VERSION" ]]; then
   git clone -b "llvmorg-$LLVM_VERSION" --depth 1 "https://github.com/llvm/llvm-project.git" "llvm-project-$LLVM_VERSION"
+  for PATCH_FILE in "${LLVM_PATCH_FILES[@]}"; do
+    PATCH_FILE_BASENAME="$(basename "$PATCH_FILE")"
+    check_and_download "$PATCH_FILE_BASENAME" "$PATCH_FILE_BASENAME" "$PATCH_FILE" "$PATCH_FILE_BASENAME"
+  done
+  cd "llvm-project-$LLVM_VERSION"
+  git reset --hard
+  for PATCH_FILE in "${LLVM_PATCH_FILES[@]}"; do
+    PATCH_FILE_BASENAME="$(basename "$PATCH_FILE")"
+    git apply -c "advice.detachedHead=false" -c "init.defaultBranch=main" -c "core.autocrlf=true" "../$PATCH_FILE_BASENAME"
+  done
+  cd ..
 fi
 
 if [[ ! -e "llvm-project-$LLVM_VERSION/.git" ]]; then
@@ -323,10 +337,10 @@ function build_llvm_toolchain() {
   if [[ ! -z "$BUILD_USE_GCC_TOOLCHAIN" ]]; then
     export CMAKE_CXX_COMPILER_EXTERNAL_TOOLCHAIN=$BUILD_USE_GCC_TOOLCHAIN
     STAGE_BUILD_EXT_COMPILER_FLAGS=("${STAGE_BUILD_EXT_COMPILER_FLAGS[@]}"
-      "-DBOOTSTRAP_CMAKE_CXX_FLAGS=--gcc-toolchain=$BUILD_USE_GCC_TOOLCHAIN"
-      "-DBOOTSTRAP_CMAKE_C_FLAGS=--gcc-toolchain=$BUILD_USE_GCC_TOOLCHAIN"
       "-DCMAKE_CXX_COMPILER_EXTERNAL_TOOLCHAIN=$BUILD_USE_GCC_TOOLCHAIN"
       "-DBOOTSTRAP_CMAKE_CXX_COMPILER_EXTERNAL_TOOLCHAIN=$BUILD_USE_GCC_TOOLCHAIN"
+      "-DGCC_INSTALL_PREFIX=$BUILD_USE_GCC_TOOLCHAIN"
+      "-DBOOTSTRAP_GCC_INSTALL_PREFIX=$BUILD_USE_GCC_TOOLCHAIN"
     )
   fi
 
