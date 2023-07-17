@@ -7,7 +7,7 @@ set -x
 LLVM_VERSION=16.0.6
 LLVM_INSTALLER_VERSION=${LLVM_VERSION%.*}
 LLVM_PATCH_FILES=(
-  "https://raw.githubusercontent.com/owent-utils/bash-shell/main/LLVM%26Clang%20Installer/$LLVM_INSTALLER_VERSION.0/bolt-disable-emit-relocs.patch"
+  "https://raw.githubusercontent.com/owent-utils/bash-shell/main/LLVM%26Clang%20Installer/$LLVM_INSTALLER_VERSION/bolt-disable-emit-relocs.patch"
 )
 COMPOMENTS_LIBEDIT_VERSION=20221030-3.1
 COMPOMENTS_PYTHON_VERSION=3.11.4 # 3.10.9
