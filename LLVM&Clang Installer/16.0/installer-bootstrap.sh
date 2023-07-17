@@ -262,7 +262,7 @@ if [[ ! -e "llvm-project-$LLVM_VERSION" ]]; then
   git reset --hard
   for PATCH_FILE in "${LLVM_PATCH_FILES[@]}"; do
     PATCH_FILE_BASENAME="$(basename "$PATCH_FILE")"
-    git apply -c "advice.detachedHead=false" -c "init.defaultBranch=main" -c "core.autocrlf=true" "../$PATCH_FILE_BASENAME"
+    git -c "advice.detachedHead=false" -c "init.defaultBranch=main" -c "core.autocrlf=true" apply "../$PATCH_FILE_BASENAME"
   done
   cd ..
 fi
