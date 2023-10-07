@@ -64,14 +64,14 @@ CentOS 7 & CentOS 8
 + automake 1.16.5
 + libtool 2.4.7
 + pkgconfig 0.29.2
-+ gmp 6.2.1
-+ mpfr 4.2.0
++ gmp 6.3.0
++ mpfr 4.2.1
 + mpc 1.3.1
 + isl 0.24
 + libatomic_ops 7.8.0
 + bdw-gc 8.2.4
 + zstd 1.5.5
-+ openssl 3.0.9
++ openssl 3.1.3
 + libexpat 2.5.0
 + libxcrypt 4.4.36
 + gdbm latest
@@ -79,17 +79,17 @@ CentOS 7 & CentOS 8
 
 ### 编译目标
 
-+ gcc 13.1.0
++ gcc 13.2.0
 + bison 3.8.2
-+ binutils 2.40
-+ python 3.11.3 *[按需]*
++ binutils 2.41
++ python 3.11.6 *[按需]*
 + gdb 13.2
-+ global 6.6.9
++ global 6.6.10
 + lz4 1.9.4 *[非必须]*
-+ zlib 1.2.13 *[非必须]*
++ zlib 1.3 *[非必须]*
 + libffi 3.4.4 *[非必须]*
 + ncurses 6.4 *[非必须]*
-+ xz 5.4.3 *[非必须]*
++ xz 5.4.4 *[非必须]*
 
 ### 注
 
@@ -112,3 +112,13 @@ CentOS 7 & CentOS 8
   + libxcrypt -> 4.4.36
   + gdb -> 13.2
   + xz -> 5.4.3
++ 2023-10-07    Update
+  + python -> 3.11.6
+  + gmp -> 6.3.0
+  + mpfr -> 4.2.1
+  + gcc -> 13.2.0
+  + binutils -> 2.41
+  + openssl -> 3.1.3
+  + zlib -> 1.3
+  + global -> 6.6.10
+  + xz -> 5.4.4

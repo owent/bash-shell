@@ -3,9 +3,9 @@
 **注意: 使用 `./installer.sh` 前请先将文件Copy到外层，确保路径上没有特殊字符和空格。**
 > 某些第三方组件的构建脚本适配不是很好，特殊字符和空格会导致编译不过。
 
-LLVM + Clang 16.0 发布啦，本脚本在之前LLVM + Clang 15.0 的构建脚本的基础上修改而来。
+LLVM + Clang 17.0 发布啦，本脚本在之前LLVM + Clang 16.0 的构建脚本的基础上修改而来。
 
-如果在一些比较老的系统上，自带的gcc版本过低（比如CentOS 7）.可以先用 https://github.com/owent-utils/bash-shell/tree/master/GCC%20Installer/gcc-12 编译出新版gcc，再用这个gcc来编译llvm+clang工具链。
+如果在一些比较老的系统上，自带的gcc版本过低（比如CentOS 7）.可以先用 https://github.com/owent-utils/bash-shell/tree/master/GCC%20Installer/gcc-13 编译出新版gcc，再用这个gcc来编译llvm+clang工具链。
 
 ## 编译脚本使用示例
 
@@ -39,9 +39,9 @@ tail -f nohup.out;
 
 ## 发行注记
 
-+ llvm : https://discourse.llvm.org/t/llvm-16-0-1-released/65380
++ llvm : https://discourse.llvm.org/t/llvm-17-0-1-released/65380
 
-## 编译安装 LLVM + Clang 16.0
+## 编译安装 LLVM + Clang 17.0
 
 ### 准备环境及依赖项
 
@@ -67,23 +67,23 @@ CentOS 7&CentOS 8
 
 #### 编译的依赖项
 
-+ [x] libc++ 16.0.6
-+ [x] libc++abi 16.0.6
-+ [x] libunwind 16.0.6
-+ [x] [libedit][2] 20221030-3.1
-+ [x] [Python][3] 3.11.4
++ [x] libc++ 17.0.2
++ [x] libc++abi 17.0.2
++ [x] libunwind 17.0.2
++ [x] [libedit][2] 20230828-3.1
++ [x] [Python][3] 3.11.6
 + [x] [swig][4] v4.1.1
-+ [x] [zlib][5] 1.2.13
++ [x] [zlib][5] 1.3
 + [x] [libffi][6] 3.4.4
 
 #### 默认编译目标
 
-+ [x] llvm 16.0.6
-+ [x] clang 16.0.6
-+ [x] compiler-rt 16.0.6
-+ [x] clang-tools-extra 16.0.6
-+ [x] lldb 16.0.6
-+ [x] lld 16.0.6
++ [x] llvm 17.0.2
++ [x] clang 17.0.2
++ [x] compiler-rt 17.0.2
++ [x] clang-tools-extra 17.0.2
++ [x] lldb 17.0.2
++ [x] lld 17.0.2
 + [ ] libc: 提示不支持
 + [x] libclc
 + [x] openmp
@@ -247,13 +247,7 @@ CentOS 7&CentOS 8
 
 ### History
 
-+ 2023-04-14    Created
-+ 2023-05-09    Upgrade llvm to 16.0.6
-+ 2023-07-15    Update
-  + llvm -> 16.0.6
-  + Python -> 3.11.4
-  + Patch bolt
-  + Fix gcc toolchain settings
++ 2023-10-07    Created
 
 [1]: https://github.com/llvm/llvm-project.git
 [2]: http://thrysoee.dk/editline/
