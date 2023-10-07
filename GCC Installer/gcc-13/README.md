@@ -71,7 +71,7 @@ CentOS 7 & CentOS 8
 + libatomic_ops 7.8.0
 + bdw-gc 8.2.4
 + zstd 1.5.5
-+ openssl 3.1.3
++ openssl 3.1.2
 + libexpat 2.5.0
 + libxcrypt 4.4.36
 + gdbm latest
@@ -118,7 +118,7 @@ CentOS 7 & CentOS 8
   + mpfr -> 4.2.1
   + gcc -> 13.2.0
   + binutils -> 2.41
-  + openssl -> 3.1.3
+  + openssl -> 3.1.2
   + zlib -> 1.3
   + global -> 6.6.10
   + xz -> 5.4.4
