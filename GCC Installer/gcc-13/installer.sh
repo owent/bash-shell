@@ -3,6 +3,7 @@
 # ======================================= 配置 =======================================
 BUILD_TARGET_COMPOMENTS=""
 COMPOMENTS_M4_VERSION=latest
+COMPOMENTS_MAKE_VERSION=4.4.1
 COMPOMENTS_AUTOCONF_VERSION=latest
 COMPOMENTS_AUTOMAKE_VERSION=1.16.5
 COMPOMENTS_LIBTOOL_VERSION=2.4.7
@@ -92,7 +93,7 @@ while getopts "dp:cht:d:g:n" OPTION; do
       echo "-c                          clean build cache."
       echo "-d                          download only."
       echo "-h                          help message."
-      echo "-t [build target]           set build target(m4 autoconf automake libtool pkgconfig gmp mpfr mpc isl xz zstd lz4 zlib libiconv libffi gcc bison binutils openssl readline ncurses libexpat libxcrypt gdbm gdb libatomic_ops bdw-gc global)."
+      echo "-t [build target]           set build target(m4 autoconf automake libtool pkgconfig gmp mpfr mpc isl xz zstd lz4 zlib libiconv libffi gcc bison binutils make openssl readline ncurses libexpat libxcrypt gdbm gdb libatomic_ops bdw-gc global)."
       echo "-d [compoment option]       add dependency compoments build options."
       echo "-g [gnu option]             add gcc,binutils,gdb build options."
       echo "-n                          print toolchain version and exit."
@@ -765,6 +766,47 @@ function build_bintuils() {
   fi
 }
 
+function build_make() {
+  INSTALL_PREFIX_PATH="$1"
+  if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list make $BUILD_TARGET_COMPOMENTS) ]]; then
+    MAKE_PKG=$(check_and_download "make" "make-*.tar.gz" "$REPOSITORY_MIRROR_URL_GNU/make/make-$COMPOMENTS_BINUTILS_VERSION.tar.gz")
+    if [[ $? -ne 0 ]]; then
+      echo -e "$MAKE_PKG"
+      exit 1
+    fi
+    if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
+      find . -name "make-*" -type d | xargs -r rm -rf
+      tar -axvf $MAKE_PKG
+      MAKE_DIR=$(ls -d make-* | grep -v \.tar\.gz)
+      mkdir -p $MAKE_DIR/build
+      cd $MAKE_DIR/build
+      make clean || true
+      find . -name config.cache | xargs -r rm || true
+
+      MAKE_LDFLAGS="$LDFLAGS -Wl,-rpath=\$ORIGIN/../../lib64:\$ORIGIN/../../lib:\$ORIGIN"
+
+      env LDFLAGS="${MAKE_LDFLAGS//\$/\$\$}" PATH="$INSTALL_PREFIX_PATH/bin:$PATH" ../configure --prefix=$INSTALL_PREFIX_PATH \
+        --with-libiconv-prefix=$PREFIX_DIR --with-guile --enable-year2038 \
+        $MAKE_LDFLAGS $BUILD_TARGET_CONF_OPTION
+
+      env LDFLAGS="${MAKE_LDFLAGS//\$/\$\$}" PATH="$INSTALL_PREFIX_PATH/bin:$PATH" make $BUILD_THREAD_OPT O='\$$O' \
+        || env LDFLAGS="${MAKE_LDFLAGS//\$/\$\$}" PATH="$INSTALL_PREFIX_PATH/bin:$PATH" make O='\$$O'
+      if [[ $? -ne 0 ]]; then
+        echo -e "\\033[31;1mError: Build make failed - make.\\033[39;49;0m"
+        exit 1
+      fi
+
+      env LDFLAGS="${MAKE_LDFLAGS//\$/\$\$}" PATH="$INSTALL_PREFIX_PATH/bin:$PATH" make install O='\$$O'
+
+      if [[ $? -ne 0 ]] || [[ ! -e "$INSTALL_PREFIX_PATH/bin/make" ]]; then
+        echo -e "\\033[31;1mError: Build make failed - install.\\033[39;49;0m"
+        exit 1
+      fi
+      cd "$WORKING_DIR"
+    fi
+  fi
+}
+
 # Build stage1 libraries and tools
 BUILD_BACKUP_PKG_CONFIG_PATH="$PKG_CONFIG_PATH"
 if [[ "x$BUILD_BACKUP_PKG_CONFIG_PATH" == "x" ]]; then
@@ -780,6 +822,7 @@ build_lz4 "$PREFIX_DIR"
 build_libiconv "$PREFIX_DIR"
 build_bison "$BUILD_STAGE1_INSTALLPREFIX"
 build_bintuils "$BUILD_STAGE1_INSTALLPREFIX"
+build_make "$PREFIX_DIR"
 
 # ======================= install gcc =======================
 if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list gcc $BUILD_TARGET_COMPOMENTS) ]]; then
@@ -966,6 +1009,7 @@ build_xz "$PREFIX_DIR"
 build_zstd "$PREFIX_DIR"
 build_lz4 "$PREFIX_DIR"
 build_libiconv "$PREFIX_DIR"
+build_make "$PREFIX_DIR"
 
 # ======================= install libffi [后面有些组件依赖] =======================
 if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list libffi $BUILD_TARGET_COMPOMENTS) ]]; then
