@@ -30,7 +30,7 @@ COMPOMENTS_PYTHON_VERSION=3.11.6 # 3.10.9
 COMPOMENTS_GDB_VERSION=13.2
 COMPOMENTS_GLOBAL_VERSION=6.6.10
 COMPOMENTS_LIBICONV_VERSION=1.17
-COMPOMENTS_XZ_VERSION=5.4.4
+COMPOMENTS_XZ_VERSION=5.4.6
 COMPOMENTS_ZSTD_VERSION=1.5.5
 COMPOMENTS_LZ4_VERSION=1.9.4
 # 大多数发行版并没有开启 libssp , 开启会导致需要增加链接选项 -fstack-protector-all
@@ -572,7 +572,7 @@ function build_zlib() {
 function build_xz() {
   INSTALL_PREFIX_PATH="$1"
   if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list xz $BUILD_TARGET_COMPOMENTS) ]]; then
-    XZ_PKG=$(check_and_download "xz" "xz-*.tar.gz" "https://tukaani.org/xz/xz-$COMPOMENTS_XZ_VERSION.tar.gz" "xz-$COMPOMENTS_XZ_VERSION.tar.gz")
+    XZ_PKG=$(check_and_download "xz" "xz-*.tar.gz" "https://github.com/tukaani-project/xz/releases/download/v5.4.6/xz-5.4.6.tar.gz" "xz-$COMPOMENTS_XZ_VERSION.tar.gz")
     if [[ $? -ne 0 ]]; then
       echo -e "$XZ_PKG"
       exit 1
