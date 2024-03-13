@@ -555,7 +555,9 @@ function build_zlib() {
       tar -axvf $ZLIB_PKG
       ZLIB_DIR=$(ls -d zlib-* | grep -v \.tar\.gz)
       cd "$ZLIB_DIR"
-      make clean || true
+      if [[ -e Makefile ]]; then
+        make clean || true
+      fi
       env LDFLAGS="${LDFLAGS//\$/\$\$}" ./configure --prefix=$INSTALL_PREFIX_PATH --static
       make $BUILD_THREAD_OPT || make
       if [[ $? -ne 0 ]]; then
@@ -698,7 +700,9 @@ function build_bison() {
       tar -axvf $BISON_PKG
       BISON_DIR=$(ls -d bison-* | grep -v \.tar\.xz)
       cd $BISON_DIR
-      make clean || true
+      if [[ -e Makefile ]]; then
+        make clean || true
+      fi
       env LDFLAGS="${LDFLAGS//\$/\$\$}" ./configure --prefix=$INSTALL_PREFIX_PATH
       env LDFLAGS="${LDFLAGS//\$/\$\$}" make $BUILD_THREAD_OPT || env LDFLAGS="${LDFLAGS//\$/\$\$}" make
       if [[ $? -ne 0 ]]; then
@@ -731,7 +735,9 @@ function build_bintuils() {
       tar -axvf $BINUTILS_PKG
       BINUTILS_DIR=$(ls -d binutils-* | grep -v \.tar\.xz)
       cd $BINUTILS_DIR
-      make clean || true
+      if [[ -e Makefile ]]; then
+        make clean || true
+      fi
       find . -name config.cache | xargs -r rm || true
       BUILD_BINUTILS_OPTIONS="--with-bugurl=https://github.com/owent-utils/bash-shell/issues --enable-build-with-cxx --enable-gold "
       BUILD_BINUTILS_OPTIONS="$BUILD_BINUTILS_OPTIONS --enable-libada --enable-lto --enable-objc-gc --enable-vtable-verify --enable-plugins"
@@ -780,7 +786,9 @@ function build_make() {
       MAKE_DIR=$(ls -d make-* | grep -v \.tar\.gz)
       mkdir -p $MAKE_DIR/build
       cd $MAKE_DIR/build
-      make clean || true
+      if [[ -e Makefile ]]; then
+        make clean || true
+      fi
       find . -name config.cache | xargs -r rm || true
 
       MAKE_LDFLAGS="$LDFLAGS -Wl,-rpath=\$ORIGIN/../../lib64:\$ORIGIN/../../lib:\$ORIGIN"
@@ -924,11 +932,13 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list openssl $BUILD_
     tar -axvf $OPENSSL_PKG
     OPENSSL_SRC_DIR=$(ls -d openssl-* | grep -v \.tar\.gz)
     cd $OPENSSL_SRC_DIR
-    make clean || true
+    if [[ -e Makefile ]]; then
+      make clean || true
+    fi
     # @see https://wiki.openssl.org/index.php/Compilation_and_Installation
     env LDFLAGS="${LDFLAGS//\$/\$\$}" ./config "--prefix=$PREFIX_DIR/internal-packages" "--openssldir=$PREFIX_DIR/internal-packages/ssl" "--release" \
       "no-dso" "no-tests" "no-external-tests" "no-shared" "no-idea" "no-md4" "no-mdc2" "no-rc2" \
-      "no-ssl2" "no-ssl3" "no-weak-ssl-ciphers" "enable-ec_nistp_64_gcc_128" "enable-static-engine" # "--api=1.1.1"
+      "no-ssl3" "no-weak-ssl-ciphers" "enable-ec_nistp_64_gcc_128" "enable-static-engine" # "--api=1.1.1"
     make $BUILD_THREAD_OPT || make
     make install_sw install_ssldirs
     if [[ $? -eq 0 ]]; then
@@ -954,7 +964,7 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list openssl $BUILD_
         fi
         for OPENSSL_ALIAS_PATH in "$PREFIX_DIR/internal-packages/lib64/engines-"*; do
           OPENSSL_ALIAS_BASENAME="$(basename "$OPENSSL_ALIAS_PATH")"
-          if [[ ! -e "$PREFIX_DIR/internal-packages/lib/$OPENSSL_ALIAS_BASENAME" ]]; then
+          if [[ -e "$PREFIX_DIR/internal-packages/lib64/$OPENSSL_ALIAS_BASENAME" ]] && [[ ! -e "$PREFIX_DIR/internal-packages/lib/$OPENSSL_ALIAS_BASENAME" ]]; then
             ln -s "$PREFIX_DIR/internal-packages/lib64/$OPENSSL_ALIAS_BASENAME" "$PREFIX_DIR/internal-packages/lib/$OPENSSL_ALIAS_BASENAME"
           fi
         done
@@ -962,7 +972,7 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list openssl $BUILD_
           "$PREFIX_DIR/internal-packages/lib64/"*ssl.* \
           "$PREFIX_DIR/internal-packages/lib64/"*openssl.*; do
           OPENSSL_ALIAS_BASENAME="$(basename "$OPENSSL_ALIAS_PATH")"
-          if [[ ! -e "$PREFIX_DIR/internal-packages/lib/$OPENSSL_ALIAS_BASENAME" ]]; then
+          if [[ -e "$PREFIX_DIR/internal-packages/lib64/$OPENSSL_ALIAS_BASENAME" ]] && [[ ! -e "$PREFIX_DIR/internal-packages/lib/$OPENSSL_ALIAS_BASENAME" ]]; then
             ln "$PREFIX_DIR/internal-packages/lib64/$OPENSSL_ALIAS_BASENAME" "$PREFIX_DIR/internal-packages/lib/$OPENSSL_ALIAS_BASENAME"
           fi
         done
@@ -970,7 +980,7 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list openssl $BUILD_
           "$PREFIX_DIR/internal-packages/lib64/pkgconfig/"*ssl.* \
           "$PREFIX_DIR/internal-packages/lib64/pkgconfig/"*openssl.*; do
           OPENSSL_ALIAS_BASENAME="$(basename "$OPENSSL_ALIAS_PATH")"
-          if [[ ! -e "$PREFIX_DIR/internal-packages/lib/pkgconfig/$OPENSSL_ALIAS_BASENAME" ]]; then
+          if [[ -e "$PREFIX_DIR/internal-packages/lib64/pkgconfig/$OPENSSL_ALIAS_BASENAME" ]] && [[ ! -e "$PREFIX_DIR/internal-packages/lib/pkgconfig/$OPENSSL_ALIAS_BASENAME" ]]; then
             ln "$PREFIX_DIR/internal-packages/lib64/pkgconfig/$OPENSSL_ALIAS_BASENAME" "$PREFIX_DIR/internal-packages/lib/pkgconfig/$OPENSSL_ALIAS_BASENAME"
           fi
         done
@@ -991,7 +1001,9 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list zlib $BUILD_TAR
     tar -axvf $ZLIB_PKG
     ZLIB_DIR=$(ls -d zlib-* | grep -v \.tar\.gz)
     cd "$ZLIB_DIR"
-    make clean || true
+    if [[ -e Makefile ]]; then
+      make clean || true
+    fi
     env LDFLAGS="${LDFLAGS//\$/\$\$}" ./configure --prefix=$PREFIX_DIR --static
     make $BUILD_THREAD_OPT || make
     if [[ $? -ne 0 ]]; then
@@ -1022,7 +1034,9 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list libffi $BUILD_T
     tar -axvf $LIBFFI_PKG
     LIBFFI_DIR=$(ls -d libffi-* | grep -v \.tar\.gz)
     cd "$LIBFFI_DIR"
-    make clean || true
+    if [[ -e Makefile ]]; then
+      make clean || true
+    fi
     env LDFLAGS="${LDFLAGS//\$/\$\$}" ./configure --prefix=$PREFIX_DIR --with-pic=yes
     make $BUILD_THREAD_OPT || make
     if [[ $? -ne 0 ]]; then
@@ -1045,13 +1059,17 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list ncurses $BUILD_
     tar -axvf "$NCURSES_PKG"
     NCURSES_DIR=$(ls -d ncurses-* | grep -v \.tar\.gz)
     cd $NCURSES_DIR
-    make clean || true
+    if [[ -e Makefile ]]; then
+      make clean || true
+    fi
 
     # Pyhton require shared libraries
+    # expected --with-xterm-kbs=DEL for linux-gnu
     env LDFLAGS="${LDFLAGS//\$/\$\$}" ./configure "--prefix=$PREFIX_DIR" "--with-pkg-config-libdir=$PREFIX_DIR/lib/pkgconfig" \
       --with-normal --without-debug --without-ada --with-termlib --enable-termcap \
       --enable-pc-files --with-cxx-binding --with-shared --with-cxx-shared \
       --enable-ext-colors --enable-ext-mouse --enable-bsdpad --enable-opaque-curses \
+      --with-xterm-kbs=DEL \
       --with-terminfo-dirs=/etc/terminfo:/usr/share/terminfo:/lib/terminfo \
       --with-termpath=/etc/termcap:/usr/share/misc/termcap
 
@@ -1064,10 +1082,12 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list ncurses $BUILD_
 
     make clean
     # Pyhton require shared libraries
+    # expected --with-xterm-kbs=DEL for linux-gnu
     env LDFLAGS="${LDFLAGS//\$/\$\$}" ./configure "--prefix=$PREFIX_DIR" "--with-pkg-config-libdir=$PREFIX_DIR/lib/pkgconfig" \
       --with-normal --without-debug --without-ada --with-termlib --enable-termcap \
       --enable-widec --enable-pc-files --with-cxx-binding --with-shared --with-cxx-shared \
       --enable-ext-colors --enable-ext-mouse --enable-bsdpad --enable-opaque-curses \
+      --with-xterm-kbs=DEL \
       --with-terminfo-dirs=/etc/terminfo:/usr/share/terminfo:/lib/terminfo \
       --with-termpath=/etc/termcap:/usr/share/misc/termcap
 
@@ -1118,7 +1138,9 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list libxcrypt $BUIL
     tar -axvf "$LIBXCRYPT_PKG"
     LIBXCRYPT_DIR=$(ls -d libxcrypt-* | grep -v \.tar\.gz)
     cd "$LIBXCRYPT_DIR"
-    make clean || true
+    if [[ -e Makefile ]]; then
+      make clean || true
+    fi
     ./autogen.sh
     env LDFLAGS="${LDFLAGS//\$/\$\$}" ./configure "--prefix=$PREFIX_DIR" --with-pic=yes
     make $BUILD_THREAD_OPT || make
@@ -1142,7 +1164,9 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list gdbm $BUILD_TAR
     tar -axvf "$GDBM_PKG"
     GDBM_DIR=$(ls -d gdbm-* | grep -v \.tar\.gz)
     cd "$GDBM_DIR"
-    make clean || true
+    if [[ -e Makefile ]]; then
+      make clean || true
+    fi
     # add -fcommon to solve multiple definition of `parseopt_program_args'
     env CFLAGS="$CFLAGS -fcommon" LDFLAGS="${LDFLAGS//\$/\$\$}" ./configure "--prefix=$PREFIX_DIR" --with-pic=yes
     make $BUILD_THREAD_OPT || make
@@ -1166,7 +1190,9 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list readline $BUILD
     tar -axvf "$READLINE_PKG"
     READLINE_DIR=$(ls -d readline-* | grep -v \.tar\.gz)
     cd "$READLINE_DIR"
-    make clean || true
+    if [[ -e Makefile ]]; then
+      make clean || true
+    fi
     env LDFLAGS="${LDFLAGS//\$/\$\$} -static" ./configure "--prefix=$PREFIX_DIR" --with-pic=yes --enable-static=yes --enable-shared=no \
       --enable-multibyte --with-curses
     env LDFLAGS="${LDFLAGS//\$/\$\$} -static" make $BUILD_THREAD_OPT || env LDFLAGS="${LDFLAGS//\$/\$\$} -static" make
@@ -1214,8 +1240,15 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list gdb $BUILD_TARG
     if [[ ! -z "$OPENSSL_INSTALL_DIR" ]]; then
       PYTHON_CONFIGURE_OPTIONS=(${PYTHON_CONFIGURE_OPTIONS[@]} "--with-openssl=$OPENSSL_INSTALL_DIR")
     fi
-    make clean || true
-    env LDFLAGS="${LDFLAGS//\$/\$\$}" ./configure ${PYTHON_CONFIGURE_OPTIONS[@]}
+    if [[ -e Makefile ]]; then
+      make clean || true
+    fi
+
+    if [[ "$BUILD_TARGET_COMPOMENTS_PATCH_TINFO" != "0" ]]; then
+      env "LIBS=$LIBS -l$BUILD_TARGET_COMPOMENTS_PATCH_TINFO" LDFLAGS="${LDFLAGS//\$/\$\$}" ./configure ${PYTHON_CONFIGURE_OPTIONS[@]}
+    else
+      env LDFLAGS="${LDFLAGS//\$/\$\$}" ./configure ${PYTHON_CONFIGURE_OPTIONS[@]}
+    fi
     make $BUILD_THREAD_OPT || make
     if [[ $? -ne 0 ]]; then
       echo -e "\\033[31;1mError: Build python failed.\\033[39;49;0m"
@@ -1247,7 +1280,9 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list gdb $BUILD_TARG
     fi
     mkdir -p build_jobs_dir
     cd build_jobs_dir
-    make clean || true
+    if [[ -e Makefile ]]; then
+      make clean || true
+    fi
     if [[ $COMPOMENTS_LIBSSP_ENABLE -ne 0 ]]; then
       GDB_DEPS_OPT=(${GDB_DEPS_OPT[@]} --enable-libssp)
     fi
@@ -1282,9 +1317,10 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list global $BUILD_T
     tar -axvf $GLOBAL_PKG
     GLOBAL_DIR=$(ls -d global-* | grep -v \.tar\.gz)
     cd $GLOBAL_DIR
-    make clean || true
+    if [[ -e Makefile ]]; then
+      make clean || true
+    fi
     # patch for global 6.6.5 linking error
-    echo "int main() { return 0; }" | gcc -x c -ltinfo -o /dev/null - 2>/dev/null
     if [[ "$BUILD_TARGET_COMPOMENTS_PATCH_TINFO" != "0" ]]; then
       env "LIBS=$LIBS -l$BUILD_TARGET_COMPOMENTS_PATCH_TINFO" LDFLAGS="${LDFLAGS//\$/\$\$}" ./configure --prefix=$PREFIX_DIR --with-pic=yes
     else
