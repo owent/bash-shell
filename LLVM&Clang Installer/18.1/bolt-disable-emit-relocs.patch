@@ -1,9 +1,9 @@
 diff --git a/bolt/tools/merge-fdata/CMakeLists.txt b/bolt/tools/merge-fdata/CMakeLists.txt
-index 9405acb6a..f049c5383 100644
+index f6a87a226898..d20b578ed43d 100644
 --- a/bolt/tools/merge-fdata/CMakeLists.txt
 +++ b/bolt/tools/merge-fdata/CMakeLists.txt
-@@ -18,6 +18,6 @@ install(PROGRAMS
-   )
+@@ -12,6 +12,6 @@ add_bolt_tool(merge-fdata
+ add_dependencies(bolt merge-fdata)
  
  # Emit relocations for BOLT meta test (bolt/test/runtime/meta-merge-fdata.test)
 -if (BOLT_INCLUDE_TESTS AND UNIX AND NOT APPLE)
