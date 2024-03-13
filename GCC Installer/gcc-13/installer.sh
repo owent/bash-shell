@@ -787,7 +787,7 @@ function build_make() {
 
       env LDFLAGS="${MAKE_LDFLAGS//\$/\$\$}" PATH="$INSTALL_PREFIX_PATH/bin:$PATH" ../configure --prefix=$INSTALL_PREFIX_PATH \
         --with-libiconv-prefix=$PREFIX_DIR --with-guile --enable-year2038 \
-        $MAKE_LDFLAGS $BUILD_TARGET_CONF_OPTION
+        $BUILD_TARGET_CONF_OPTION
 
       env LDFLAGS="${MAKE_LDFLAGS//\$/\$\$}" PATH="$INSTALL_PREFIX_PATH/bin:$PATH" make $BUILD_THREAD_OPT O='\$$O' \
         || env LDFLAGS="${MAKE_LDFLAGS//\$/\$\$}" PATH="$INSTALL_PREFIX_PATH/bin:$PATH" make O='\$$O'
