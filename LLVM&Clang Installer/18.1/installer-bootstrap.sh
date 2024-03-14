@@ -14,6 +14,7 @@ COMPOMENTS_PYTHON_VERSION=3.12.2 # 3.11.8
 COMPOMENTS_SWIG_VERSION=v4.2.1
 COMPOMENTS_ZLIB_VERSION=1.3.1
 COMPOMENTS_LIBFFI_VERSION=3.4.6
+COMPOMENTS_LIBXML2_VERSION=2.11.7
 PREFIX_DIR=/usr/local/llvm-$LLVM_VERSION
 
 # ======================= 非交叉编译 =======================
@@ -286,6 +287,13 @@ if [[ $? -ne 0 ]]; then
   exit 1
 fi
 
+check_and_download "libxml2" "libxml2-v$COMPOMENTS_LIBXML2_VERSION.tar.gz" "https://gitlab.gnome.org/GNOME/libxml2/-/archive/v$COMPOMENTS_LIBXML2_VERSION/libxml2-v$COMPOMENTS_LIBXML2_VERSION.tar.gz" "libxml2-v$COMPOMENTS_LIBXML2_VERSION.tar.gz"
+if [[ $? -ne 0 ]]; then
+  rm -f "libxml2-v$COMPOMENTS_LIBXML2_VERSION.tar.gz"
+  echo -e "\\033[31;1mDownload from https://gitlab.gnome.org/GNOME/libxml2/-/archive/v$COMPOMENTS_LIBXML2_VERSION/libxml2-v$COMPOMENTS_LIBXML2_VERSION.tar.gz failed.\\033[39;49;0m"
+  exit 1
+fi
+
 if [[ ! -e "zlib-$COMPOMENTS_ZLIB_VERSION" ]]; then
   git clone -b "v$COMPOMENTS_ZLIB_VERSION" --depth 1 "https://github.com/madler/zlib.git" "zlib-$COMPOMENTS_ZLIB_VERSION"
 fi
@@ -472,6 +480,31 @@ if [[ -e "libffi-$COMPOMENTS_LIBFFI_VERSION.tar.gz" ]]; then
     exit 1
   fi
   make install
+  cd "$WORKING_DIR"
+fi
+
+if [[ -e "libxml2-v$COMPOMENTS_LIBXML2_VERSION.tar.gz" ]]; then
+  if [[ ! -e "libxml2-v$COMPOMENTS_LIBXML2_VERSION" ]]; then
+    tar -axvf "libxml2-v$COMPOMENTS_LIBXML2_VERSION.tar.gz"
+  fi
+  mkdir -p "libxml2-v$COMPOMENTS_LIBXML2_VERSION/build_jobs_dir"
+  cd "libxml2-v$COMPOMENTS_LIBXML2_VERSION/build_jobs_dir"
+  if [[ -e "CMakeCache.txt" ]]; then
+    cmake --build . -- clean || true
+  fi
+  LIBXML2_CMAKE_OPTIONS=("-DCMAKE_POSITION_INDEPENDENT_CODE=YES" "-DBUILD_SHARED_LIBS=OFF" "-DCMAKE_INSTALL_PREFIX=$PREFIX_DIR")
+  if [[ -e "$PREFIX_DIR/../gcc-latest/load-gcc-envs.sh" ]]; then
+    LIBXML2_CMAKE_OPTIONS=(${LIBXML2_CMAKE_OPTIONS[@]} "-DCMAKE_FIND_ROOT_PATH=$PREFIX_DIR/../gcc-latest" "-DCMAKE_PREFIX_PATH=$PREFIX_DIR/../gcc-latest")
+  elif [[ ! -z "$GCC_HOME_DIR" ]] && [[ -e "$GCC_HOME_DIR/load-gcc-envs.sh" ]]; then
+    LIBXML2_CMAKE_OPTIONS=(${LIBXML2_CMAKE_OPTIONS[@]} "-DCMAKE_FIND_ROOT_PATH=$GCC_HOME_DIR" "-DCMAKE_PREFIX_PATH=$GCC_HOME_DIR")
+  fi
+  cmake .. ${LIBXML2_CMAKE_OPTIONS[@]}
+  cmake --build . $BUILD_JOBS_OPTION || cmake --build .
+  if [[ $? -ne 0 ]]; then
+    echo -e "\\033[31;1mBuild zlib failed.\\033[39;49;0m"
+    exit 1
+  fi
+  cmake --build . -- install
   cd "$WORKING_DIR"
 fi
 

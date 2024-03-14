@@ -75,6 +75,7 @@ CentOS 7&CentOS 8
 + [x] [swig][4] v4.1.1
 + [x] [zlib][5] 1.3
 + [x] [libffi][6] 3.4.4
++ [x] [libxml2][13] 2.11.7
 
 #### 默认编译目标
 
@@ -90,11 +91,11 @@ CentOS 7&CentOS 8
 + [ ] polly (这个版本自举编译 polly 会失败，故而本版本临时关闭之)
 + [x] pstl
 
-> 注: 所有的库都会被安装在 ```$PREFEX_DIR``` 里
+> 注: 所有的库都会被安装在 `$PREFEX_DIR` 里
 
 #### 额外建议
 
-+ 如果增加编译组件，比如已装有gtest要编译lld，使用命令 ```./installer.sh -t +debuginfo-tests```
++ 如果增加编译组件，比如已装有gtest要编译lld，使用命令 `./installer.sh -t +debuginfo-tests`
 
 #### History
 
@@ -261,3 +262,4 @@ CentOS 7&CentOS 8
 [10]: https://github.com/llvm/llvm-project/blob/main/llvm/CMakeLists.txt
 [11]: distribution-stage1.cmake
 [12]: distribution-stage2.cmake
+[13]: https://gitlab.gnome.org/GNOME/libxml2
