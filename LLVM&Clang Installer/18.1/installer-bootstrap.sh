@@ -461,7 +461,7 @@ if [[ -e "zlib-$COMPOMENTS_ZLIB_VERSION" ]]; then
   if [[ -e "CMakeCache.txt" ]]; then
     cmake --build . -- clean || true
   fi
-  cmake .. -DCMAKE_POSITION_INDEPENDENT_CODE=YES -DBUILD_SHARED_LIBS=OFF "-DCMAKE_INSTALL_PREFIX=$PREFIX_DIR"
+  cmake .. -DCMAKE_POSITION_INDEPENDENT_CODE=YES "-DCMAKE_INSTALL_PREFIX=$PREFIX_DIR"
   cmake --build . $BUILD_JOBS_OPTION || cmake --build .
   if [[ $? -ne 0 ]]; then
     echo -e "\\033[31;1mBuild zlib failed.\\033[39;49;0m"
@@ -496,7 +496,7 @@ if [[ -e "libxml2-v$COMPOMENTS_LIBXML2_VERSION.tar.gz" ]]; then
   if [[ -e "CMakeCache.txt" ]]; then
     cmake --build . -- clean || true
   fi
-  LIBXML2_CMAKE_OPTIONS=("-DCMAKE_POSITION_INDEPENDENT_CODE=YES" "-DBUILD_SHARED_LIBS=OFF" "-DCMAKE_INSTALL_PREFIX=$PREFIX_DIR")
+  LIBXML2_CMAKE_OPTIONS=("-DCMAKE_POSITION_INDEPENDENT_CODE=YES" "-DCMAKE_INSTALL_PREFIX=$PREFIX_DIR")
   TRY_GCC_HOME="$(dirname "$(dirname "$(which gcc)")")"
   if [[ -e "$PREFIX_DIR/../gcc-latest/load-gcc-envs.sh" ]]; then
     LIBXML2_CMAKE_OPTIONS=(${LIBXML2_CMAKE_OPTIONS[@]} "-DCMAKE_FIND_ROOT_PATH=$PREFIX_DIR/../gcc-latest" "-DCMAKE_PREFIX_PATH=$PREFIX_DIR/../gcc-latest")
