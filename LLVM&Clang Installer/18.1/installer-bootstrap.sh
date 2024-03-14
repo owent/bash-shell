@@ -328,7 +328,8 @@ export LLVM_DIR="$PWD/llvm-project-$LLVM_VERSION"
 
 function build_llvm_toolchain() {
   STAGE_BUILD_EXT_COMPILER_FLAGS=("-DCMAKE_FIND_ROOT_PATH=$PREFIX_DIR"
-    "-DCMAKE_PREFIX_PATH=$PREFIX_DIR")
+    "-DCMAKE_PREFIX_PATH=$PREFIX_DIR"
+    "-DLLVM_USE_SPLIT_DWARF=ON" "-DBOOTSTRAP_LLVM_USE_SPLIT_DWARF=ON")
 
   if [[ "x$CFLAGS" == "x" ]]; then
     export CFLAGS="-I$PREFIX_DIR/include"
@@ -373,6 +374,9 @@ function build_llvm_toolchain() {
     else
       BUILD_WITH_NINJA=""
     fi
+  fi
+  if [[ ! -z "$BUILD_WITH_NINJA" ]]; then
+    STAGE_BUILD_EXT_COMPILER_FLAGS=("${STAGE_BUILD_EXT_COMPILER_FLAGS[@]}" "-DLLVM_PARALLEL_LINK_JOBS=4" "-DBOOTSTRAP_LLVM_PARALLEL_LINK_JOBS=4")
   fi
 
   # Ready to build
