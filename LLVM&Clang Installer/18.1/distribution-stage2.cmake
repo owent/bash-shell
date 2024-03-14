@@ -360,7 +360,6 @@ set(LLVM_TOOLCHAIN_TOOLS_SELECT
     llvm-readelf
     llvm-readobj
     llvm-reduce
-    llvm-remark-size-diff
     llvm-rtdyld
     llvm-sim
     llvm-size
@@ -368,7 +367,6 @@ set(LLVM_TOOLCHAIN_TOOLS_SELECT
     llvm-stress
     llvm-strip
     llvm-symbolizer
-    llvm-tapi-diff
     llvm-tli-checker
     llvm-undname
     llvm-windres
@@ -418,8 +416,6 @@ set(LLVM_DISTRIBUTION_ADDTIONAL_COMPONENTS
     lldb
     lldb-server
     lldb-instr
-    lldb-vscode
-    # add_llvm_install_targets(xxx) in <llvm-project>/clang
     libclang-headers
     libclang-python-bindings
     libclang
