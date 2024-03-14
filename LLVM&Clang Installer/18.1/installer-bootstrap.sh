@@ -493,10 +493,11 @@ if [[ -e "libxml2-v$COMPOMENTS_LIBXML2_VERSION.tar.gz" ]]; then
     cmake --build . -- clean || true
   fi
   LIBXML2_CMAKE_OPTIONS=("-DCMAKE_POSITION_INDEPENDENT_CODE=YES" "-DBUILD_SHARED_LIBS=OFF" "-DCMAKE_INSTALL_PREFIX=$PREFIX_DIR")
+  TRY_GCC_HOME="$(dirname "$(dirname "$(which gcc)")")"
   if [[ -e "$PREFIX_DIR/../gcc-latest/load-gcc-envs.sh" ]]; then
     LIBXML2_CMAKE_OPTIONS=(${LIBXML2_CMAKE_OPTIONS[@]} "-DCMAKE_FIND_ROOT_PATH=$PREFIX_DIR/../gcc-latest" "-DCMAKE_PREFIX_PATH=$PREFIX_DIR/../gcc-latest")
-  elif [[ ! -z "$GCC_HOME_DIR" ]] && [[ -e "$GCC_HOME_DIR/load-gcc-envs.sh" ]]; then
-    LIBXML2_CMAKE_OPTIONS=(${LIBXML2_CMAKE_OPTIONS[@]} "-DCMAKE_FIND_ROOT_PATH=$GCC_HOME_DIR" "-DCMAKE_PREFIX_PATH=$GCC_HOME_DIR")
+  elif [[ ! -z "$TRY_GCC_HOME" ]] && [[ -e "$TRY_GCC_HOME/load-gcc-envs.sh" ]]; then
+    LIBXML2_CMAKE_OPTIONS=(${LIBXML2_CMAKE_OPTIONS[@]} "-DCMAKE_FIND_ROOT_PATH=$TRY_GCC_HOME" "-DCMAKE_PREFIX_PATH=$TRY_GCC_HOME")
   fi
   cmake .. ${LIBXML2_CMAKE_OPTIONS[@]}
   cmake --build . $BUILD_JOBS_OPTION || cmake --build .
