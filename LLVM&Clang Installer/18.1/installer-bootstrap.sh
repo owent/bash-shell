@@ -10,7 +10,8 @@ LLVM_PATCH_FILES=(
   "https://raw.githubusercontent.com/owent-utils/bash-shell/main/LLVM%26Clang%20Installer/$LLVM_INSTALLER_VERSION/bolt-disable-emit-relocs.patch"
 )
 COMPOMENTS_LIBEDIT_VERSION=20230828-3.1
-COMPOMENTS_PYTHON_VERSION=3.12.2 # 3.11.8
+# distcc 3.4 use distutils which is removed from python 3.12.2, we use python 3.11 by now
+COMPOMENTS_PYTHON_VERSION=3.11.8
 COMPOMENTS_SWIG_VERSION=v4.2.1
 COMPOMENTS_ZLIB_VERSION=1.3.1
 COMPOMENTS_LIBFFI_VERSION=3.4.6

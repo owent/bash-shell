@@ -82,7 +82,7 @@ CentOS 7 & CentOS 8
 + gcc 13.2.0
 + bison 3.8.2
 + binutils 2.42
-+ python 3.12.2 *[按需]*
++ python 3.11.8 *[按需]*
 + gdb 14.2
 + global 6.6.12
 + lz4 1.9.4 *[非必须]*
@@ -122,8 +122,8 @@ CentOS 7 & CentOS 8
   + zlib -> 1.3
   + global -> 6.6.10
   + xz -> 5.4.4
-+ 2024-03-13    Update
-  + python -> 3.12.2
++ 2024-03-15    Update
+  + python -> 3.11.8
   + zlib -> 1.3.1
   + libffi -> 3.4.6
   + libatomic_ops -> 7.8.2

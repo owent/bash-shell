@@ -26,7 +26,8 @@ COMPOMENTS_LIBEXPAT_VERSION=2.6.1
 COMPOMENTS_LIBXCRYPT_VERSION=4.4.36
 COMPOMENTS_GDBM_VERSION=latest
 COMPOMENTS_READLINE_VERSION=8.2
-COMPOMENTS_PYTHON_VERSION=3.12.2 # 3.11.8
+# distcc 3.4 use distutils which is removed from python 3.12.2, we use python 3.11 by now
+COMPOMENTS_PYTHON_VERSION=3.11.8
 COMPOMENTS_GDB_VERSION=14.2
 COMPOMENTS_GLOBAL_VERSION=6.6.12
 COMPOMENTS_LIBICONV_VERSION=1.17
@@ -180,7 +181,7 @@ function check_and_download() {
   PKG_URL="$3"
 
   PKG_VAR_VAL=($(find . -maxdepth 1 -name "$PKG_MATCH_EXPR"))
-  if [[ ${#PKG_VAR_VAL} -gt 0 ]]; then
+  if [[ ${#PKG_VAR_VAL[@]} -gt 0 ]]; then
     echo "${PKG_VAR_VAL[0]}"
     return 0
   fi
@@ -818,9 +819,9 @@ function build_make() {
 # Build stage1 libraries and tools
 BUILD_BACKUP_PKG_CONFIG_PATH="$PKG_CONFIG_PATH"
 if [[ "x$BUILD_BACKUP_PKG_CONFIG_PATH" == "x" ]]; then
-  export PKG_CONFIG_PATH="$PREFIX_DIR/lib/pkgconfig"
+  export PKG_CONFIG_PATH="$PREFIX_DIR/lib64/pkgconfig:$PREFIX_DIR/lib/pkgconfig"
 else
-  export PKG_CONFIG_PATH="$PREFIX_DIR/lib/pkgconfig:$BUILD_BACKUP_PKG_CONFIG_PATH"
+  export PKG_CONFIG_PATH="$PREFIX_DIR/lib64/pkgconfig:$PREFIX_DIR/lib/pkgconfig:$BUILD_BACKUP_PKG_CONFIG_PATH"
 fi
 
 build_zlib "$PREFIX_DIR"
