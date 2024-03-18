@@ -732,7 +732,7 @@ function build_bintuils() {
     COMPOMENTS_USE_VERSION=$COMPOMENTS_BINUTILS_VERSION
   fi
   if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list binutils $BUILD_TARGET_COMPOMENTS) ]]; then
-    BINUTILS_PKG=$(check_and_download "binutils" "binutils-*.tar.xz" "$REPOSITORY_MIRROR_URL_GNU/binutils/binutils-$COMPOMENTS_BINUTILS_VERSION.tar.xz")
+    BINUTILS_PKG=$(check_and_download "binutils" "binutils-*.tar.xz" "$REPOSITORY_MIRROR_URL_GNU/binutils/binutils-$COMPOMENTS_USE_VERSION.tar.xz")
     if [[ $? -ne 0 ]]; then
       echo -e "$BINUTILS_PKG"
       exit 1
