@@ -17,6 +17,7 @@ COMPOMENTS_BDWGC_VERSION=8.2.6
 COMPOMENTS_GCC_VERSION=13.2.0
 COMPOMENTS_BISON_VERSION=3.8.2
 # binutils 2.40+ add --with-zstd=$INSTALL_PREFIX_PATH, maybe need env CXXFLAGS="-fpermissive"
+COMPOMENTS_BINUTILS_STAGE1_VERSION=2.41
 COMPOMENTS_BINUTILS_VERSION=2.42
 COMPOMENTS_OPENSSL_VERSION=3.1.5
 COMPOMENTS_ZLIB_VERSION=1.3.1
@@ -725,6 +726,11 @@ function build_bison() {
 # Build new version of binutils to support new version of dwarf
 function build_bintuils() {
   INSTALL_PREFIX_PATH="$1"
+  if [[ $# -gt 1 ]]; then
+    COMPOMENTS_USE_VERSION=$2
+  else
+    COMPOMENTS_USE_VERSION=$COMPOMENTS_BINUTILS_VERSION
+  fi
   if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list binutils $BUILD_TARGET_COMPOMENTS) ]]; then
     BINUTILS_PKG=$(check_and_download "binutils" "binutils-*.tar.xz" "$REPOSITORY_MIRROR_URL_GNU/binutils/binutils-$COMPOMENTS_BINUTILS_VERSION.tar.xz")
     if [[ $? -ne 0 ]]; then
@@ -830,7 +836,7 @@ build_zstd "$PREFIX_DIR"
 build_lz4 "$PREFIX_DIR"
 build_libiconv "$PREFIX_DIR"
 build_bison "$BUILD_STAGE1_INSTALLPREFIX"
-build_bintuils "$BUILD_STAGE1_INSTALLPREFIX"
+build_bintuils "$BUILD_STAGE1_INSTALLPREFIX" "$COMPOMENTS_BINUTILS_STAGE1_VERSION"
 build_make "$PREFIX_DIR"
 
 # ======================= install gcc =======================

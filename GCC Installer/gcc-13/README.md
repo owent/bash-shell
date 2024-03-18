@@ -122,7 +122,7 @@ CentOS 7 & CentOS 8
   + zlib -> 1.3
   + global -> 6.6.10
   + xz -> 5.4.4
-+ 2024-03-15    Update
++ 2024-03-15    Update, 分离stage1的binutils
   + python -> 3.11.8
   + zlib -> 1.3.1
   + libffi -> 3.4.6
