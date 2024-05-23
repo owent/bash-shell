@@ -4,18 +4,19 @@
 set -x
 
 # ======================================= 配置 =======================================
-LLVM_VERSION=18.1.1
+LLVM_VERSION=18.1.6
 LLVM_INSTALLER_VERSION=${LLVM_VERSION%.*}
 LLVM_PATCH_FILES=(
   "https://raw.githubusercontent.com/owent-utils/bash-shell/main/LLVM%26Clang%20Installer/$LLVM_INSTALLER_VERSION/bolt-disable-emit-relocs.patch"
 )
-COMPOMENTS_LIBEDIT_VERSION=20230828-3.1
+COMPOMENTS_LIBEDIT_VERSION=20240517-3.1
 # distcc 3.4 use distutils which is removed from python 3.12.2, we use python 3.11 by now
-COMPOMENTS_PYTHON_VERSION=3.11.8
+COMPOMENTS_PYTHON_VERSION=3.11.9
 COMPOMENTS_SWIG_VERSION=v4.2.1
 COMPOMENTS_ZLIB_VERSION=1.3.1
 COMPOMENTS_LIBFFI_VERSION=3.4.6
-COMPOMENTS_LIBXML2_VERSION=2.11.7
+COMPOMENTS_LIBXML2_VERSION=2.11.8
+COMPOMENTS_INCLUDE_WHAT_YOU_USE_VERSION=0.22
 PREFIX_DIR=/usr/local/llvm-$LLVM_VERSION
 
 # ======================= 非交叉编译 =======================
@@ -163,6 +164,11 @@ done
 
 shift $(($OPTIND - 1))
 
+if [[ -z "$REPOSITORY_MIRROR_URL_GITHUB" ]]; then
+  REPOSITORY_MIRROR_URL_GITHUB="https://github.com"
+  # REPOSITORY_MIRROR_URL_GITHUB=https://mirrors.tencent.com/github.com
+fi
+
 if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
   mkdir -p "$PREFIX_DIR"
   PREFIX_DIR="$(cd "$PREFIX_DIR" && pwd)"
@@ -250,7 +256,7 @@ fi
 
 # ======================= 统一的包检查和下载函数 =======================
 if [[ ! -e "llvm-project-$LLVM_VERSION" ]]; then
-  git clone -b "llvmorg-$LLVM_VERSION" --depth 1 "https://github.com/llvm/llvm-project.git" "llvm-project-$LLVM_VERSION"
+  git clone -b "llvmorg-$LLVM_VERSION" --depth 1 "$REPOSITORY_MIRROR_URL_GITHUB/llvm/llvm-project.git" "llvm-project-$LLVM_VERSION"
   for PATCH_FILE in "${LLVM_PATCH_FILES[@]}"; do
     PATCH_FILE_BASENAME="$(basename "$PATCH_FILE")"
     check_and_download "$PATCH_FILE_BASENAME" "$PATCH_FILE_BASENAME" "$PATCH_FILE" "$PATCH_FILE_BASENAME"
@@ -270,7 +276,35 @@ if [[ ! -e "llvm-project-$LLVM_VERSION" ]]; then
 fi
 
 if [[ ! -e "llvm-project-$LLVM_VERSION/.git" ]]; then
-  echo -e "\\033[31;1mgit clone https://github.com/llvm/llvm-project.git failed.\\033[39;49;0m"
+  echo -e "\\033[31;1mgit clone $REPOSITORY_MIRROR_URL_GITHUB/llvm/llvm-project.git failed.\\033[39;49;0m"
+  exit 1
+fi
+
+if [[ ! -e "llvm-project-$LLVM_VERSION/llvm/projects/include-what-you-use/.git" ]]; then
+  if [[ -e "llvm-project-$LLVM_VERSION/llvm/projects/include-what-you-use" ]]; then
+    rm -rf "llvm-project-$LLVM_VERSION/llvm/projects/include-what-you-use"
+  fi
+  git clone -b "$COMPOMENTS_INCLUDE_WHAT_YOU_USE_VERSION" --depth 1 "$REPOSITORY_MIRROR_URL_GITHUB/include-what-you-use.git" "llvm-project-$LLVM_VERSION"
+  for PATCH_FILE in "${LLVM_PATCH_FILES[@]}"; do
+    PATCH_FILE_BASENAME="$(basename "$PATCH_FILE")"
+    check_and_download "$PATCH_FILE_BASENAME" "$PATCH_FILE_BASENAME" "$PATCH_FILE" "$PATCH_FILE_BASENAME"
+    if [[ $? -ne 0 ]]; then
+      rm -f "$PATCH_FILE_BASENAME"
+      echo -e "\\033[31;1mDownload from $PATCH_FILE failed.\\033[39;49;0m"
+      exit 1
+    fi
+  done
+  cd "llvm-project-$LLVM_VERSION"
+  git reset --hard
+  for PATCH_FILE in "${LLVM_PATCH_FILES[@]}"; do
+    PATCH_FILE_BASENAME="$(basename "$PATCH_FILE")"
+    git -c "advice.detachedHead=false" -c "init.defaultBranch=main" -c "core.autocrlf=true" apply "../$PATCH_FILE_BASENAME"
+  done
+  cd ..
+fi
+
+if [[ ! -e "llvm-project-$LLVM_VERSION/.git" ]]; then
+  echo -e "\\033[31;1mgit clone $REPOSITORY_MIRROR_URL_GITHUB/llvm/llvm-project.git failed.\\033[39;49;0m"
   exit 1
 fi
 
@@ -281,10 +315,10 @@ if [[ $? -ne 0 ]]; then
   exit 1
 fi
 
-check_and_download "libffi" "libffi-$COMPOMENTS_LIBFFI_VERSION.tar.gz" "https://github.com/libffi/libffi/releases/download/v$COMPOMENTS_LIBFFI_VERSION/libffi-$COMPOMENTS_LIBFFI_VERSION.tar.gz" "libffi-$COMPOMENTS_LIBFFI_VERSION.tar.gz"
+check_and_download "libffi" "libffi-$COMPOMENTS_LIBFFI_VERSION.tar.gz" "$REPOSITORY_MIRROR_URL_GITHUB/libffi/libffi/releases/download/v$COMPOMENTS_LIBFFI_VERSION/libffi-$COMPOMENTS_LIBFFI_VERSION.tar.gz" "libffi-$COMPOMENTS_LIBFFI_VERSION.tar.gz"
 if [[ $? -ne 0 ]]; then
   rm -f "libffi-$COMPOMENTS_LIBFFI_VERSION.tar.gz"
-  echo -e "\\033[31;1mDownload from https://github.com/libffi/libffi/releases/download/v$COMPOMENTS_LIBFFI_VERSION/libffi-$COMPOMENTS_LIBFFI_VERSION.tar.gz failed.\\033[39;49;0m"
+  echo -e "\\033[31;1mDownload from $REPOSITORY_MIRROR_URL_GITHUB/libffi/libffi/releases/download/v$COMPOMENTS_LIBFFI_VERSION/libffi-$COMPOMENTS_LIBFFI_VERSION.tar.gz failed.\\033[39;49;0m"
   exit 1
 fi
 
@@ -296,7 +330,7 @@ if [[ $? -ne 0 ]]; then
 fi
 
 if [[ ! -e "zlib-$COMPOMENTS_ZLIB_VERSION" ]]; then
-  git clone -b "v$COMPOMENTS_ZLIB_VERSION" --depth 1 "https://github.com/madler/zlib.git" "zlib-$COMPOMENTS_ZLIB_VERSION"
+  git clone -b "v$COMPOMENTS_ZLIB_VERSION" --depth 1 "$REPOSITORY_MIRROR_URL_GITHUB/madler/zlib.git" "zlib-$COMPOMENTS_ZLIB_VERSION"
 fi
 
 PYTHON_PKG=$(check_and_download "python" "Python-*.tar.xz" "https://www.python.org/ftp/python/$COMPOMENTS_PYTHON_VERSION/Python-$COMPOMENTS_PYTHON_VERSION.tar.xz")
@@ -305,7 +339,7 @@ if [[ $? -ne 0 ]]; then
 fi
 
 if [[ ! -e "swig-$COMPOMENTS_SWIG_VERSION" ]]; then
-  git clone -b "$COMPOMENTS_SWIG_VERSION" --depth 1 "https://github.com/swig/swig.git" "swig-$COMPOMENTS_SWIG_VERSION"
+  git clone -b "$COMPOMENTS_SWIG_VERSION" --depth 1 "$REPOSITORY_MIRROR_URL_GITHUB/swig/swig.git" "swig-$COMPOMENTS_SWIG_VERSION"
   if [[ $? -ne 0 ]]; then
     exit 1
   fi
@@ -686,7 +720,7 @@ Release:        1%{?dist}
 Summary:        llvm-clang-libc++ $LLVM_VERSION
 Group:          Development Tools
 License:        BSD
-URL:            https://github.com/owent-utils/bash-shell/tree/master/LLVM%26Clang%20Installer
+URL:            $REPOSITORY_MIRROR_URL_GITHUB/owent-utils/bash-shell/tree/master/LLVM%26Clang%20Installer
 BuildRoot:      %_topdir/BUILDROOT
 Prefix:         $PREFIX_DIR
 # Source0:

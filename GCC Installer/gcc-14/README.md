@@ -1,28 +1,30 @@
-# Linux 编译安装 GCC 13
+# Linux 编译安装 GCC 14
 
 **注意: 使用 `./installer.sh` 前请先将文件Copy到外层，确保路径上没有特殊字符和空格。**
 > 某些第三方组件的构建脚本适配不是很好，特殊字符和空格会导致编译不过。
 
-GCC 13发布啦，本脚本在之前GCC 12的基础上做了稍许更新 。
+GCC 14发布啦，本脚本在之前GCC 13的基础上做了稍许更新 。
 
 由于GCC从5开始[对版本号进行重新规范](https://gcc.gnu.org/develop.html#num_scheme)，所以这里的编译脚本以后以主版本号为准。
 
-GCC 13的大致(C/C++)内容如下：
+GCC 14的大致(C/C++)内容如下：
 
-1. AddressSanitizer在Linux上默认开启 `detect_stack_use_after_return=1` 。
-2. 新的调试符号压缩选项 `-gz=zstd` ，废弃老旧的压缩格式 `-gz=zlib-gnu` 。
-3. 可以使用 [SARIF](https://sarifweb.azurewebsites.net/) 规范输出诊断信息。
-4. 两个非标准 `std::pair` 开启 deprecated 标记 。
-5. 支持 STABS 调式信息格式。
-6. `-Ofast, -ffast-math and -funsafe-math-optimizations` 优化。
-7. 新的Warning选项和属性。
-8. 一些新的C23/C++23特性支持。
-9. 针对C语言常见的动态长度数组的设计模式的支持。
-10. 增加 `-nostdlibc++` 用于告知 g++ 不要默认链接libstdc++库。
+1. 开始支持 `__has_feature` 和 `__has_extension` 。
+2. 一些C23的功能。
+3. 一些C++26的功能特性。
+4. C++模板诊断信息增强。
+5. NRVO支持子代码块。
+6. 常量表达式会跟踪生命周期。
+7. 优化 `#include` 提示。
+8. 优化显示类型转换的诊断信息输出。
+9. 优化修订 `static/thread_local` 符号名。
+10. 支持 `hot` 和 `cold` 可以应用在类上。
+11. 大量 `decltype` 的修订。
+12. 向量化相关的增强和 `#pragma`。
 
 详见: https://gcc.gnu.org/gcc-13/changes.html
 
-## 编译安装 GCC 13.X.X
+## 编译安装 GCC 14.X.X
 
 ### 准备环境及依赖项
 
@@ -37,7 +39,7 @@ GCC 13的大致(C/C++)内容如下：
 9. GNU make 工具 版本3.80及以上 （可由GNU镜像列表 http://www.gnu.org/prep/ftp.html 或自动选择最佳镜像 http://ftpmirror.gnu.org 下载 ）
 10. GNU tar工具 版本1.14及以上   （可由GNU镜像列表 http://www.gnu.org/prep/ftp.html 或自动选择最佳镜像 http://ftpmirror.gnu.org 下载 ）
 11. perl 版本5.6.1-5.6.24      （此处可下载 http://www.perl.org/）
-12. tar或zip和unzip工具 （此处可下载 http://www.info-zip.org)
+12. tar或zip和unzip工具 （此处可下载 http://www.info-zip.org）
 13. gmp库 版本4.3.2及以上 （可由GNU镜像列表 http://www.gnu.org/prep/ftp.html 或自动选择最佳镜像 http://ftpmirror.gnu.org 下载 ）
 14. mpfr库 版本3.1.0及以上 （可由GNU镜像列表 http://www.gnu.org/prep/ftp.html 或自动选择最佳镜像 http://ftpmirror.gnu.org 下载 ）
 15. mpc库 版本1.0.1及以上 （可由GNU镜像列表 http://www.gnu.org/prep/ftp.html 或自动选择最佳镜像 http://ftpmirror.gnu.org 下载 ）
@@ -70,26 +72,26 @@ CentOS 7 & CentOS 8
 + isl 0.24
 + libatomic_ops 7.8.2
 + bdw-gc 8.2.6
-+ zstd 1.5.5
++ zstd 1.5.6
 + openssl 3.1.2
-+ libexpat 2.6.1
++ libexpat 2.6.2
 + libxcrypt 4.4.36
 + gdbm latest
 + readline 8.2
 
 ### 编译目标
 
-+ gcc 13.2.0
++ gcc 14.1.0
 + bison 3.8.2
 + binutils 2.42
-+ python 3.11.8 *[按需]*
++ python 3.11.9 *[按需]*
 + gdb 14.2
 + global 6.6.12
 + lz4 1.9.4 *[非必须]*
 + zlib 1.3.1 *[非必须]*
 + libffi 3.4.6 *[非必须]*
-+ ncurses 6.4 *[非必须]*
-+ xz 5.6.1 *[非必须]*
++ ncurses 6.5 *[非必须]*
++ xz 5.4.6 *[非必须]*
 
 ### 注
 
@@ -104,33 +106,4 @@ CentOS 7 & CentOS 8
 
 ### History
 
-+ 2023-04-28    Created
-+ 2023-07-15    Update
-  + python -> 3.11.4
-  + bdw-gc -> 8.2.4
-  + openssl -> 3.0.9
-  + libxcrypt -> 4.4.36
-  + gdb -> 13.2
-  + xz -> 5.4.3
-+ 2023-10-07    Update
-  + python -> 3.11.6
-  + gmp -> 6.3.0
-  + mpfr -> 4.2.1
-  + gcc -> 13.2.0
-  + binutils -> 2.41
-  + openssl -> 3.1.2
-  + zlib -> 1.3
-  + global -> 6.6.10
-  + xz -> 5.4.4
-+ 2024-03-15    Update, 分离stage1的binutils
-  + python -> 3.11.8
-  + zlib -> 1.3.1
-  + libffi -> 3.4.6
-  + libatomic_ops -> 7.8.2
-  + bdwgc -> 8.2.6
-  + binutils -> 2.42
-  + openssl -> 3.1.5
-  + libexpat -> 2.6.1
-  + gdb -> 14.2
-  + global -> 6.6.12
-  + xz -> 5.6.1
++ 2024-05-23    Created

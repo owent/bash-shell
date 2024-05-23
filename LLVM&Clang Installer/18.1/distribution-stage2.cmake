@@ -4,7 +4,7 @@ set(LLVM_TARGETS_TO_BUILD Native CACHE STRING "") # X86;ARM;AArch64;RISCV
 
 set(PACKAGE_VENDOR OWenT CACHE STRING "")
 
-set(LLVM_ENABLE_PROJECTS "bolt;clang;clang-tools-extra;lld;llvm;lldb;libclc;mlir;polly;pstl" CACHE STRING "")
+set(LLVM_ENABLE_PROJECTS "bolt;clang;clang-tools-extra;lld;llvm;lldb;libclc;mlir;polly;pstl;include-what-you-use" CACHE STRING "")
 set(LLVM_ENABLE_RUNTIMES "compiler-rt;libcxx;libcxxabi;libunwind" CACHE STRING "")
 
 set(LLVM_ENABLE_BACKTRACES OFF CACHE BOOL "")
@@ -441,7 +441,8 @@ set(LLVM_DISTRIBUTION_ADDTIONAL_COMPONENTS
     clang-headers
     clang-libraries
     ]]
-)
+    # additional
+    include-what-you-use)
 
 #[[
 # clang-cpp is a development library, and linking it will cost a lot memory.It will only available when
