@@ -284,7 +284,7 @@ if [[ ! -e "llvm-project-$LLVM_VERSION/llvm/projects/include-what-you-use/.git" 
   if [[ -e "llvm-project-$LLVM_VERSION/llvm/projects/include-what-you-use" ]]; then
     rm -rf "llvm-project-$LLVM_VERSION/llvm/projects/include-what-you-use"
   fi
-  git clone -b "$COMPOMENTS_INCLUDE_WHAT_YOU_USE_VERSION" --depth 1 "$REPOSITORY_MIRROR_URL_GITHUB/include-what-you-use.git" "llvm-project-$LLVM_VERSION"
+  git clone -b "$COMPOMENTS_INCLUDE_WHAT_YOU_USE_VERSION" --depth 1 "$REPOSITORY_MIRROR_URL_GITHUB/include-what-you-use.git" "llvm-project-$LLVM_VERSION/llvm/projects/include-what-you-use"
   for PATCH_FILE in "${LLVM_PATCH_FILES[@]}"; do
     PATCH_FILE_BASENAME="$(basename "$PATCH_FILE")"
     check_and_download "$PATCH_FILE_BASENAME" "$PATCH_FILE_BASENAME" "$PATCH_FILE" "$PATCH_FILE_BASENAME"
@@ -294,13 +294,6 @@ if [[ ! -e "llvm-project-$LLVM_VERSION/llvm/projects/include-what-you-use/.git" 
       exit 1
     fi
   done
-  cd "llvm-project-$LLVM_VERSION"
-  git reset --hard
-  for PATCH_FILE in "${LLVM_PATCH_FILES[@]}"; do
-    PATCH_FILE_BASENAME="$(basename "$PATCH_FILE")"
-    git -c "advice.detachedHead=false" -c "init.defaultBranch=main" -c "core.autocrlf=true" apply "../$PATCH_FILE_BASENAME"
-  done
-  cd ..
 fi
 
 if [[ ! -e "llvm-project-$LLVM_VERSION/.git" ]]; then
