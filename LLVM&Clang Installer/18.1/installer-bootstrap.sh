@@ -178,6 +178,18 @@ fi
 WORKING_DIR="$PWD"
 BUILD_STAGE_CACHE_FILE="$(readlink -f "$BUILD_STAGE_CACHE_FILE")"
 
+which ninja >/dev/null 2>&1
+if [[ $? -eq 0 ]]; then
+  CMAKE_BUILD_WITH_NINJA="-G Ninja"
+else
+  which ninja-build >/dev/null 2>&1
+  if [ $? -eq 0 ]; then
+    CMAKE_BUILD_WITH_NINJA="-G Ninja"
+  else
+    CMAKE_BUILD_WITH_NINJA=""
+  fi
+fi
+
 # ======================= 统一的包检查和下载函数 =======================
 function check_and_download() {
   PKG_NAME="$1"
@@ -280,11 +292,11 @@ if [[ ! -e "llvm-project-$LLVM_VERSION/.git" ]]; then
   exit 1
 fi
 
-if [[ ! -e "llvm-project-$LLVM_VERSION/llvm/projects/include-what-you-use/.git" ]]; then
-  if [[ -e "llvm-project-$LLVM_VERSION/llvm/projects/include-what-you-use" ]]; then
-    rm -rf "llvm-project-$LLVM_VERSION/llvm/projects/include-what-you-use"
+if [[ ! -e "include-what-you-use-$COMPOMENTS_INCLUDE_WHAT_YOU_USE_VERSION/.git" ]]; then
+  if [[ -e "include-what-you-use-$COMPOMENTS_INCLUDE_WHAT_YOU_USE_VERSION" ]]; then
+    rm -rf "include-what-you-use-$COMPOMENTS_INCLUDE_WHAT_YOU_USE_VERSION"
   fi
-  git clone -b "$COMPOMENTS_INCLUDE_WHAT_YOU_USE_VERSION" --depth 1 "$REPOSITORY_MIRROR_URL_GITHUB/include-what-you-use.git" "llvm-project-$LLVM_VERSION/llvm/projects/include-what-you-use"
+  git clone -b "$COMPOMENTS_INCLUDE_WHAT_YOU_USE_VERSION" --depth 1 "$REPOSITORY_MIRROR_URL_GITHUB/include-what-you-use.git" "include-what-you-use-$COMPOMENTS_INCLUDE_WHAT_YOU_USE_VERSION"
   for PATCH_FILE in "${LLVM_PATCH_FILES[@]}"; do
     PATCH_FILE_BASENAME="$(basename "$PATCH_FILE")"
     check_and_download "$PATCH_FILE_BASENAME" "$PATCH_FILE_BASENAME" "$PATCH_FILE" "$PATCH_FILE_BASENAME"
@@ -354,6 +366,15 @@ fi
 
 export LLVM_DIR="$PWD/llvm-project-$LLVM_VERSION"
 
+function cleanup_build_dir() {
+  if [[ -e "/dev/shm/build-install-llvm/build_jobs_dir" ]]; then
+    rm -rf "/dev/shm/build-install-llvm/build_jobs_dir"
+    rm -rf "$LLVM_DIR/build_jobs_dir"
+  fi
+}
+
+trap cleanup_build_dir EXIT
+
 function build_llvm_toolchain() {
   STAGE_BUILD_EXT_COMPILER_FLAGS=("-DCMAKE_FIND_ROOT_PATH=$PREFIX_DIR"
     "-DCMAKE_PREFIX_PATH=$PREFIX_DIR"
@@ -392,18 +413,7 @@ function build_llvm_toolchain() {
     STAGE_BUILD_EXT_COMPILER_FLAGS=("${STAGE_BUILD_EXT_COMPILER_FLAGS[@]}" "-DLLVM_USE_LINKER=$BUILD_USE_LD")
   fi
 
-  which ninja >/dev/null 2>&1
-  if [[ $? -eq 0 ]]; then
-    BUILD_WITH_NINJA="-G Ninja"
-  else
-    which ninja-build >/dev/null 2>&1
-    if [ $? -eq 0 ]; then
-      BUILD_WITH_NINJA="-G Ninja"
-    else
-      BUILD_WITH_NINJA=""
-    fi
-  fi
-  if [[ ! -z "$BUILD_WITH_NINJA" ]]; then
+  if [[ ! -z "$CMAKE_BUILD_WITH_NINJA" ]]; then
     STAGE_BUILD_EXT_COMPILER_FLAGS=("${STAGE_BUILD_EXT_COMPILER_FLAGS[@]}" "-DLLVM_PARALLEL_LINK_JOBS=4" "-DBOOTSTRAP_LLVM_PARALLEL_LINK_JOBS=4")
   fi
 
@@ -430,7 +440,7 @@ function build_llvm_toolchain() {
 
   PASSTHROUGH_CMAKE_OPTIONS="CMAKE_INSTALL_PREFIX;CMAKE_FIND_ROOT_PATH;CMAKE_PREFIX_PATH;LLVM_PARALLEL_LINK_JOBS"
   PASSTHROUGH_CMAKE_OPTIONS="$PASSTHROUGH_CMAKE_OPTIONS;PYTHON_HOME;LLDB_PYTHON_VERSION;LLDB_ENABLE_PYTHON;LLDB_RELOCATABLE_PYTHON"
-  cmake "$LLVM_DIR/llvm" $BUILD_WITH_NINJA "-DCMAKE_INSTALL_PREFIX=$PREFIX_DIR" \
+  cmake "$LLVM_DIR/llvm" $CMAKE_BUILD_WITH_NINJA "-DCMAKE_INSTALL_PREFIX=$PREFIX_DIR" \
     -C "$BUILD_STAGE_CACHE_FILE" "-DCLANG_BOOTSTRAP_PASSTHROUGH=$PASSTHROUGH_CMAKE_OPTIONS" \
     $BUILD_LLVM_PATCHED_OPTION "${STAGE_BUILD_EXT_COMPILER_FLAGS[@]}" "$@"
   if [[ 0 -ne $? ]]; then
@@ -457,11 +467,6 @@ function build_llvm_toolchain() {
     return 1
   fi
 
-  if [[ -e "/dev/shm/build-install-llvm/build_jobs_dir" ]]; then
-    cd ..
-    rm -rf "/dev/shm/build-install-llvm/build_jobs_dir"
-    rm -rf "$LLVM_DIR/build_jobs_dir"
-  fi
   return 0
 }
 
@@ -489,7 +494,7 @@ if [[ -e "zlib-$COMPOMENTS_ZLIB_VERSION" ]]; then
   if [[ -e "CMakeCache.txt" ]]; then
     cmake --build . -- clean || true
   fi
-  cmake .. -DCMAKE_POSITION_INDEPENDENT_CODE=YES "-DCMAKE_INSTALL_PREFIX=$PREFIX_DIR"
+  cmake .. $CMAKE_BUILD_WITH_NINJA -DCMAKE_POSITION_INDEPENDENT_CODE=YES "-DCMAKE_INSTALL_PREFIX=$PREFIX_DIR"
   cmake --build . $BUILD_JOBS_OPTION || cmake --build .
   if [[ $? -ne 0 ]]; then
     echo -e "\\033[31;1mBuild zlib failed.\\033[39;49;0m"
@@ -531,7 +536,7 @@ if [[ -e "libxml2-v$COMPOMENTS_LIBXML2_VERSION.tar.gz" ]]; then
   elif [[ ! -z "$TRY_GCC_HOME" ]] && [[ -e "$TRY_GCC_HOME/load-gcc-envs.sh" ]]; then
     LIBXML2_CMAKE_OPTIONS=(${LIBXML2_CMAKE_OPTIONS[@]} "-DCMAKE_FIND_ROOT_PATH=$TRY_GCC_HOME" "-DCMAKE_PREFIX_PATH=$TRY_GCC_HOME")
   fi
-  cmake .. ${LIBXML2_CMAKE_OPTIONS[@]}
+  cmake .. $CMAKE_BUILD_WITH_NINJA ${LIBXML2_CMAKE_OPTIONS[@]}
   cmake --build . $BUILD_JOBS_OPTION || cmake --build .
   if [[ $? -ne 0 ]]; then
     echo -e "\\033[31;1mBuild zlib failed.\\033[39;49;0m"
@@ -617,6 +622,24 @@ if [[ ! -e "$PREFIX_DIR/bin/clang" ]]; then
 fi
 
 echo -e "\\033[32;1mbuild llvm success.\\033[39;49;0m"
+
+# Build include-what-you-use
+if [[ -e "include-what-you-use-$COMPOMENTS_INCLUDE_WHAT_YOU_USE_VERSION" ]]; then
+  mkdir -p "include-what-you-use-$COMPOMENTS_INCLUDE_WHAT_YOU_USE_VERSION/build_jobs_dir"
+
+  cd "include-what-you-use-$COMPOMENTS_INCLUDE_WHAT_YOU_USE_VERSION/build_jobs_dir"
+  cmake $CMAKE_BUILD_WITH_NINJA .. -DCMAKE_POSITION_INDEPENDENT_CODE=YES "-DCMAKE_FIND_ROOT_PATH=$PREFIX_DIR" \
+    "-DCMAKE_PREFIX_PATH=$PREFIX_DIR:$LLVM_DIR/build_jobs_dir" "-DCMAKE_C_COMPILER=$PREFIX_DIR/bin/clang" "-DCMAKE_CXX_COMPILER=$PREFIX_DIR/bin/clang++"
+
+  cmake --build . $BUILD_JOBS_OPTION || cmake --build .
+  if [[ $? -ne 0 ]]; then
+    echo -e "\\033[31;1mBuild include-what-you-use failed.\\033[39;49;0m"
+    exit 1
+  fi
+  cmake --install . --prefix "$PREFIX_DIR"
+
+  cd "$WORKING_DIR"
+fi
 
 if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
 
