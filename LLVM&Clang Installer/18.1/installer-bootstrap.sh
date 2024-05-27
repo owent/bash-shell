@@ -296,7 +296,7 @@ if [[ ! -e "include-what-you-use-$COMPOMENTS_INCLUDE_WHAT_YOU_USE_VERSION/.git" 
   if [[ -e "include-what-you-use-$COMPOMENTS_INCLUDE_WHAT_YOU_USE_VERSION" ]]; then
     rm -rf "include-what-you-use-$COMPOMENTS_INCLUDE_WHAT_YOU_USE_VERSION"
   fi
-  git clone -b "$COMPOMENTS_INCLUDE_WHAT_YOU_USE_VERSION" --depth 1 "$REPOSITORY_MIRROR_URL_GITHUB/include-what-you-use.git" "include-what-you-use-$COMPOMENTS_INCLUDE_WHAT_YOU_USE_VERSION"
+  git clone -b "$COMPOMENTS_INCLUDE_WHAT_YOU_USE_VERSION" --depth 1 "$REPOSITORY_MIRROR_URL_GITHUB/include-what-you-use/include-what-you-use.git" "include-what-you-use-$COMPOMENTS_INCLUDE_WHAT_YOU_USE_VERSION"
   for PATCH_FILE in "${LLVM_PATCH_FILES[@]}"; do
     PATCH_FILE_BASENAME="$(basename "$PATCH_FILE")"
     check_and_download "$PATCH_FILE_BASENAME" "$PATCH_FILE_BASENAME" "$PATCH_FILE" "$PATCH_FILE_BASENAME"
