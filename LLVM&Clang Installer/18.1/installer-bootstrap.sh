@@ -624,21 +624,24 @@ fi
 echo -e "\\033[32;1mbuild llvm success.\\033[39;49;0m"
 
 # Build include-what-you-use
-if [[ -e "include-what-you-use-$COMPOMENTS_INCLUDE_WHAT_YOU_USE_VERSION" ]]; then
-  mkdir -p "include-what-you-use-$COMPOMENTS_INCLUDE_WHAT_YOU_USE_VERSION/build_jobs_dir"
-
-  cd "include-what-you-use-$COMPOMENTS_INCLUDE_WHAT_YOU_USE_VERSION/build_jobs_dir"
-  cmake $CMAKE_BUILD_WITH_NINJA .. -DCMAKE_POSITION_INDEPENDENT_CODE=YES "-DCMAKE_FIND_ROOT_PATH=$PREFIX_DIR" \
-    "-DCMAKE_PREFIX_PATH=$PREFIX_DIR:$LLVM_DIR/build_jobs_dir" "-DCMAKE_C_COMPILER=$PREFIX_DIR/bin/clang" "-DCMAKE_CXX_COMPILER=$PREFIX_DIR/bin/clang++"
-
-  cmake --build . $BUILD_JOBS_OPTION || cmake --build .
-  if [[ $? -ne 0 ]]; then
-    echo -e "\\033[31;1mBuild include-what-you-use failed.\\033[39;49;0m"
-    exit 1
-  fi
-  cmake --install . --prefix "$PREFIX_DIR"
-
+if [ $BUILD_DOWNLOAD_ONLY -eq 0 ]; then
   cd "$WORKING_DIR"
+  if [[ -e "include-what-you-use-$COMPOMENTS_INCLUDE_WHAT_YOU_USE_VERSION" ]]; then
+    mkdir -p "include-what-you-use-$COMPOMENTS_INCLUDE_WHAT_YOU_USE_VERSION/build_jobs_dir"
+
+    cd "include-what-you-use-$COMPOMENTS_INCLUDE_WHAT_YOU_USE_VERSION/build_jobs_dir"
+    cmake $CMAKE_BUILD_WITH_NINJA .. -DCMAKE_POSITION_INDEPENDENT_CODE=YES "-DCMAKE_FIND_ROOT_PATH=$PREFIX_DIR" \
+      "-DCMAKE_PREFIX_PATH=$PREFIX_DIR;$LLVM_DIR/build_jobs_dir" "-DCMAKE_C_COMPILER=$PREFIX_DIR/bin/clang" "-DCMAKE_CXX_COMPILER=$PREFIX_DIR/bin/clang++"
+
+    cmake --build . $BUILD_JOBS_OPTION || cmake --build .
+    if [[ $? -ne 0 ]]; then
+      echo -e "\\033[31;1mBuild include-what-you-use failed.\\033[39;49;0m"
+      exit 1
+    fi
+    cmake --install . --prefix "$PREFIX_DIR"
+
+    cd "$WORKING_DIR"
+  fi
 fi
 
 if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then

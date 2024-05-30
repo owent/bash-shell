@@ -325,7 +325,7 @@ set(LLVM_BUILTIN_TARGETS "${BUILTIN_TARGETS}" CACHE STRING "")
 set(LLVM_RUNTIME_TARGETS "${RUNTIME_TARGETS}" CACHE STRING "")
 
 # Setup toolchain.
-set(LLVM_INSTALL_TOOLCHAIN_ONLY ON CACHE BOOL "")
+set(LLVM_INSTALL_TOOLCHAIN_ONLY OFF CACHE BOOL "")
 # See <llvm-project>/llvm/test/CMakeLists.txt
 set(LLVM_TOOLCHAIN_TOOLS_SELECT
     dsymutil
@@ -430,18 +430,22 @@ set(LLVM_DISTRIBUTION_ADDTIONAL_COMPONENTS
     pp-trace
     opt-viewer
     # unwind, cxx, cxxabi are already included in runtimes From <llvm-project>/clang/cmake/caches/Apple-stage2.cmake
-    Remarks
-    #[[
-    # From <llvm-project>/clang/cmake/caches/MultiDistributionExample.cmake . These targets are development targets, and
-    # them will only available when LLVM_INSTALL_TOOLCHAIN_ONLY=OFF
+    Remarks)
+#[[
+# From <llvm-project>/clang/cmake/caches/MultiDistributionExample.cmake . These targets are development targets, and
+# them will only available when LLVM_INSTALL_TOOLCHAIN_ONLY=OFF
+]]
+if(LLVM_INSTALL_TOOLCHAIN_ONLY)
+  list(
+    APPEND
+    LLVM_DISTRIBUTION_ADDTIONAL_COMPONENTS
     cmake-exports
     llvm-headers
     llvm-libraries
     clang-cmake-exports
     clang-headers
-    clang-libraries
-    ]]
-)
+    clang-libraries)
+endif()
 
 #[[
 # clang-cpp is a development library, and linking it will cost a lot memory.It will only available when
