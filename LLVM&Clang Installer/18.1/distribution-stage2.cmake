@@ -392,20 +392,30 @@ set(LLVM_TOOLCHAIN_TOOLS_SELECT
     llvm-ml
     llvm-modextract
     llvm-strings
-    scan-build
-    scan-view)
-if(APPLE)
-  list(
-    APPEND
-    LLVM_TOOLCHAIN_TOOLS_SELECT
     llvm-bitcode-strip
-    llvm-ifs
     llvm-lipo
     llvm-libtool-darwin
-    llvm-otool)
-endif()
+    llvm-tblgen
+    llvm-ifs
+    bugpoint
+    verify-uselistorder
+    llvm-bcanalyzer
+    llvm-otool
+    scan-build
+    scan-view
+    llvm-cat
+    llvm-cfi-verify
+    llvm-debuginfod
+    llvm-remarkutil
+    llvm-cvtres
+    llvm-readtapi
+    llvm-debuginfo-analyzer
+    reduce-chunk-list)
 if(CMAKE_HOST_SYSTEM_NAME MATCHES "Linux|Windows")
   list(APPEND LLVM_TOOLCHAIN_TOOLS_SELECT llvm-jitlink llvm-jitlistener)
+endif()
+if(polly IN LIST LLVM_ENABLE_PROJECTS)
+  list(APPEND LLVM_TOOLCHAIN_TOOLS_SELECT LLVMPolly PollyISL)
 endif()
 set(LLVM_TOOLCHAIN_TOOLS ${LLVM_TOOLCHAIN_TOOLS_SELECT} CACHE STRING "")
 
@@ -435,13 +445,16 @@ set(LLVM_DISTRIBUTION_ADDTIONAL_COMPONENTS
 # From <llvm-project>/clang/cmake/caches/MultiDistributionExample.cmake . These targets are development targets, and
 # them will only available when LLVM_INSTALL_TOOLCHAIN_ONLY=OFF
 ]]
-if(LLVM_INSTALL_TOOLCHAIN_ONLY)
+if(NOT LLVM_INSTALL_TOOLCHAIN_ONLY)
   list(
     APPEND
     LLVM_DISTRIBUTION_ADDTIONAL_COMPONENTS
+    # llvm
     cmake-exports
     llvm-headers
     llvm-libraries
+    llvm-c-test
+    # clang
     clang-cmake-exports
     clang-headers
     clang-libraries)
@@ -474,9 +487,21 @@ endif()
 set(LLVM_DISTRIBUTION_COMPONENTS
     clang
     lld
+    amdgpu-arch
+    nvptx-arch
     clang-apply-replacements
     clang-doc
     clang-format
+    clang-tblgen
+    clang-offload-packager
+    clang-offload-bundler
+    clang-repl
+    clang-reorder-fields
+    clang-move
+    clang-query
+    clang-include-cleaner
+    clang-pseudo
+    clang-linker-wrapper
     clang-resource-headers
     clang-include-fixer
     clang-refactor

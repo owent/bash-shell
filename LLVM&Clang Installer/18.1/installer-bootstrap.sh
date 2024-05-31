@@ -623,27 +623,6 @@ fi
 
 echo -e "\\033[32;1mbuild llvm success.\\033[39;49;0m"
 
-# Build include-what-you-use
-if [ $BUILD_DOWNLOAD_ONLY -eq 0 ]; then
-  cd "$WORKING_DIR"
-  if [[ -e "include-what-you-use-$COMPOMENTS_INCLUDE_WHAT_YOU_USE_VERSION" ]]; then
-    mkdir -p "include-what-you-use-$COMPOMENTS_INCLUDE_WHAT_YOU_USE_VERSION/build_jobs_dir"
-
-    cd "include-what-you-use-$COMPOMENTS_INCLUDE_WHAT_YOU_USE_VERSION/build_jobs_dir"
-    cmake $CMAKE_BUILD_WITH_NINJA .. -DCMAKE_POSITION_INDEPENDENT_CODE=YES "-DCMAKE_FIND_ROOT_PATH=$PREFIX_DIR" \
-      "-DCMAKE_PREFIX_PATH=$PREFIX_DIR;$LLVM_DIR/build_jobs_dir" "-DCMAKE_C_COMPILER=$PREFIX_DIR/bin/clang" "-DCMAKE_CXX_COMPILER=$PREFIX_DIR/bin/clang++"
-
-    cmake --build . $BUILD_JOBS_OPTION || cmake --build .
-    if [[ $? -ne 0 ]]; then
-      echo -e "\\033[31;1mBuild include-what-you-use failed.\\033[39;49;0m"
-      exit 1
-    fi
-    cmake --install . --prefix "$PREFIX_DIR"
-
-    cd "$WORKING_DIR"
-  fi
-fi
-
 if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
 
   DEP_COMPILER_HOME="$(dirname "$(dirname "$ORIGIN_COMPILER_CXX")")"
@@ -706,23 +685,6 @@ fi
 ' >>"$PREFIX_DIR/load-llvm-envs.sh"
   chmod +x "$PREFIX_DIR/load-llvm-envs.sh"
 
-  LLVM_CONFIG_PATH="$PREFIX_DIR/bin/llvm-config"
-  echo -e "\\033[33;1mAddition, run the cmds below to add environment var(s).\\033[39;49;0m"
-  echo -e "\\033[31;1mexport PATH=$($LLVM_CONFIG_PATH --bindir):$PATH\\033[39;49;0m"
-  echo -e "\\033[33;1mBuild LLVM done.\\033[39;49;0m"
-  echo ""
-  echo -e "\\033[32;1mSample flags to build exectable file:.\\033[39;49;0m"
-  echo -e "\\033[35;1m\tCC=$PREFIX_DIR/bin/clang\\033[39;49;0m"
-  echo -e "\\033[35;1m\tCXX=$PREFIX_DIR/bin/clang++\\033[39;49;0m"
-  echo -e "\\033[35;1m\tCFLAGS=$($LLVM_CONFIG_PATH --cflags) -std=libc++\\033[39;49;0m"
-  if [ ! -z "$(find $($LLVM_CONFIG_PATH --libdir) -name libc++abi.so)" ]; then
-    echo -e "\\033[35;1m\tCXXFLAGS=$($LLVM_CONFIG_PATH --cxxflags) -std=libc++\\033[39;49;0m"
-    echo -e "\\033[35;1m\tLDFLAGS=$($LLVM_CONFIG_PATH --ldflags) -lc++ -lc++abi\\033[39;49;0m"
-  else
-    echo -e "\\033[35;1m\tCXXFLAGS=$($LLVM_CONFIG_PATH --cxxflags)\\033[39;49;0m"
-    echo -e "\\033[35;1m\tLDFLAGS=$($LLVM_CONFIG_PATH --ldflags)\\033[39;49;0m"
-  fi
-  echo -e "\\033[35;1m\tMaybe need add --gcc-toolchain=$GCC_HOME_DIR to compile options\\033[39;49;0m"
 else
   echo -e "\\033[35;1mDownloaded.\\033[39;49;0m"
 fi
@@ -762,7 +724,58 @@ $PREFIX_DIR/*
 
 " >"$PREFIX_DIR/SPECS/rpm.spec"
 
-echo "Using:"
-echo "    mkdir -pv \$HOME/rpmbuild/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}"
-echo "    cd $PREFIX_DIR && rpmbuild -bb --target=x86_64 SPECS/rpm.spec"
-echo "to build rpm package."
+source "$PREFIX_DIR/load-llvm-envs.sh"
+# Build include-what-you-use
+if [ $BUILD_DOWNLOAD_ONLY -eq 0 ]; then
+  cd "$WORKING_DIR"
+  if [[ -e "include-what-you-use-$COMPOMENTS_INCLUDE_WHAT_YOU_USE_VERSION" ]]; then
+    mkdir -p "include-what-you-use-$COMPOMENTS_INCLUDE_WHAT_YOU_USE_VERSION/build_jobs_dir"
+
+    USE_LD_FLAGS="-fuse-ld=mold"
+    which mold || USE_LD_FLAGS=""
+    # GCC_LIBSTDCXX_LIB_PATH=$(find "$GCC_HOME_DIR" -name libstdc++.so | head -n 1)
+    LIBCLANG_CPP_PATH=$(find "$PREFIX_DIR" -name libclang-cpp.so | head -n 1)
+    SELECT_STDLIB="-stdlib=libstdc++"
+    ldd "$LIBCLANG_CPP_PATH" | grep -F 'libstdc++' >/dev/null 2>&1 || SELECT_STDLIB="$(llvm-config --cxxflags)"
+    cd "include-what-you-use-$COMPOMENTS_INCLUDE_WHAT_YOU_USE_VERSION/build_jobs_dir"
+    env CXXFLAGS="$CXXFLAGS $SELECT_STDLIB" LDFLAGS="$LDFLAGS $USE_LD_FLAGS -L$GCC_HOME_DIR/lib64 -L$GCC_HOME_DIR/lib $(llvm-config --ldflags)" \
+      cmake $CMAKE_BUILD_WITH_NINJA .. -DCMAKE_POSITION_INDEPENDENT_CODE=YES "-DCMAKE_FIND_ROOT_PATH=$PREFIX_DIR" \
+      "-DCMAKE_PREFIX_PATH=$PREFIX_DIR" "-DCMAKE_C_COMPILER=$PREFIX_DIR/bin/clang" "-DCMAKE_CXX_COMPILER=$PREFIX_DIR/bin/clang++" \
+      "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON" "-DIWYU_LINK_CLANG_DYLIB=ON"
+
+    cmake --build . $BUILD_JOBS_OPTION || cmake --build .
+    if [[ $? -ne 0 ]]; then
+      echo -e "\\033[31;1mBuild include-what-you-use failed.\\033[39;49;0m"
+      exit 1
+    fi
+    cmake --install . --prefix "$PREFIX_DIR"
+
+    cd "$WORKING_DIR"
+  fi
+fi
+
+if [ $BUILD_DOWNLOAD_ONLY -eq 0 ]; then
+  LLVM_CONFIG_PATH="$PREFIX_DIR/bin/llvm-config"
+  echo -e "\\033[33;1mAddition, run the cmds below to add environment var(s).\\033[39;49;0m"
+  echo -e "\\033[31;1mexport PATH=$($LLVM_CONFIG_PATH --bindir):$PATH\\033[39;49;0m"
+  echo -e "\\033[33;1mBuild LLVM done.\\033[39;49;0m"
+  echo ""
+  echo -e "\\033[32;1mSample flags to build exectable file:.\\033[39;49;0m"
+  echo -e "\\033[35;1m\tCC=$PREFIX_DIR/bin/clang\\033[39;49;0m"
+  echo -e "\\033[35;1m\tCXX=$PREFIX_DIR/bin/clang++\\033[39;49;0m"
+  echo -e "\\033[35;1m\tCFLAGS=$($LLVM_CONFIG_PATH --cflags) -std=libc++\\033[39;49;0m"
+  if [ ! -z "$(find $($LLVM_CONFIG_PATH --libdir) -name libc++abi.so)" ]; then
+    echo -e "\\033[35;1m\tCXXFLAGS=$($LLVM_CONFIG_PATH --cxxflags) -std=libc++\\033[39;49;0m"
+    echo -e "\\033[35;1m\tLDFLAGS=$($LLVM_CONFIG_PATH --ldflags) -lc++ -lc++abi\\033[39;49;0m"
+  else
+    echo -e "\\033[35;1m\tCXXFLAGS=$($LLVM_CONFIG_PATH --cxxflags)\\033[39;49;0m"
+    echo -e "\\033[35;1m\tLDFLAGS=$($LLVM_CONFIG_PATH --ldflags)\\033[39;49;0m"
+  fi
+  echo -e "\\033[35;1m\tMaybe need add --gcc-toolchain=$GCC_HOME_DIR to compile options\\033[39;49;0m"
+
+  echo "Using:"
+  echo "    mkdir -pv \$HOME/rpmbuild/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}"
+  echo "    cd $PREFIX_DIR && rpmbuild -bb --target=x86_64 SPECS/rpm.spec"
+  echo "to build rpm package."
+
+fi
