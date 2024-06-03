@@ -409,8 +409,7 @@ set(LLVM_TOOLCHAIN_TOOLS_SELECT
     llvm-remarkutil
     llvm-cvtres
     llvm-readtapi
-    llvm-debuginfo-analyzer
-    reduce-chunk-list)
+    llvm-debuginfo-analyzer)
 if(CMAKE_HOST_SYSTEM_NAME MATCHES "Linux|Windows")
   list(APPEND LLVM_TOOLCHAIN_TOOLS_SELECT llvm-jitlink llvm-jitlistener)
 endif()
@@ -496,7 +495,6 @@ set(LLVM_DISTRIBUTION_COMPONENTS
     clang-tblgen
     clang-offload-packager
     clang-offload-bundler
-    clang-repl
     clang-reorder-fields
     clang-move
     clang-query
