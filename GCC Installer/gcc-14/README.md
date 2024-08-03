@@ -63,7 +63,7 @@ CentOS 7 & CentOS 8
 
 + m4 latest
 + autoconf latest
-+ automake 1.16.5
++ automake 1.17
 + libtool 2.4.7
 + pkgconfig 0.29.2
 + gmp 6.3.0
@@ -81,17 +81,17 @@ CentOS 7 & CentOS 8
 
 ### 编译目标
 
-+ gcc 14.1.0
++ gcc 14.2.0
 + bison 3.8.2
 + binutils 2.42
 + python 3.11.9 *[按需]*
-+ gdb 14.2
-+ global 6.6.12
-+ lz4 1.9.4 *[非必须]*
++ gdb 15.1
++ global 6.6.13
++ lz4 1.10.0 *[非必须]*
 + zlib 1.3.1 *[非必须]*
 + libffi 3.4.6 *[非必须]*
 + ncurses 6.5 *[非必须]*
-+ xz 5.4.6 *[非必须]*
++ xz 5.6.2 *[非必须]*
 
 ### 注
 
@@ -107,3 +107,11 @@ CentOS 7 & CentOS 8
 ### History
 
 + 2024-05-23    Created
++ 2024-08-03    Update
+  + GCC -> 14.2.0
+  + automake -> 1.17
+  + binutils -> 2.42
+  + gdb -> 15.1
+  + global -> 6.6.13
+  + xz -> 5.6.2
+  + lz4 -> 1.10.0

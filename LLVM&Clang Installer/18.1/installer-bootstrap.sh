@@ -4,7 +4,7 @@
 set -x
 
 # ======================================= 配置 =======================================
-LLVM_VERSION=18.1.6
+LLVM_VERSION=18.1.8
 LLVM_INSTALLER_VERSION=${LLVM_VERSION%.*}
 LLVM_PATCH_FILES=(
   "https://raw.githubusercontent.com/owent-utils/bash-shell/main/LLVM%26Clang%20Installer/$LLVM_INSTALLER_VERSION/bolt-disable-emit-relocs.patch"
@@ -15,7 +15,7 @@ COMPOMENTS_PYTHON_VERSION=3.11.9
 COMPOMENTS_SWIG_VERSION=v4.2.1
 COMPOMENTS_ZLIB_VERSION=1.3.1
 COMPOMENTS_LIBFFI_VERSION=3.4.6
-COMPOMENTS_LIBXML2_VERSION=2.11.8
+COMPOMENTS_LIBXML2_VERSION=2.13.3
 COMPOMENTS_INCLUDE_WHAT_YOU_USE_VERSION=0.22
 PREFIX_DIR=/usr/local/llvm-$LLVM_VERSION
 
