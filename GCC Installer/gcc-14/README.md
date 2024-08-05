@@ -110,7 +110,6 @@ CentOS 7 & CentOS 8
 + 2024-08-03    Update
   + GCC -> 14.2.0
   + automake -> 1.17
-  + binutils -> 2.42
   + gdb -> 15.1
   + global -> 6.6.13
   + xz -> 5.6.2
