@@ -114,3 +114,4 @@ CentOS 7 & CentOS 8
   + global -> 6.6.13
   + xz -> 5.6.2
   + lz4 -> 1.10.0
++ 2024-08-03    Restore GCC->14.1.0(14.2.0 lead to many crash)
