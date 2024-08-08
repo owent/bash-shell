@@ -137,6 +137,7 @@ if [[ -z "$CC" ]]; then
   export CXX=g++
 fi
 BUILD_STAGE1_INSTALLPREFIX="$WORKING_DIR/stage1-prebuilt"
+BUILD_STAGE1_TOOLSPREFIX="$WORKING_DIR/stage1-prebuilt-tools"
 
 # ======================= 如果是64位系统且没安装32位的开发包，则编译要gcc加上 --disable-multilib 参数, 不生成32位库 =======================
 SYS_LONG_BIT=$(getconf LONG_BIT)
@@ -256,13 +257,14 @@ if [[ "x$LD_LIBRARY_PATH" == "x" ]]; then
 else
   export LD_LIBRARY_PATH="$PREFIX_DIR/lib:$PREFIX_DIR/lib64:$LD_LIBRARY_PATH"
 fi
-export PATH=$PREFIX_DIR/bin:$BUILD_STAGE1_INSTALLPREFIX/bin:$PATH
+export PATH=$PREFIX_DIR/bin:$BUILD_STAGE1_INSTALLPREFIX/bin:$BUILD_STAGE1_TOOLSPREFIX/bin:$PATH
 
 echo -e "\\033[32;1mnotice: reset env LD_LIBRARY_PATH=$LD_LIBRARY_PATH\\033[39;49;0m"
 echo -e "\\033[32;1mnotice: reset env PATH=$PATH\\033[39;49;0m"
 
 echo "WORKING_DIR               = $WORKING_DIR"
 echo "STAGE1_INSTALLPREFIX      = $BUILD_STAGE1_INSTALLPREFIX"
+echo "STAGE1_TOOLSPREFIX        = $BUILD_STAGE1_TOOLSPREFIX"
 echo "PREFIX_DIR                = $PREFIX_DIR"
 echo "BUILD_TARGET_CONF_OPTION  = $BUILD_TARGET_CONF_OPTION"
 echo "BUILD_OTHER_CONF_OPTION   = $BUILD_OTHER_CONF_OPTION"
@@ -287,7 +289,7 @@ function build_m4() {
   STAGE_CONFIGURE_OPTIONS=""
   STAGE_CFLAGS=""
   STAGE_LDFLAGS=""
-  if [[ "$INSTALL_PREFIX_PATH" == "$BUILD_STAGE1_INSTALLPREFIX" ]]; then
+  if [[ "$INSTALL_PREFIX_PATH" == "$BUILD_STAGE1_INSTALLPREFIX" ]] || [[ "$INSTALL_PREFIX_PATH" == "$BUILD_STAGE1_TOOLSPREFIX" ]]; then
     STAGE_CONFIGURE_OPTIONS=""
     BUILD_BACKUP_PKG_CONFIG_PATH="$PKG_CONFIG_PATH"
     if [[ "x$BUILD_BACKUP_PKG_CONFIG_PATH" == "x" ]]; then
@@ -324,7 +326,6 @@ function build_m4() {
     fi
   fi
 }
-build_m4 "$BUILD_STAGE1_INSTALLPREFIX"
 
 # install autoconf
 function build_autoconf() {
@@ -332,7 +333,7 @@ function build_autoconf() {
   STAGE_CONFIGURE_OPTIONS=""
   STAGE_CFLAGS=""
   STAGE_LDFLAGS=""
-  if [[ "$INSTALL_PREFIX_PATH" == "$BUILD_STAGE1_INSTALLPREFIX" ]]; then
+  if [[ "$INSTALL_PREFIX_PATH" == "$BUILD_STAGE1_INSTALLPREFIX" ]] || [[ "$INSTALL_PREFIX_PATH" == "$BUILD_STAGE1_TOOLSPREFIX" ]]; then
     STAGE_CONFIGURE_OPTIONS=""
     BUILD_BACKUP_PKG_CONFIG_PATH="$PKG_CONFIG_PATH"
     if [[ "x$BUILD_BACKUP_PKG_CONFIG_PATH" == "x" ]]; then
@@ -368,7 +369,6 @@ function build_autoconf() {
     fi
   fi
 }
-build_autoconf "$BUILD_STAGE1_INSTALLPREFIX"
 
 # install automake
 function build_automake() {
@@ -376,7 +376,7 @@ function build_automake() {
   STAGE_CONFIGURE_OPTIONS=""
   STAGE_CFLAGS=""
   STAGE_LDFLAGS=""
-  if [[ "$INSTALL_PREFIX_PATH" == "$BUILD_STAGE1_INSTALLPREFIX" ]]; then
+  if [[ "$INSTALL_PREFIX_PATH" == "$BUILD_STAGE1_INSTALLPREFIX" ]] || [[ "$INSTALL_PREFIX_PATH" == "$BUILD_STAGE1_TOOLSPREFIX" ]]; then
     STAGE_CONFIGURE_OPTIONS=""
     BUILD_BACKUP_PKG_CONFIG_PATH="$PKG_CONFIG_PATH"
     if [[ "x$BUILD_BACKUP_PKG_CONFIG_PATH" == "x" ]]; then
@@ -412,7 +412,6 @@ function build_automake() {
     fi
   fi
 }
-build_automake "$BUILD_STAGE1_INSTALLPREFIX"
 
 # install libtool
 function build_libtool() {
@@ -420,7 +419,7 @@ function build_libtool() {
   STAGE_CONFIGURE_OPTIONS=""
   STAGE_CFLAGS=""
   STAGE_LDFLAGS=""
-  if [[ "$INSTALL_PREFIX_PATH" == "$BUILD_STAGE1_INSTALLPREFIX" ]]; then
+  if [[ "$INSTALL_PREFIX_PATH" == "$BUILD_STAGE1_INSTALLPREFIX" ]] || [[ "$INSTALL_PREFIX_PATH" == "$BUILD_STAGE1_TOOLSPREFIX" ]]; then
     STAGE_CONFIGURE_OPTIONS="--disable-shared --enable-static "
     BUILD_BACKUP_PKG_CONFIG_PATH="$PKG_CONFIG_PATH"
     if [[ "x$BUILD_BACKUP_PKG_CONFIG_PATH" == "x" ]]; then
@@ -456,7 +455,6 @@ function build_libtool() {
     fi
   fi
 }
-build_libtool "$BUILD_STAGE1_INSTALLPREFIX"
 
 # install pkgconfig
 function build_pkgconfig() {
@@ -464,7 +462,7 @@ function build_pkgconfig() {
   STAGE_CONFIGURE_OPTIONS=""
   STAGE_CFLAGS=""
   STAGE_LDFLAGS=""
-  if [[ "$INSTALL_PREFIX_PATH" == "$BUILD_STAGE1_INSTALLPREFIX" ]]; then
+  if [[ "$INSTALL_PREFIX_PATH" == "$BUILD_STAGE1_INSTALLPREFIX" ]] || [[ "$INSTALL_PREFIX_PATH" == "$BUILD_STAGE1_TOOLSPREFIX" ]]; then
     STAGE_CONFIGURE_OPTIONS="--disable-shared --enable-static "
     BUILD_BACKUP_PKG_CONFIG_PATH="$PKG_CONFIG_PATH"
     if [[ "x$BUILD_BACKUP_PKG_CONFIG_PATH" == "x" ]]; then
@@ -500,7 +498,6 @@ function build_pkgconfig() {
     fi
   fi
 }
-build_pkgconfig "$BUILD_STAGE1_INSTALLPREFIX"
 
 # install gmp
 function build_gmp() {
@@ -508,7 +505,7 @@ function build_gmp() {
   STAGE_CONFIGURE_OPTIONS=""
   STAGE_CFLAGS=""
   STAGE_LDFLAGS=""
-  if [[ "$INSTALL_PREFIX_PATH" == "$BUILD_STAGE1_INSTALLPREFIX" ]]; then
+  if [[ "$INSTALL_PREFIX_PATH" == "$BUILD_STAGE1_INSTALLPREFIX" ]] || [[ "$INSTALL_PREFIX_PATH" == "$BUILD_STAGE1_TOOLSPREFIX" ]]; then
     STAGE_CONFIGURE_OPTIONS="--disable-shared --enable-static "
     BUILD_BACKUP_PKG_CONFIG_PATH="$PKG_CONFIG_PATH"
     if [[ "x$BUILD_BACKUP_PKG_CONFIG_PATH" == "x" ]]; then
@@ -547,7 +544,6 @@ function build_gmp() {
     fi
   fi
 }
-build_gmp "$BUILD_STAGE1_INSTALLPREFIX"
 
 # install mpfr
 function build_mpfr() {
@@ -555,7 +551,7 @@ function build_mpfr() {
   STAGE_CONFIGURE_OPTIONS=""
   STAGE_CFLAGS=""
   STAGE_LDFLAGS=""
-  if [[ "$INSTALL_PREFIX_PATH" == "$BUILD_STAGE1_INSTALLPREFIX" ]]; then
+  if [[ "$INSTALL_PREFIX_PATH" == "$BUILD_STAGE1_INSTALLPREFIX" ]] || [[ "$INSTALL_PREFIX_PATH" == "$BUILD_STAGE1_TOOLSPREFIX" ]]; then
     STAGE_CONFIGURE_OPTIONS="--disable-shared --enable-static "
     BUILD_BACKUP_PKG_CONFIG_PATH="$PKG_CONFIG_PATH"
     if [[ "x$BUILD_BACKUP_PKG_CONFIG_PATH" == "x" ]]; then
@@ -591,7 +587,6 @@ function build_mpfr() {
     fi
   fi
 }
-build_mpfr "$BUILD_STAGE1_INSTALLPREFIX"
 
 # install mpc
 function build_mpc() {
@@ -599,7 +594,7 @@ function build_mpc() {
   STAGE_CONFIGURE_OPTIONS=""
   STAGE_CFLAGS=""
   STAGE_LDFLAGS=""
-  if [[ "$INSTALL_PREFIX_PATH" == "$BUILD_STAGE1_INSTALLPREFIX" ]]; then
+  if [[ "$INSTALL_PREFIX_PATH" == "$BUILD_STAGE1_INSTALLPREFIX" ]] || [[ "$INSTALL_PREFIX_PATH" == "$BUILD_STAGE1_TOOLSPREFIX" ]]; then
     STAGE_CONFIGURE_OPTIONS="--disable-shared --enable-static "
     BUILD_BACKUP_PKG_CONFIG_PATH="$PKG_CONFIG_PATH"
     if [[ "x$BUILD_BACKUP_PKG_CONFIG_PATH" == "x" ]]; then
@@ -635,7 +630,6 @@ function build_mpc() {
     fi
   fi
 }
-build_mpc "$BUILD_STAGE1_INSTALLPREFIX"
 
 # install isl
 function build_isl() {
@@ -643,7 +637,7 @@ function build_isl() {
   STAGE_CONFIGURE_OPTIONS=""
   STAGE_CFLAGS=""
   STAGE_LDFLAGS=""
-  if [[ "$INSTALL_PREFIX_PATH" == "$BUILD_STAGE1_INSTALLPREFIX" ]]; then
+  if [[ "$INSTALL_PREFIX_PATH" == "$BUILD_STAGE1_INSTALLPREFIX" ]] || [[ "$INSTALL_PREFIX_PATH" == "$BUILD_STAGE1_TOOLSPREFIX" ]]; then
     STAGE_CONFIGURE_OPTIONS="--disable-shared --enable-static "
     BUILD_BACKUP_PKG_CONFIG_PATH="$PKG_CONFIG_PATH"
     if [[ "x$BUILD_BACKUP_PKG_CONFIG_PATH" == "x" ]]; then
@@ -680,7 +674,6 @@ function build_isl() {
     fi
   fi
 }
-build_isl "$BUILD_STAGE1_INSTALLPREFIX"
 
 # install libatomic_ops
 function build_libatomic_ops() {
@@ -688,7 +681,7 @@ function build_libatomic_ops() {
   STAGE_CONFIGURE_OPTIONS=""
   STAGE_CFLAGS=""
   STAGE_LDFLAGS=""
-  if [[ "$INSTALL_PREFIX_PATH" == "$BUILD_STAGE1_INSTALLPREFIX" ]]; then
+  if [[ "$INSTALL_PREFIX_PATH" == "$BUILD_STAGE1_INSTALLPREFIX" ]] || [[ "$INSTALL_PREFIX_PATH" == "$BUILD_STAGE1_TOOLSPREFIX" ]]; then
     STAGE_CONFIGURE_OPTIONS="--disable-shared --enable-static "
     BUILD_BACKUP_PKG_CONFIG_PATH="$PKG_CONFIG_PATH"
     if [[ "x$BUILD_BACKUP_PKG_CONFIG_PATH" == "x" ]]; then
@@ -725,7 +718,6 @@ function build_libatomic_ops() {
     fi
   fi
 }
-build_libatomic_ops "$BUILD_STAGE1_INSTALLPREFIX"
 
 # install bdw-gc
 function build_bdw_gc() {
@@ -733,7 +725,7 @@ function build_bdw_gc() {
   STAGE_CONFIGURE_OPTIONS=""
   STAGE_CFLAGS=""
   STAGE_LDFLAGS=""
-  if [[ "$INSTALL_PREFIX_PATH" == "$BUILD_STAGE1_INSTALLPREFIX" ]]; then
+  if [[ "$INSTALL_PREFIX_PATH" == "$BUILD_STAGE1_INSTALLPREFIX" ]] || [[ "$INSTALL_PREFIX_PATH" == "$BUILD_STAGE1_TOOLSPREFIX" ]]; then
     STAGE_CONFIGURE_OPTIONS="--enable-shared=no --enable-static=yes "
     BUILD_BACKUP_PKG_CONFIG_PATH="$PKG_CONFIG_PATH"
     if [[ "x$BUILD_BACKUP_PKG_CONFIG_PATH" == "x" ]]; then
@@ -796,15 +788,11 @@ function build_bdw_gc() {
           echo -e "\\033[31;1mError: build bdw-gc with -m32 failed.\\033[39;49;0m"
           exit 1
         fi
-        BDWGC_PREBIUILT="--with-target-bdw-gc=$INSTALL_PREFIX_PATH/multilib/$SYS_LONG_BIT,32=$INSTALL_PREFIX_PATH/multilib/32"
-      else
-        BDWGC_PREBIUILT="--with-target-bdw-gc=$INSTALL_PREFIX_PATH/multilib/$SYS_LONG_BIT"
       fi
       cd "$WORKING_DIR"
     fi
   fi
 }
-build_bdw_gc "$BUILD_STAGE1_INSTALLPREFIX"
 
 # install zlib
 function build_zlib() {
@@ -812,7 +800,7 @@ function build_zlib() {
   STAGE_CONFIGURE_OPTIONS=""
   STAGE_CFLAGS=""
   STAGE_LDFLAGS=""
-  if [[ "$INSTALL_PREFIX_PATH" == "$BUILD_STAGE1_INSTALLPREFIX" ]]; then
+  if [[ "$INSTALL_PREFIX_PATH" == "$BUILD_STAGE1_INSTALLPREFIX" ]] || [[ "$INSTALL_PREFIX_PATH" == "$BUILD_STAGE1_TOOLSPREFIX" ]]; then
     STAGE_CONFIGURE_OPTIONS="-DBUILD_SHARED_LIBS=OFF "
     BUILD_BACKUP_PKG_CONFIG_PATH="$PKG_CONFIG_PATH"
     if [[ "x$BUILD_BACKUP_PKG_CONFIG_PATH" == "x" ]]; then
@@ -867,7 +855,7 @@ function build_xz() {
   STAGE_CONFIGURE_OPTIONS=""
   STAGE_CFLAGS=""
   STAGE_LDFLAGS=""
-  if [[ "$INSTALL_PREFIX_PATH" == "$BUILD_STAGE1_INSTALLPREFIX" ]]; then
+  if [[ "$INSTALL_PREFIX_PATH" == "$BUILD_STAGE1_INSTALLPREFIX" ]] || [[ "$INSTALL_PREFIX_PATH" == "$BUILD_STAGE1_TOOLSPREFIX" ]]; then
     STAGE_CONFIGURE_OPTIONS="--disable-shared "
     BUILD_BACKUP_PKG_CONFIG_PATH="$PKG_CONFIG_PATH"
     if [[ "x$BUILD_BACKUP_PKG_CONFIG_PATH" == "x" ]]; then
@@ -915,7 +903,7 @@ function build_zstd() {
   INSTALL_PREFIX_PATH="$1"
   STAGE_CFLAGS=""
   STAGE_LDFLAGS=""
-  if [[ "$INSTALL_PREFIX_PATH" == "$BUILD_STAGE1_INSTALLPREFIX" ]]; then
+  if [[ "$INSTALL_PREFIX_PATH" == "$BUILD_STAGE1_INSTALLPREFIX" ]] || [[ "$INSTALL_PREFIX_PATH" == "$BUILD_STAGE1_TOOLSPREFIX" ]]; then
     STAGE_CONFIGURE_OPTIONS="-DBUILD_SHARED_LIBS=OFF "
     BUILD_BACKUP_PKG_CONFIG_PATH="$PKG_CONFIG_PATH"
     if [[ "x$BUILD_BACKUP_PKG_CONFIG_PATH" == "x" ]]; then
@@ -974,7 +962,7 @@ function build_lz4() {
   INSTALL_PREFIX_PATH="$1"
   STAGE_CFLAGS=""
   STAGE_LDFLAGS=""
-  if [[ "$INSTALL_PREFIX_PATH" == "$BUILD_STAGE1_INSTALLPREFIX" ]]; then
+  if [[ "$INSTALL_PREFIX_PATH" == "$BUILD_STAGE1_INSTALLPREFIX" ]] || [[ "$INSTALL_PREFIX_PATH" == "$BUILD_STAGE1_TOOLSPREFIX" ]]; then
     STAGE_CONFIGURE_OPTIONS="-DBUILD_SHARED_LIBS=OFF "
     BUILD_BACKUP_PKG_CONFIG_PATH="$PKG_CONFIG_PATH"
     if [[ "x$BUILD_BACKUP_PKG_CONFIG_PATH" == "x" ]]; then
@@ -1029,7 +1017,7 @@ function build_libiconv() {
   INSTALL_PREFIX_PATH="$1"
   STAGE_CFLAGS=""
   STAGE_LDFLAGS=""
-  if [[ "$INSTALL_PREFIX_PATH" == "$BUILD_STAGE1_INSTALLPREFIX" ]]; then
+  if [[ "$INSTALL_PREFIX_PATH" == "$BUILD_STAGE1_INSTALLPREFIX" ]] || [[ "$INSTALL_PREFIX_PATH" == "$BUILD_STAGE1_TOOLSPREFIX" ]]; then
     STAGE_CONFIGURE_OPTIONS="--enable-static --disable-shared "
     BUILD_BACKUP_PKG_CONFIG_PATH="$PKG_CONFIG_PATH"
     if [[ "x$BUILD_BACKUP_PKG_CONFIG_PATH" == "x" ]]; then
@@ -1071,7 +1059,7 @@ function build_bison() {
   INSTALL_PREFIX_PATH="$1"
   STAGE_CFLAGS=""
   STAGE_LDFLAGS=""
-  if [[ "$INSTALL_PREFIX_PATH" == "$BUILD_STAGE1_INSTALLPREFIX" ]]; then
+  if [[ "$INSTALL_PREFIX_PATH" == "$BUILD_STAGE1_INSTALLPREFIX" ]] || [[ "$INSTALL_PREFIX_PATH" == "$BUILD_STAGE1_TOOLSPREFIX" ]]; then
     STAGE_CONFIGURE_OPTIONS="--enable-static --disable-shared "
     BUILD_BACKUP_PKG_CONFIG_PATH="$PKG_CONFIG_PATH"
     if [[ "x$BUILD_BACKUP_PKG_CONFIG_PATH" == "x" ]]; then
@@ -1125,7 +1113,7 @@ function build_bintuils() {
   INSTALL_PREFIX_PATH="$1"
   STAGE_CFLAGS=""
   STAGE_LDFLAGS=""
-  if [[ "$INSTALL_PREFIX_PATH" == "$BUILD_STAGE1_INSTALLPREFIX" ]]; then
+  if [[ "$INSTALL_PREFIX_PATH" == "$BUILD_STAGE1_INSTALLPREFIX" ]] || [[ "$INSTALL_PREFIX_PATH" == "$BUILD_STAGE1_TOOLSPREFIX" ]]; then
     STAGE_CONFIGURE_OPTIONS="--enable-static --disable-shared "
     BUILD_BACKUP_PKG_CONFIG_PATH="$PKG_CONFIG_PATH"
     if [[ "x$BUILD_BACKUP_PKG_CONFIG_PATH" == "x" ]]; then
@@ -1133,8 +1121,10 @@ function build_bintuils() {
     else
       export PKG_CONFIG_PATH="$INSTALL_PREFIX_PATH/lib64/pkgconfig:$INSTALL_PREFIX_PATH/lib/pkgconfig:$BUILD_BACKUP_PKG_CONFIG_PATH"
     fi
+    COMPOMENTS_USE_VERSION=$COMPOMENTS_BINUTILS_STAGE1_VERSION
   else
     STAGE_CONFIGURE_OPTIONS="--enable-gprofng "
+    COMPOMENTS_USE_VERSION=$COMPOMENTS_BINUTILS_VERSION
   fi
   STAGE_CFLAGS="-I$INSTALL_PREFIX_PATH/include "
   STAGE_LDFLAGS="-L$INSTALL_PREFIX_PATH/lib64 -L$INSTALL_PREFIX_PATH/lib "
@@ -1142,20 +1132,18 @@ function build_bintuils() {
 
   if [[ $# -gt 1 ]]; then
     COMPOMENTS_USE_VERSION=$2
-  else
-    COMPOMENTS_USE_VERSION=$COMPOMENTS_BINUTILS_VERSION
   fi
 
   if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list binutils $BUILD_TARGET_COMPOMENTS) ]]; then
-    BINUTILS_PKG=$(check_and_download "binutils" "binutils-*.tar.xz" "$REPOSITORY_MIRROR_URL_GNU/binutils/binutils-$COMPOMENTS_USE_VERSION.tar.xz")
+    BINUTILS_PKG=$(check_and_download "binutils" "binutils-$COMPOMENTS_USE_VERSION*.tar.xz" "$REPOSITORY_MIRROR_URL_GNU/binutils/binutils-$COMPOMENTS_USE_VERSION.tar.xz")
     if [[ $? -ne 0 ]]; then
       echo -e "$BINUTILS_PKG"
       exit 1
     fi
     if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
-      find . -name "binutils-*" -type d | xargs -r rm -rf
+      find . -name "binutils-$COMPOMENTS_USE_VERSION*" -type d | xargs -r rm -rf
       tar -axvf $BINUTILS_PKG
-      BINUTILS_DIR=$(ls -d binutils-* | grep -v \.tar\.xz)
+      BINUTILS_DIR=$(ls -d binutils-$COMPOMENTS_USE_VERSION* | grep -v \.tar\.xz)
       cd $BINUTILS_DIR
       if [[ -e Makefile ]]; then
         make clean || true
@@ -1172,6 +1160,11 @@ function build_bintuils() {
       sed -i.bak 's/[[:space:]]doc$//g' gprofng/Makefile.in
 
       BINUTILS_LDFLAGS="$LDFLAGS -Wl,-rpath=\$ORIGIN:\$ORIGIN/../../lib64:\$ORIGIN/../../lib"
+      if [[ $SYS_LONG_BIT -ne 32 ]] && [[ -e "$INSTALL_PREFIX_PATH/multilib/$SYS_LONG_BIT" ]] && [[ -e "$INSTALL_PREFIX_PATH/multilib/32" ]]; then
+        BDWGC_PREBIUILT="--with-target-bdw-gc=$INSTALL_PREFIX_PATH/multilib/$SYS_LONG_BIT,32=$INSTALL_PREFIX_PATH/multilib/32"
+      else
+        BDWGC_PREBIUILT="--with-target-bdw-gc=$INSTALL_PREFIX_PATH/multilib/$SYS_LONG_BIT"
+      fi
 
       env LDFLAGS="${STAGE_LDFLAGS}${BINUTILS_LDFLAGS//\$/\$\$}" PATH="$INSTALL_PREFIX_PATH/bin:$PATH" CFLAGS="${STAGE_CFLAGS}${CFLAGS}" CXXFLAGS="${STAGE_CFLAGS}${CXXFLAGS}" ./configure --prefix=$INSTALL_PREFIX_PATH \
         --with-gmp=$INSTALL_PREFIX_PATH --with-mpc=$INSTALL_PREFIX_PATH --with-mpfr=$INSTALL_PREFIX_PATH --with-isl=$INSTALL_PREFIX_PATH $BDWGC_PREBIUILT \
@@ -1199,7 +1192,7 @@ function build_make() {
   INSTALL_PREFIX_PATH="$1"
   STAGE_CFLAGS=""
   STAGE_LDFLAGS=""
-  if [[ "$INSTALL_PREFIX_PATH" == "$BUILD_STAGE1_INSTALLPREFIX" ]]; then
+  if [[ "$INSTALL_PREFIX_PATH" == "$BUILD_STAGE1_INSTALLPREFIX" ]] || [[ "$INSTALL_PREFIX_PATH" == "$BUILD_STAGE1_TOOLSPREFIX" ]]; then
     STAGE_CONFIGURE_OPTIONS="--enable-static --disable-shared "
     BUILD_BACKUP_PKG_CONFIG_PATH="$PKG_CONFIG_PATH"
     if [[ "x$BUILD_BACKUP_PKG_CONFIG_PATH" == "x" ]]; then
@@ -1263,14 +1256,25 @@ else
   export PKG_CONFIG_PATH="$PREFIX_DIR/lib64/pkgconfig:$PREFIX_DIR/lib/pkgconfig:$BUILD_BACKUP_PKG_CONFIG_PATH"
 fi
 
+build_m4 "$BUILD_STAGE1_TOOLSPREFIX"
+build_autoconf "$BUILD_STAGE1_TOOLSPREFIX"
+build_automake "$BUILD_STAGE1_TOOLSPREFIX"
+build_libtool "$BUILD_STAGE1_TOOLSPREFIX"
+build_pkgconfig "$BUILD_STAGE1_TOOLSPREFIX"
+build_gmp "$BUILD_STAGE1_INSTALLPREFIX"
+build_mpfr "$BUILD_STAGE1_INSTALLPREFIX"
+build_mpc "$BUILD_STAGE1_INSTALLPREFIX"
+build_isl "$BUILD_STAGE1_INSTALLPREFIX"
+build_libatomic_ops "$BUILD_STAGE1_INSTALLPREFIX"
+build_bdw_gc "$BUILD_STAGE1_INSTALLPREFIX"
 build_zlib "$BUILD_STAGE1_INSTALLPREFIX"
 build_xz "$BUILD_STAGE1_INSTALLPREFIX"
 build_zstd "$BUILD_STAGE1_INSTALLPREFIX"
 build_lz4 "$BUILD_STAGE1_INSTALLPREFIX"
 build_libiconv "$BUILD_STAGE1_INSTALLPREFIX"
 build_bison "$BUILD_STAGE1_INSTALLPREFIX"
-build_bintuils "$BUILD_STAGE1_INSTALLPREFIX" "$COMPOMENTS_BINUTILS_STAGE1_VERSION"
-build_make "$BUILD_STAGE1_INSTALLPREFIX"
+build_bintuils "$BUILD_STAGE1_TOOLSPREFIX" "$COMPOMENTS_BINUTILS_STAGE1_VERSION"
+build_make "$BUILD_STAGE1_TOOLSPREFIX"
 
 # ======================= install gcc =======================
 if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list gcc $BUILD_TARGET_COMPOMENTS) ]]; then
@@ -1289,7 +1293,14 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list gcc $BUILD_TARG
     mkdir -p objdir
     cd objdir
     # ======================= 这一行的最后一个参数请注意，如果要支持其他语言要安装依赖库并打开对该语言的支持 =======================
-    GCC_CONF_OPTION_ALL="--prefix=$PREFIX_DIR --with-gmp=$PREFIX_DIR --with-mpc=$PREFIX_DIR --with-mpfr=$PREFIX_DIR --with-isl=$PREFIX_DIR --with-zstd=$PREFIX_DIR $BDWGC_PREBIUILT "
+    if [[ $SYS_LONG_BIT -ne 32 ]] && [[ -e "$BUILD_STAGE1_INSTALLPREFIX/multilib/$SYS_LONG_BIT" ]] && [[ -e "$BUILD_STAGE1_INSTALLPREFIX/multilib/32" ]]; then
+      BDWGC_PREBIUILT="--with-target-bdw-gc=$BUILD_STAGE1_INSTALLPREFIX/multilib/$SYS_LONG_BIT,32=$BUILD_STAGE1_INSTALLPREFIX/multilib/32"
+    else
+      BDWGC_PREBIUILT="--with-target-bdw-gc=$BUILD_STAGE1_INSTALLPREFIX/multilib/$SYS_LONG_BIT"
+    fi
+
+    GCC_CONF_OPTION_ALL="--prefix=$PREFIX_DIR --with-gmp=$BUILD_STAGE1_INSTALLPREFIX --with-mpc=$BUILD_STAGE1_INSTALLPREFIX --with-mpfr=$BUILD_STAGE1_INSTALLPREFIX"
+    GCC_CONF_OPTION_ALL="$GCC_CONF_OPTION_ALL --with-isl=$BUILD_STAGE1_INSTALLPREFIX --with-zstd=$BUILD_STAGE1_INSTALLPREFIX $BDWGC_PREBIUILT "
     GCC_CONF_OPTION_ALL="$GCC_CONF_OPTION_ALL --enable-shared --enable-static --enable-gnu-unique-object --enable-bootstrap --enable-build-with-cxx --disable-libjava-multilib --enable-checking=release"
     GCC_CONF_OPTION_ALL="$GCC_CONF_OPTION_ALL --enable-gold --enable-ld --enable-libada --enable-lto --enable-objc-gc --enable-gprofng --enable-vtable-verify"
     if [[ $COMPOMENTS_LIBSSP_ENABLE -ne 0 ]]; then
@@ -1298,7 +1309,7 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list gcc $BUILD_TARG
     GCC_CONF_OPTION_ALL="$GCC_CONF_OPTION_ALL --enable-linker-build-id --enable-rpath"
     GCC_CONF_OPTION_ALL="$GCC_CONF_OPTION_ALL $GCC_OPT_DISABLE_MULTILIB $BUILD_TARGET_CONF_OPTION"
     # See https://stackoverflow.com/questions/13334300/how-to-build-and-install-gcc-with-built-in-rpath
-    GCC_CONF_LDFLAGS="-L${BUILD_STAGE1_INSTALLPREFIX}/lib64 -L${BUILD_STAGE1_INSTALLPREFIX}/lib ${LDFLAGS//\$/\$\$} -Wl,-rpath,\$\$ORIGIN/../../../../lib64:\$\$ORIGIN/../../../../lib:\$\$ORIGIN"
+    GCC_CONF_LDFLAGS="${LDFLAGS//\$/\$\$} -Wl,-rpath,\$\$ORIGIN/../../../../lib64:\$\$ORIGIN/../../../../lib:\$\$ORIGIN"
     if [[ "x$LD_RUN_PATH" == "x" ]]; then
       GCC_CONF_LD_RUN_PATH="\$ORIGIN:\$ORIGIN/../lib64:\$ORIGIN/../../../../lib64:\$ORIGIN/../lib:\$ORIGIN/../../../../lib"
     else
@@ -1307,21 +1318,28 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list gcc $BUILD_TARG
     # env CFLAGS="--ggc-min-expand=0 --ggc-min-heapsize=6291456" CXXFLAGS="--ggc-min-expand=0 --ggc-min-heapsize=6291456" 老版本的gcc没有这个选项
     env LDFLAGS="$GCC_CONF_LDFLAGS" LD_RUN_PATH="$GCC_CONF_LD_RUN_PATH" \
       LDFLAGS_FOR_TARGET="$GCC_CONF_LDFLAGS" LDFLAGS_FOR_BUILD="$GCC_CONF_LDFLAGS" BOOT_LDFLAGS="$GCC_CONF_LDFLAGS" \
-      CFLAGS="-I${BUILD_STAGE1_INSTALLPREFIX}/include ${CFLAGS}" CXXFLAGS="-I${BUILD_STAGE1_INSTALLPREFIX}/include ${CXXFLAGS}" \
       ../$GCC_DIR/configure $GCC_CONF_OPTION_ALL
+    if [[ $? -ne 0 ]]; then
+      echo -e "\\033[31;1mError: configure gcc failed.\\033[39;49;0m"
+      exit 1
+    fi
+
     env LDFLAGS="$GCC_CONF_LDFLAGS" LD_RUN_PATH="$GCC_CONF_LD_RUN_PATH" \
       LDFLAGS_FOR_TARGET="$GCC_CONF_LDFLAGS" LDFLAGS_FOR_BUILD="$GCC_CONF_LDFLAGS" BOOT_LDFLAGS="$GCC_CONF_LDFLAGS" \
-      CFLAGS="-I${BUILD_STAGE1_INSTALLPREFIX}/include ${CFLAGS}" CXXFLAGS="-I${BUILD_STAGE1_INSTALLPREFIX}/include ${CXXFLAGS}" \
       make $BUILD_THREAD_OPT O='$$$$O'
+    if [[ $? -ne 0 ]]; then
+      echo -e "\\033[31;1mError: build gcc failed.\\033[39;49;0m"
+      exit 1
+    fi
+
     env LDFLAGS="$GCC_CONF_LDFLAGS" LD_RUN_PATH="$GCC_CONF_LD_RUN_PATH" \
       LDFLAGS_FOR_TARGET="$GCC_CONF_LDFLAGS" LDFLAGS_FOR_BUILD="$GCC_CONF_LDFLAGS" BOOT_LDFLAGS="$GCC_CONF_LDFLAGS" \
-      CFLAGS="-I${BUILD_STAGE1_INSTALLPREFIX}/include ${CFLAGS}" CXXFLAGS="-I${BUILD_STAGE1_INSTALLPREFIX}/include ${CXXFLAGS}" \
       make install O='$$$$O'
     cd "$WORKING_DIR"
 
     ls $PREFIX_DIR/bin/*gcc
     if [[ $? -ne 0 ]]; then
-      echo -e "\\033[31;1mError: build gcc failed.\\033[39;49;0m"
+      echo -e "\\033[31;1mError: install gcc failed.\\033[39;49;0m"
       exit 1
     fi
 
@@ -1714,6 +1732,12 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list gdb $BUILD_TARG
     fi
     if [[ $COMPOMENTS_LIBSSP_ENABLE -ne 0 ]]; then
       GDB_DEPS_OPT=(${GDB_DEPS_OPT[@]} --enable-libssp)
+    fi
+
+    if [[ $SYS_LONG_BIT -ne 32 ]] && [[ -e "$PREFIX_DIR/multilib/$SYS_LONG_BIT" ]] && [[ -e "$PREFIX_DIR/multilib/32" ]]; then
+      BDWGC_PREBIUILT="--with-target-bdw-gc=$PREFIX_DIR/multilib/$SYS_LONG_BIT,32=$PREFIX_DIR/multilib/32"
+    else
+      BDWGC_PREBIUILT="--with-target-bdw-gc=$PREFIX_DIR/multilib/$SYS_LONG_BIT"
     fi
 
     env LDFLAGS="$COMPOMENTS_GDB_STATIC_BUILD_LDFLAGS" ../configure --prefix=$PREFIX_DIR --with-gmp=$PREFIX_DIR --with-mpc=$PREFIX_DIR --with-mpfr=$PREFIX_DIR \
