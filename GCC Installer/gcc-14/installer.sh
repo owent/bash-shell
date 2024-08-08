@@ -297,11 +297,14 @@ function build_m4() {
     else
       export PKG_CONFIG_PATH="$INSTALL_PREFIX_PATH/lib64/pkgconfig:$INSTALL_PREFIX_PATH/lib/pkgconfig:$BUILD_BACKUP_PKG_CONFIG_PATH"
     fi
+    STAGE_CFLAGS="-I$BUILD_STAGE1_INSTALLPREFIX/include "
+    STAGE_LDFLAGS="-L$BUILD_STAGE1_INSTALLPREFIX/lib64 -L$BUILD_STAGE1_INSTALLPREFIX/lib "
   else
     STAGE_CONFIGURE_OPTIONS=""
+    STAGE_CFLAGS="-I$INSTALL_PREFIX_PATH/include "
+    STAGE_LDFLAGS="-L$INSTALL_PREFIX_PATH/lib64 -L$INSTALL_PREFIX_PATH/lib "
   fi
-  STAGE_CFLAGS="-I$INSTALL_PREFIX_PATH/include "
-  STAGE_LDFLAGS="-L$INSTALL_PREFIX_PATH/lib64 -L$INSTALL_PREFIX_PATH/lib "
+
   echo "$LDFLAGS" | grep -F '$ORIGIN/../lib64' || STAGE_LDFLAGS="$STAGE_LDFLAGS -Wl,-rpath=\$ORIGIN:\$ORIGIN/../lib64:\$ORIGIN/../lib"
 
   if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list m4 $BUILD_TARGET_COMPOMENTS) ]]; then
@@ -341,11 +344,14 @@ function build_autoconf() {
     else
       export PKG_CONFIG_PATH="$INSTALL_PREFIX_PATH/lib64/pkgconfig:$INSTALL_PREFIX_PATH/lib/pkgconfig:$BUILD_BACKUP_PKG_CONFIG_PATH"
     fi
+    STAGE_CFLAGS="-I$BUILD_STAGE1_INSTALLPREFIX/include "
+    STAGE_LDFLAGS="-L$BUILD_STAGE1_INSTALLPREFIX/lib64 -L$BUILD_STAGE1_INSTALLPREFIX/lib "
   else
     STAGE_CONFIGURE_OPTIONS=""
+    STAGE_CFLAGS="-I$INSTALL_PREFIX_PATH/include "
+    STAGE_LDFLAGS="-L$INSTALL_PREFIX_PATH/lib64 -L$INSTALL_PREFIX_PATH/lib "
   fi
-  STAGE_CFLAGS="-I$INSTALL_PREFIX_PATH/include "
-  STAGE_LDFLAGS="-L$INSTALL_PREFIX_PATH/lib64 -L$INSTALL_PREFIX_PATH/lib "
+
   echo "$LDFLAGS" | grep -F '$ORIGIN/../lib64' || STAGE_LDFLAGS="$STAGE_LDFLAGS -Wl,-rpath=\$ORIGIN:\$ORIGIN/../lib64:\$ORIGIN/../lib"
 
   if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list autoconf $BUILD_TARGET_COMPOMENTS) ]]; then
@@ -384,11 +390,14 @@ function build_automake() {
     else
       export PKG_CONFIG_PATH="$INSTALL_PREFIX_PATH/lib64/pkgconfig:$INSTALL_PREFIX_PATH/lib/pkgconfig:$BUILD_BACKUP_PKG_CONFIG_PATH"
     fi
+    STAGE_CFLAGS="-I$BUILD_STAGE1_INSTALLPREFIX/include "
+    STAGE_LDFLAGS="-L$BUILD_STAGE1_INSTALLPREFIX/lib64 -L$BUILD_STAGE1_INSTALLPREFIX/lib "
   else
     STAGE_CONFIGURE_OPTIONS=""
+    STAGE_CFLAGS="-I$INSTALL_PREFIX_PATH/include "
+    STAGE_LDFLAGS="-L$INSTALL_PREFIX_PATH/lib64 -L$INSTALL_PREFIX_PATH/lib "
   fi
-  STAGE_CFLAGS="-I$INSTALL_PREFIX_PATH/include "
-  STAGE_LDFLAGS="-L$INSTALL_PREFIX_PATH/lib64 -L$INSTALL_PREFIX_PATH/lib "
+
   echo "$LDFLAGS" | grep -F '$ORIGIN/../lib64' || STAGE_LDFLAGS="$STAGE_LDFLAGS -Wl,-rpath=\$ORIGIN:\$ORIGIN/../lib64:\$ORIGIN/../lib"
 
   if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list automake $BUILD_TARGET_COMPOMENTS) ]]; then
@@ -427,11 +436,14 @@ function build_libtool() {
     else
       export PKG_CONFIG_PATH="$INSTALL_PREFIX_PATH/lib64/pkgconfig:$INSTALL_PREFIX_PATH/lib/pkgconfig:$BUILD_BACKUP_PKG_CONFIG_PATH"
     fi
+    STAGE_CFLAGS="-I$BUILD_STAGE1_INSTALLPREFIX/include "
+    STAGE_LDFLAGS="-L$BUILD_STAGE1_INSTALLPREFIX/lib64 -L$BUILD_STAGE1_INSTALLPREFIX/lib "
   else
     STAGE_CONFIGURE_OPTIONS=""
+    STAGE_CFLAGS="-I$INSTALL_PREFIX_PATH/include "
+    STAGE_LDFLAGS="-L$INSTALL_PREFIX_PATH/lib64 -L$INSTALL_PREFIX_PATH/lib "
   fi
-  STAGE_CFLAGS="-I$INSTALL_PREFIX_PATH/include "
-  STAGE_LDFLAGS="-L$INSTALL_PREFIX_PATH/lib64 -L$INSTALL_PREFIX_PATH/lib "
+
   echo "$LDFLAGS" | grep -F '$ORIGIN/../lib64' || STAGE_LDFLAGS="$STAGE_LDFLAGS -Wl,-rpath=\$ORIGIN:\$ORIGIN/../lib64:\$ORIGIN/../lib"
 
   if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list libtool $BUILD_TARGET_COMPOMENTS) ]]; then
@@ -470,11 +482,14 @@ function build_pkgconfig() {
     else
       export PKG_CONFIG_PATH="$INSTALL_PREFIX_PATH/lib64/pkgconfig:$INSTALL_PREFIX_PATH/lib/pkgconfig:$BUILD_BACKUP_PKG_CONFIG_PATH"
     fi
+    STAGE_CFLAGS="-I$BUILD_STAGE1_INSTALLPREFIX/include "
+    STAGE_LDFLAGS="-L$BUILD_STAGE1_INSTALLPREFIX/lib64 -L$BUILD_STAGE1_INSTALLPREFIX/lib "
   else
     STAGE_CONFIGURE_OPTIONS=""
+    STAGE_CFLAGS="-I$INSTALL_PREFIX_PATH/include "
+    STAGE_LDFLAGS="-L$INSTALL_PREFIX_PATH/lib64 -L$INSTALL_PREFIX_PATH/lib "
   fi
-  STAGE_CFLAGS="-I$INSTALL_PREFIX_PATH/include "
-  STAGE_LDFLAGS="-L$INSTALL_PREFIX_PATH/lib64 -L$INSTALL_PREFIX_PATH/lib "
+
   echo "$LDFLAGS" | grep -F '$ORIGIN/../lib64' || STAGE_LDFLAGS="$STAGE_LDFLAGS -Wl,-rpath=\$ORIGIN:\$ORIGIN/../lib64:\$ORIGIN/../lib"
 
   if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list pkgconfig $BUILD_TARGET_COMPOMENTS) ]]; then
@@ -513,11 +528,14 @@ function build_gmp() {
     else
       export PKG_CONFIG_PATH="$INSTALL_PREFIX_PATH/lib64/pkgconfig:$INSTALL_PREFIX_PATH/lib/pkgconfig:$BUILD_BACKUP_PKG_CONFIG_PATH"
     fi
+    STAGE_CFLAGS="-I$BUILD_STAGE1_INSTALLPREFIX/include "
+    STAGE_LDFLAGS="-L$BUILD_STAGE1_INSTALLPREFIX/lib64 -L$BUILD_STAGE1_INSTALLPREFIX/lib "
   else
     STAGE_CONFIGURE_OPTIONS=""
+    STAGE_CFLAGS="-I$INSTALL_PREFIX_PATH/include "
+    STAGE_LDFLAGS="-L$INSTALL_PREFIX_PATH/lib64 -L$INSTALL_PREFIX_PATH/lib "
   fi
-  STAGE_CFLAGS="-I$INSTALL_PREFIX_PATH/include "
-  STAGE_LDFLAGS="-L$INSTALL_PREFIX_PATH/lib64 -L$INSTALL_PREFIX_PATH/lib "
+
   echo "$LDFLAGS" | grep -F '$ORIGIN/../lib64' || STAGE_LDFLAGS="$STAGE_LDFLAGS -Wl,-rpath=\$ORIGIN:\$ORIGIN/../lib64:\$ORIGIN/../lib"
 
   if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list gmp $BUILD_TARGET_COMPOMENTS) ]]; then
@@ -559,11 +577,14 @@ function build_mpfr() {
     else
       export PKG_CONFIG_PATH="$INSTALL_PREFIX_PATH/lib64/pkgconfig:$INSTALL_PREFIX_PATH/lib/pkgconfig:$BUILD_BACKUP_PKG_CONFIG_PATH"
     fi
+    STAGE_CFLAGS="-I$BUILD_STAGE1_INSTALLPREFIX/include "
+    STAGE_LDFLAGS="-L$BUILD_STAGE1_INSTALLPREFIX/lib64 -L$BUILD_STAGE1_INSTALLPREFIX/lib "
   else
     STAGE_CONFIGURE_OPTIONS=""
+    STAGE_CFLAGS="-I$INSTALL_PREFIX_PATH/include "
+    STAGE_LDFLAGS="-L$INSTALL_PREFIX_PATH/lib64 -L$INSTALL_PREFIX_PATH/lib "
   fi
-  STAGE_CFLAGS="-I$INSTALL_PREFIX_PATH/include "
-  STAGE_LDFLAGS="-L$INSTALL_PREFIX_PATH/lib64 -L$INSTALL_PREFIX_PATH/lib "
+
   echo "$LDFLAGS" | grep -F '$ORIGIN/../lib64' || STAGE_LDFLAGS="$STAGE_LDFLAGS -Wl,-rpath=\$ORIGIN:\$ORIGIN/../lib64:\$ORIGIN/../lib"
 
   if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list mpfr $BUILD_TARGET_COMPOMENTS) ]]; then
@@ -602,11 +623,14 @@ function build_mpc() {
     else
       export PKG_CONFIG_PATH="$INSTALL_PREFIX_PATH/lib64/pkgconfig:$INSTALL_PREFIX_PATH/lib/pkgconfig:$BUILD_BACKUP_PKG_CONFIG_PATH"
     fi
+    STAGE_CFLAGS="-I$BUILD_STAGE1_INSTALLPREFIX/include "
+    STAGE_LDFLAGS="-L$BUILD_STAGE1_INSTALLPREFIX/lib64 -L$BUILD_STAGE1_INSTALLPREFIX/lib "
   else
     STAGE_CONFIGURE_OPTIONS=""
+    STAGE_CFLAGS="-I$INSTALL_PREFIX_PATH/include "
+    STAGE_LDFLAGS="-L$INSTALL_PREFIX_PATH/lib64 -L$INSTALL_PREFIX_PATH/lib "
   fi
-  STAGE_CFLAGS="-I$INSTALL_PREFIX_PATH/include "
-  STAGE_LDFLAGS="-L$INSTALL_PREFIX_PATH/lib64 -L$INSTALL_PREFIX_PATH/lib "
+
   echo "$LDFLAGS" | grep -F '$ORIGIN/../lib64' || STAGE_LDFLAGS="$STAGE_LDFLAGS -Wl,-rpath=\$ORIGIN:\$ORIGIN/../lib64:\$ORIGIN/../lib"
 
   if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list mpc $BUILD_TARGET_COMPOMENTS) ]]; then
@@ -645,11 +669,14 @@ function build_isl() {
     else
       export PKG_CONFIG_PATH="$INSTALL_PREFIX_PATH/lib64/pkgconfig:$INSTALL_PREFIX_PATH/lib/pkgconfig:$BUILD_BACKUP_PKG_CONFIG_PATH"
     fi
+    STAGE_CFLAGS="-I$BUILD_STAGE1_INSTALLPREFIX/include "
+    STAGE_LDFLAGS="-L$BUILD_STAGE1_INSTALLPREFIX/lib64 -L$BUILD_STAGE1_INSTALLPREFIX/lib "
   else
     STAGE_CONFIGURE_OPTIONS=""
+    STAGE_CFLAGS="-I$INSTALL_PREFIX_PATH/include "
+    STAGE_LDFLAGS="-L$INSTALL_PREFIX_PATH/lib64 -L$INSTALL_PREFIX_PATH/lib "
   fi
-  STAGE_CFLAGS="-I$INSTALL_PREFIX_PATH/include "
-  STAGE_LDFLAGS="-L$INSTALL_PREFIX_PATH/lib64 -L$INSTALL_PREFIX_PATH/lib "
+
   echo "$LDFLAGS" | grep -F '$ORIGIN/../lib64' || STAGE_LDFLAGS="$STAGE_LDFLAGS -Wl,-rpath=\$ORIGIN:\$ORIGIN/../lib64:\$ORIGIN/../lib"
 
   if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list isl $BUILD_TARGET_COMPOMENTS) ]]; then
@@ -689,11 +716,14 @@ function build_libatomic_ops() {
     else
       export PKG_CONFIG_PATH="$INSTALL_PREFIX_PATH/lib64/pkgconfig:$INSTALL_PREFIX_PATH/lib/pkgconfig:$BUILD_BACKUP_PKG_CONFIG_PATH"
     fi
+    STAGE_CFLAGS="-I$BUILD_STAGE1_INSTALLPREFIX/include "
+    STAGE_LDFLAGS="-L$BUILD_STAGE1_INSTALLPREFIX/lib64 -L$BUILD_STAGE1_INSTALLPREFIX/lib "
   else
     STAGE_CONFIGURE_OPTIONS=""
+    STAGE_CFLAGS="-I$INSTALL_PREFIX_PATH/include "
+    STAGE_LDFLAGS="-L$INSTALL_PREFIX_PATH/lib64 -L$INSTALL_PREFIX_PATH/lib "
   fi
-  STAGE_CFLAGS="-I$INSTALL_PREFIX_PATH/include "
-  STAGE_LDFLAGS="-L$INSTALL_PREFIX_PATH/lib64 -L$INSTALL_PREFIX_PATH/lib "
+
   echo "$LDFLAGS" | grep -F '$ORIGIN/../lib64' || STAGE_LDFLAGS="$STAGE_LDFLAGS -Wl,-rpath=\$ORIGIN:\$ORIGIN/../lib64:\$ORIGIN/../lib"
 
   if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list libatomic_ops $BUILD_TARGET_COMPOMENTS) ]; then
@@ -733,11 +763,14 @@ function build_bdw_gc() {
     else
       export PKG_CONFIG_PATH="$INSTALL_PREFIX_PATH/lib64/pkgconfig:$INSTALL_PREFIX_PATH/lib/pkgconfig:$BUILD_BACKUP_PKG_CONFIG_PATH"
     fi
+    STAGE_CFLAGS="-I$BUILD_STAGE1_INSTALLPREFIX/include "
+    STAGE_LDFLAGS="-L$BUILD_STAGE1_INSTALLPREFIX/lib64 -L$BUILD_STAGE1_INSTALLPREFIX/lib "
   else
     STAGE_CONFIGURE_OPTIONS="--enable-shared=yes --enable-static=yes"
+    STAGE_CFLAGS="-I$INSTALL_PREFIX_PATH/include "
+    STAGE_LDFLAGS="-L$INSTALL_PREFIX_PATH/lib64 -L$INSTALL_PREFIX_PATH/lib "
   fi
-  STAGE_CFLAGS="-I$INSTALL_PREFIX_PATH/include "
-  STAGE_LDFLAGS="-L$INSTALL_PREFIX_PATH/lib64 -L$INSTALL_PREFIX_PATH/lib "
+
   echo "$LDFLAGS" | grep -F '$ORIGIN/../lib64' || STAGE_LDFLAGS="$STAGE_LDFLAGS -Wl,-rpath=\$ORIGIN:\$ORIGIN/../lib64:\$ORIGIN/../lib"
 
   if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list bdw-gc $BUILD_TARGET_COMPOMENTS) ]]; then
@@ -808,11 +841,14 @@ function build_zlib() {
     else
       export PKG_CONFIG_PATH="$INSTALL_PREFIX_PATH/lib64/pkgconfig:$INSTALL_PREFIX_PATH/lib/pkgconfig:$BUILD_BACKUP_PKG_CONFIG_PATH"
     fi
+    STAGE_CFLAGS="-I$BUILD_STAGE1_INSTALLPREFIX/include "
+    STAGE_LDFLAGS="-L$BUILD_STAGE1_INSTALLPREFIX/lib64 -L$BUILD_STAGE1_INSTALLPREFIX/lib "
   else
     STAGE_CONFIGURE_OPTIONS="-DBUILD_SHARED_LIBS=ON "
+    STAGE_CFLAGS="-I$INSTALL_PREFIX_PATH/include "
+    STAGE_LDFLAGS="-L$INSTALL_PREFIX_PATH/lib64 -L$INSTALL_PREFIX_PATH/lib "
   fi
-  STAGE_CFLAGS="-I$INSTALL_PREFIX_PATH/include "
-  STAGE_LDFLAGS="-L$INSTALL_PREFIX_PATH/lib64 -L$INSTALL_PREFIX_PATH/lib "
+
   echo "$LDFLAGS" | grep -F '$ORIGIN/../lib64' || STAGE_LDFLAGS="$STAGE_LDFLAGS -Wl,-rpath=\$ORIGIN:\$ORIGIN/../lib64:\$ORIGIN/../lib"
 
   if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list zlib $BUILD_TARGET_COMPOMENTS) ]]; then
@@ -863,11 +899,14 @@ function build_xz() {
     else
       export PKG_CONFIG_PATH="$INSTALL_PREFIX_PATH/lib64/pkgconfig:$INSTALL_PREFIX_PATH/lib/pkgconfig:$BUILD_BACKUP_PKG_CONFIG_PATH"
     fi
+    STAGE_CFLAGS="-I$BUILD_STAGE1_INSTALLPREFIX/include "
+    STAGE_LDFLAGS="-L$BUILD_STAGE1_INSTALLPREFIX/lib64 -L$BUILD_STAGE1_INSTALLPREFIX/lib "
   else
     STAGE_CONFIGURE_OPTIONS="--disable-static "
+    STAGE_CFLAGS="-I$INSTALL_PREFIX_PATH/include "
+    STAGE_LDFLAGS="-L$INSTALL_PREFIX_PATH/lib64 -L$INSTALL_PREFIX_PATH/lib "
   fi
-  STAGE_CFLAGS="-I$INSTALL_PREFIX_PATH/include "
-  STAGE_LDFLAGS="-L$INSTALL_PREFIX_PATH/lib64 -L$INSTALL_PREFIX_PATH/lib "
+
   echo "$LDFLAGS" | grep -F '$ORIGIN/../lib64' || STAGE_LDFLAGS="$STAGE_LDFLAGS -Wl,-rpath=\$ORIGIN:\$ORIGIN/../lib64:\$ORIGIN/../lib"
 
   if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list xz $BUILD_TARGET_COMPOMENTS) ]]; then
@@ -911,11 +950,14 @@ function build_zstd() {
     else
       export PKG_CONFIG_PATH="$INSTALL_PREFIX_PATH/lib64/pkgconfig:$INSTALL_PREFIX_PATH/lib/pkgconfig:$BUILD_BACKUP_PKG_CONFIG_PATH"
     fi
+    STAGE_CFLAGS="-I$BUILD_STAGE1_INSTALLPREFIX/include "
+    STAGE_LDFLAGS="-L$BUILD_STAGE1_INSTALLPREFIX/lib64 -L$BUILD_STAGE1_INSTALLPREFIX/lib "
   else
     STAGE_CONFIGURE_OPTIONS="-DBUILD_SHARED_LIBS=ON "
+    STAGE_CFLAGS="-I$INSTALL_PREFIX_PATH/include "
+    STAGE_LDFLAGS="-L$INSTALL_PREFIX_PATH/lib64 -L$INSTALL_PREFIX_PATH/lib "
   fi
-  STAGE_CFLAGS="-I$INSTALL_PREFIX_PATH/include "
-  STAGE_LDFLAGS="-L$INSTALL_PREFIX_PATH/lib64 -L$INSTALL_PREFIX_PATH/lib "
+
   echo "$LDFLAGS" | grep -F '$ORIGIN/../lib64' || STAGE_LDFLAGS="$STAGE_LDFLAGS -Wl,-rpath=\$ORIGIN:\$ORIGIN/../lib64:\$ORIGIN/../lib"
 
   if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list zstd $BUILD_TARGET_COMPOMENTS) ]]; then
@@ -970,11 +1012,14 @@ function build_lz4() {
     else
       export PKG_CONFIG_PATH="$INSTALL_PREFIX_PATH/lib64/pkgconfig:$INSTALL_PREFIX_PATH/lib/pkgconfig:$BUILD_BACKUP_PKG_CONFIG_PATH"
     fi
+    STAGE_CFLAGS="-I$BUILD_STAGE1_INSTALLPREFIX/include "
+    STAGE_LDFLAGS="-L$BUILD_STAGE1_INSTALLPREFIX/lib64 -L$BUILD_STAGE1_INSTALLPREFIX/lib "
   else
     STAGE_CONFIGURE_OPTIONS="-DBUILD_SHARED_LIBS=ON "
+    STAGE_CFLAGS="-I$INSTALL_PREFIX_PATH/include "
+    STAGE_LDFLAGS="-L$INSTALL_PREFIX_PATH/lib64 -L$INSTALL_PREFIX_PATH/lib "
   fi
-  STAGE_CFLAGS="-I$INSTALL_PREFIX_PATH/include "
-  STAGE_LDFLAGS="-L$INSTALL_PREFIX_PATH/lib64 -L$INSTALL_PREFIX_PATH/lib "
+
   echo "$LDFLAGS" | grep -F '$ORIGIN/../lib64' || STAGE_LDFLAGS="$STAGE_LDFLAGS -Wl,-rpath=\$ORIGIN:\$ORIGIN/../lib64:\$ORIGIN/../lib"
 
   if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list lz4 $BUILD_TARGET_COMPOMENTS) ]]; then
@@ -1025,11 +1070,14 @@ function build_libiconv() {
     else
       export PKG_CONFIG_PATH="$INSTALL_PREFIX_PATH/lib64/pkgconfig:$INSTALL_PREFIX_PATH/lib/pkgconfig:$BUILD_BACKUP_PKG_CONFIG_PATH"
     fi
+    STAGE_CFLAGS="-I$BUILD_STAGE1_INSTALLPREFIX/include "
+    STAGE_LDFLAGS="-L$BUILD_STAGE1_INSTALLPREFIX/lib64 -L$BUILD_STAGE1_INSTALLPREFIX/lib "
   else
     STAGE_CONFIGURE_OPTIONS="--enable-static --enable-shared "
+    STAGE_CFLAGS="-I$INSTALL_PREFIX_PATH/include "
+    STAGE_LDFLAGS="-L$INSTALL_PREFIX_PATH/lib64 -L$INSTALL_PREFIX_PATH/lib "
   fi
-  STAGE_CFLAGS="-I$INSTALL_PREFIX_PATH/include "
-  STAGE_LDFLAGS="-L$INSTALL_PREFIX_PATH/lib64 -L$INSTALL_PREFIX_PATH/lib "
+
   echo "$LDFLAGS" | grep -F '$ORIGIN/../lib64' || STAGE_LDFLAGS="$STAGE_LDFLAGS -Wl,-rpath=\$ORIGIN:\$ORIGIN/../lib64:\$ORIGIN/../lib"
 
   if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list libiconv $BUILD_TARGET_COMPOMENTS) ]]; then
@@ -1067,11 +1115,14 @@ function build_bison() {
     else
       export PKG_CONFIG_PATH="$INSTALL_PREFIX_PATH/lib64/pkgconfig:$INSTALL_PREFIX_PATH/lib/pkgconfig:$BUILD_BACKUP_PKG_CONFIG_PATH"
     fi
+    STAGE_CFLAGS="-I$BUILD_STAGE1_INSTALLPREFIX/include "
+    STAGE_LDFLAGS="-L$BUILD_STAGE1_INSTALLPREFIX/lib64 -L$BUILD_STAGE1_INSTALLPREFIX/lib "
   else
     STAGE_CONFIGURE_OPTIONS="--enable-static --enable-shared "
+    STAGE_CFLAGS="-I$INSTALL_PREFIX_PATH/include "
+    STAGE_LDFLAGS="-L$INSTALL_PREFIX_PATH/lib64 -L$INSTALL_PREFIX_PATH/lib "
   fi
-  STAGE_CFLAGS="-I$INSTALL_PREFIX_PATH/include "
-  STAGE_LDFLAGS="-L$INSTALL_PREFIX_PATH/lib64 -L$INSTALL_PREFIX_PATH/lib "
+
   echo "$LDFLAGS" | grep -F '$ORIGIN/../lib64' || STAGE_LDFLAGS="$STAGE_LDFLAGS -Wl,-rpath=\$ORIGIN:\$ORIGIN/../lib64:\$ORIGIN/../lib"
 
   if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list bison $BUILD_TARGET_COMPOMENTS) ]]; then
@@ -1121,13 +1172,16 @@ function build_bintuils() {
     else
       export PKG_CONFIG_PATH="$INSTALL_PREFIX_PATH/lib64/pkgconfig:$INSTALL_PREFIX_PATH/lib/pkgconfig:$BUILD_BACKUP_PKG_CONFIG_PATH"
     fi
+    STAGE_CFLAGS="-I$BUILD_STAGE1_INSTALLPREFIX/include "
+    STAGE_LDFLAGS="-L$BUILD_STAGE1_INSTALLPREFIX/lib64 -L$BUILD_STAGE1_INSTALLPREFIX/lib "
     COMPOMENTS_USE_VERSION=$COMPOMENTS_BINUTILS_STAGE1_VERSION
   else
     STAGE_CONFIGURE_OPTIONS="--enable-gprofng "
+    STAGE_CFLAGS="-I$INSTALL_PREFIX_PATH/include "
+    STAGE_LDFLAGS="-L$INSTALL_PREFIX_PATH/lib64 -L$INSTALL_PREFIX_PATH/lib "
     COMPOMENTS_USE_VERSION=$COMPOMENTS_BINUTILS_VERSION
   fi
-  STAGE_CFLAGS="-I$INSTALL_PREFIX_PATH/include "
-  STAGE_LDFLAGS="-L$INSTALL_PREFIX_PATH/lib64 -L$INSTALL_PREFIX_PATH/lib "
+
   echo "$LDFLAGS" | grep -F '$ORIGIN/../lib64' || STAGE_LDFLAGS="$STAGE_LDFLAGS -Wl,-rpath=\$ORIGIN:\$ORIGIN/../lib64:\$ORIGIN/../lib"
 
   if [[ $# -gt 1 ]]; then
@@ -1200,11 +1254,14 @@ function build_make() {
     else
       export PKG_CONFIG_PATH="$INSTALL_PREFIX_PATH/lib64/pkgconfig:$INSTALL_PREFIX_PATH/lib/pkgconfig:$BUILD_BACKUP_PKG_CONFIG_PATH"
     fi
+    STAGE_CFLAGS="-I$BUILD_STAGE1_INSTALLPREFIX/include "
+    STAGE_LDFLAGS="-L$BUILD_STAGE1_INSTALLPREFIX/lib64 -L$BUILD_STAGE1_INSTALLPREFIX/lib "
   else
     STAGE_CONFIGURE_OPTIONS=""
+    STAGE_CFLAGS="-I$INSTALL_PREFIX_PATH/include "
+    STAGE_LDFLAGS="-L$INSTALL_PREFIX_PATH/lib64 -L$INSTALL_PREFIX_PATH/lib "
   fi
-  STAGE_CFLAGS="-I$INSTALL_PREFIX_PATH/include "
-  STAGE_LDFLAGS="-L$INSTALL_PREFIX_PATH/lib64 -L$INSTALL_PREFIX_PATH/lib "
+
   echo "$LDFLAGS" | grep -F '$ORIGIN/../lib64' || STAGE_LDFLAGS="$STAGE_LDFLAGS -Wl,-rpath=\$ORIGIN:\$ORIGIN/../lib64:\$ORIGIN/../lib"
 
   if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list make $BUILD_TARGET_COMPOMENTS) ]]; then
@@ -1375,7 +1432,24 @@ else
   export LDFLAGS="$LDFLAGS -L$PREFIX_DIR/lib64 -L$PREFIX_DIR/lib"
 fi
 
-# ======================= install binutils(ar,as,ld and etc.) =======================
+# bootstrap
+build_m4 "$PREFIX_DIR"
+build_autoconf "$PREFIX_DIR"
+build_automake "$PREFIX_DIR"
+build_libtool "$PREFIX_DIR"
+build_pkgconfig "$PREFIX_DIR"
+build_gmp "$PREFIX_DIR"
+build_mpfr "$PREFIX_DIR"
+build_mpc "$PREFIX_DIR"
+build_isl "$PREFIX_DIR"
+build_libatomic_ops "$PREFIX_DIR"
+build_bdw_gc "$PREFIX_DIR"
+build_zlib "$PREFIX_DIR"
+build_xz "$PREFIX_DIR"
+build_zstd "$PREFIX_DIR"
+build_lz4 "$PREFIX_DIR"
+build_libiconv "$PREFIX_DIR"
+build_make "$PREFIX_DIR"
 build_bison "$PREFIX_DIR"
 build_bintuils "$PREFIX_DIR"
 
@@ -1450,25 +1524,6 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list openssl $BUILD_
     cd "$WORKING_DIR"
   fi
 fi
-
-# bootstrap
-build_m4 "$PREFIX_DIR"
-build_autoconf "$PREFIX_DIR"
-build_automake "$PREFIX_DIR"
-build_libtool "$PREFIX_DIR"
-build_pkgconfig "$PREFIX_DIR"
-build_gmp "$PREFIX_DIR"
-build_mpfr "$PREFIX_DIR"
-build_mpc "$PREFIX_DIR"
-build_isl "$PREFIX_DIR"
-build_libatomic_ops "$PREFIX_DIR"
-build_bdw_gc "$PREFIX_DIR"
-build_zlib "$PREFIX_DIR"
-build_xz "$PREFIX_DIR"
-build_zstd "$PREFIX_DIR"
-build_lz4 "$PREFIX_DIR"
-build_libiconv "$PREFIX_DIR"
-build_make "$PREFIX_DIR"
 
 # ======================= install libffi [后面有些组件依赖] =======================
 if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list libffi $BUILD_TARGET_COMPOMENTS) ]]; then
