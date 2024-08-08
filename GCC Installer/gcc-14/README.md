@@ -83,7 +83,7 @@ CentOS 7 & CentOS 8
 
 + gcc 14.2.0
 + bison 3.8.2
-+ binutils 2.42
++ binutils 2.43
 + python 3.11.9 *[按需]*
 + gdb 15.1
 + global 6.6.13
@@ -114,4 +114,4 @@ CentOS 7 & CentOS 8
   + global -> 6.6.13
   + xz -> 5.6.2
   + lz4 -> 1.10.0
-+ 2024-08-03    Restore GCC->14.1.0(14.2.0 lead to many crash)
++ 2024-08-08    Restore GDB->14.2(15.1 always crash), Update binutils to 2.43
