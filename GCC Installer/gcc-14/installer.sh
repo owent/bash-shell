@@ -1492,7 +1492,7 @@ fi
 if [[ -z "$LDFLAGS" ]]; then
   export LDFLAGS="-L$PREFIX_DIR/lib64 -L$PREFIX_DIR/lib"
 else
-  export LDFLAGS="$LDFLAGS -L$PREFIX_DIR/lib64 -L$PREFIX_DIR/lib"
+  export LDFLAGS="-L$PREFIX_DIR/lib64 -L$PREFIX_DIR/lib $LDFLAGS"
 fi
 
 # bootstrap
@@ -1627,7 +1627,7 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list ncurses $BUILD_
     # expected --with-xterm-kbs=DEL for linux-gnu
     env LDFLAGS="${LDFLAGS//\$/\$\$}" CFLAGS="-fPIC ${CFLAGS}" CXXFLAGS="-fPIC ${CXXFLAGS}" ./configure "--prefix=$PREFIX_DIR" "--with-pkg-config-libdir=$PREFIX_DIR/lib/pkgconfig" \
       --with-normal --without-debug --without-ada --with-termlib --enable-termcap \
-      --enable-pc-files --with-cxx-binding --with-shared --with-cxx-shared \
+      --disable-widec --enable-pc-files --with-cxx-binding --with-shared --with-cxx-shared \
       --enable-ext-colors --enable-ext-mouse --enable-bsdpad --enable-opaque-curses \
       --with-xterm-kbs=DEL \
       --with-terminfo-dirs=/etc/terminfo:/usr/share/terminfo:/lib/terminfo \
