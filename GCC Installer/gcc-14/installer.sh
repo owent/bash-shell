@@ -322,14 +322,14 @@ function build_m4() {
   echo "$LDFLAGS" | grep -F '$ORIGIN/../lib64' || STAGE_LDFLAGS="$STAGE_LDFLAGS -Wl,-rpath=\$ORIGIN:\$ORIGIN/../lib64:\$ORIGIN/../lib"
 
   if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list m4 $BUILD_TARGET_COMPOMENTS) ]]; then
-    M4_PKG=$(check_and_download "m4" "m4-${COMPOMENTS_M4_VERSION}*.tar.gz" "$REPOSITORY_MIRROR_URL_GNU/m4/m4-${COMPOMENTS_M4_VERSION}.tar.gz")
+    M4_PKG=$(check_and_download "m4" "m4-*.tar.gz" "$REPOSITORY_MIRROR_URL_GNU/m4/m4-${COMPOMENTS_M4_VERSION}.tar.gz")
     if [ $? -ne 0 ]; then
       echo -e "$M4_PKG"
       exit 1
     fi
     if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
       tar -axvf $M4_PKG
-      M4_DIR=$(ls -d m4-${COMPOMENTS_M4_VERSION}* | grep -v \.tar\.gz)
+      M4_DIR=$(ls -d m4-* | grep -v \.tar\.gz)
       cd $M4_DIR
       cleanup_configure_cache
 
@@ -371,14 +371,14 @@ function build_autoconf() {
   echo "$LDFLAGS" | grep -F '$ORIGIN/../lib64' || STAGE_LDFLAGS="$STAGE_LDFLAGS -Wl,-rpath=\$ORIGIN:\$ORIGIN/../lib64:\$ORIGIN/../lib"
 
   if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list autoconf $BUILD_TARGET_COMPOMENTS) ]]; then
-    AUTOCONF_PKG=$(check_and_download "autoconf" "autoconf-${COMPOMENTS_AUTOCONF_VERSION}*.tar.gz" "$REPOSITORY_MIRROR_URL_GNU/autoconf/autoconf-${COMPOMENTS_AUTOCONF_VERSION}.tar.gz")
+    AUTOCONF_PKG=$(check_and_download "autoconf" "autoconf-*.tar.gz" "$REPOSITORY_MIRROR_URL_GNU/autoconf/autoconf-${COMPOMENTS_AUTOCONF_VERSION}.tar.gz")
     if [ $? -ne 0 ]; then
       echo -e "$AUTOCONF_PKG"
       exit 1
     fi
     if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
       tar -axvf $AUTOCONF_PKG
-      AUTOCONF_DIR=$(ls -d autoconf-${COMPOMENTS_AUTOCONF_VERSION}* | grep -v \.tar\.gz)
+      AUTOCONF_DIR=$(ls -d autoconf-* | grep -v \.tar\.gz)
       cd $AUTOCONF_DIR
       cleanup_configure_cache
 
@@ -1743,14 +1743,14 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list libxcrypt $BUIL
 fi
 
 if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list gdbm $BUILD_TARGET_COMPOMENTS) ]]; then
-  GDBM_PKG=$(check_and_download "gdbm" "gdbm-$COMPOMENTS_GDBM_VERSION*.tar.gz" "$REPOSITORY_MIRROR_URL_GNU/gdbm/gdbm-$COMPOMENTS_GDBM_VERSION.tar.gz")
+  GDBM_PKG=$(check_and_download "gdbm" "gdbm-*.tar.gz" "$REPOSITORY_MIRROR_URL_GNU/gdbm/gdbm-$COMPOMENTS_GDBM_VERSION.tar.gz")
   if [[ $? -ne 0 ]]; then
     echo -e "$GDBM_PKG"
     exit 1
   fi
   if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
     tar -axvf "$GDBM_PKG"
-    GDBM_DIR=$(ls -d gdbm-$COMPOMENTS_GDBM_VERSION* | grep -v \.tar\.gz)
+    GDBM_DIR=$(ls -d gdbm-* | grep -v \.tar\.gz)
     cd "$GDBM_DIR"
     cleanup_configure_cache
 
