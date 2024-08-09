@@ -29,7 +29,7 @@ COMPOMENTS_GDBM_VERSION=latest
 COMPOMENTS_READLINE_VERSION=8.2
 # distcc 3.4 use distutils which is removed from python 3.12.2, we use python 3.11 by now
 COMPOMENTS_PYTHON_VERSION=3.11.9
-COMPOMENTS_GDB_VERSION=14.2 # 15.1 always crash and ignore this version
+COMPOMENTS_GDB_VERSION=15.1 # Previous 14.2
 COMPOMENTS_GLOBAL_VERSION=6.6.13
 COMPOMENTS_LIBICONV_VERSION=1.17
 COMPOMENTS_XZ_VERSION=5.6.2
@@ -283,6 +283,20 @@ sleep $CHECK_INFO_SLEEP
 swapoff -a
 set -x
 
+function cleanup_configure_cache() {
+  if [[ -e "config.status" ]]; then
+    make distclean || true
+    if [[ $# -gt 0 ]]; then
+      find "$1" -name config.cache | xargs -r rm || true
+    else
+      find . -name config.cache | xargs -r rm || true
+    fi
+  fi
+  if [[ -e "Makefile" ]] || [[ -e "makefile" ]]; then
+    make clean || true
+  fi
+}
+
 # install m4
 function build_m4() {
   INSTALL_PREFIX_PATH="$1"
@@ -293,30 +307,32 @@ function build_m4() {
     STAGE_CONFIGURE_OPTIONS=""
     BUILD_BACKUP_PKG_CONFIG_PATH="$PKG_CONFIG_PATH"
     if [[ "x$BUILD_BACKUP_PKG_CONFIG_PATH" == "x" ]]; then
-      export PKG_CONFIG_PATH="$INSTALL_PREFIX_PATH/lib64/pkgconfig:$INSTALL_PREFIX_PATH/lib/pkgconfig"
+      export PKG_CONFIG_PATH="$BUILD_STAGE1_INSTALLPREFIX/lib64/pkgconfig:$BUILD_STAGE1_INSTALLPREFIX/lib/pkgconfig"
     else
-      export PKG_CONFIG_PATH="$INSTALL_PREFIX_PATH/lib64/pkgconfig:$INSTALL_PREFIX_PATH/lib/pkgconfig:$BUILD_BACKUP_PKG_CONFIG_PATH"
+      export PKG_CONFIG_PATH="$BUILD_STAGE1_INSTALLPREFIX/lib64/pkgconfig:$BUILD_STAGE1_INSTALLPREFIX/lib/pkgconfig:$BUILD_BACKUP_PKG_CONFIG_PATH"
     fi
-    STAGE_CFLAGS="-I$BUILD_STAGE1_INSTALLPREFIX/include "
+    STAGE_CFLAGS="-fPIC -I$BUILD_STAGE1_INSTALLPREFIX/include "
     STAGE_LDFLAGS="-L$BUILD_STAGE1_INSTALLPREFIX/lib64 -L$BUILD_STAGE1_INSTALLPREFIX/lib "
   else
     STAGE_CONFIGURE_OPTIONS=""
-    STAGE_CFLAGS="-I$INSTALL_PREFIX_PATH/include "
+    STAGE_CFLAGS="-fPIC -I$INSTALL_PREFIX_PATH/include "
     STAGE_LDFLAGS="-L$INSTALL_PREFIX_PATH/lib64 -L$INSTALL_PREFIX_PATH/lib "
   fi
 
   echo "$LDFLAGS" | grep -F '$ORIGIN/../lib64' || STAGE_LDFLAGS="$STAGE_LDFLAGS -Wl,-rpath=\$ORIGIN:\$ORIGIN/../lib64:\$ORIGIN/../lib"
 
   if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list m4 $BUILD_TARGET_COMPOMENTS) ]]; then
-    M4_PKG=$(check_and_download "m4" "m4-*.tar.gz" "$REPOSITORY_MIRROR_URL_GNU/m4/m4-${COMPOMENTS_M4_VERSION}.tar.gz")
+    M4_PKG=$(check_and_download "m4" "m4-${COMPOMENTS_M4_VERSION}*.tar.gz" "$REPOSITORY_MIRROR_URL_GNU/m4/m4-${COMPOMENTS_M4_VERSION}.tar.gz")
     if [ $? -ne 0 ]; then
       echo -e "$M4_PKG"
       exit 1
     fi
     if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
       tar -axvf $M4_PKG
-      M4_DIR=$(ls -d m4-* | grep -v \.tar\.gz)
+      M4_DIR=$(ls -d m4-${COMPOMENTS_M4_VERSION}* | grep -v \.tar\.gz)
       cd $M4_DIR
+      cleanup_configure_cache
+
       env LDFLAGS="${STAGE_LDFLAGS}${LDFLAGS//\$/\$\$}" CFLAGS="${STAGE_CFLAGS}${CFLAGS}" CXXFLAGS="${STAGE_CFLAGS}${CXXFLAGS}" \
         ./configure --prefix=$INSTALL_PREFIX_PATH --enable-c++ $STAGE_CONFIGURE_OPTIONS
       make $BUILD_THREAD_OPT O='$$$$O' || make O='$$$$O'
@@ -340,30 +356,32 @@ function build_autoconf() {
     STAGE_CONFIGURE_OPTIONS=""
     BUILD_BACKUP_PKG_CONFIG_PATH="$PKG_CONFIG_PATH"
     if [[ "x$BUILD_BACKUP_PKG_CONFIG_PATH" == "x" ]]; then
-      export PKG_CONFIG_PATH="$INSTALL_PREFIX_PATH/lib64/pkgconfig:$INSTALL_PREFIX_PATH/lib/pkgconfig"
+      export PKG_CONFIG_PATH="$BUILD_STAGE1_INSTALLPREFIX/lib64/pkgconfig:$BUILD_STAGE1_INSTALLPREFIX/lib/pkgconfig"
     else
-      export PKG_CONFIG_PATH="$INSTALL_PREFIX_PATH/lib64/pkgconfig:$INSTALL_PREFIX_PATH/lib/pkgconfig:$BUILD_BACKUP_PKG_CONFIG_PATH"
+      export PKG_CONFIG_PATH="$BUILD_STAGE1_INSTALLPREFIX/lib64/pkgconfig:$BUILD_STAGE1_INSTALLPREFIX/lib/pkgconfig:$BUILD_BACKUP_PKG_CONFIG_PATH"
     fi
-    STAGE_CFLAGS="-I$BUILD_STAGE1_INSTALLPREFIX/include "
+    STAGE_CFLAGS="-fPIC -I$BUILD_STAGE1_INSTALLPREFIX/include "
     STAGE_LDFLAGS="-L$BUILD_STAGE1_INSTALLPREFIX/lib64 -L$BUILD_STAGE1_INSTALLPREFIX/lib "
   else
     STAGE_CONFIGURE_OPTIONS=""
-    STAGE_CFLAGS="-I$INSTALL_PREFIX_PATH/include "
+    STAGE_CFLAGS="-fPIC -I$INSTALL_PREFIX_PATH/include "
     STAGE_LDFLAGS="-L$INSTALL_PREFIX_PATH/lib64 -L$INSTALL_PREFIX_PATH/lib "
   fi
 
   echo "$LDFLAGS" | grep -F '$ORIGIN/../lib64' || STAGE_LDFLAGS="$STAGE_LDFLAGS -Wl,-rpath=\$ORIGIN:\$ORIGIN/../lib64:\$ORIGIN/../lib"
 
   if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list autoconf $BUILD_TARGET_COMPOMENTS) ]]; then
-    AUTOCONF_PKG=$(check_and_download "autoconf" "autoconf-*.tar.gz" "$REPOSITORY_MIRROR_URL_GNU/autoconf/autoconf-${COMPOMENTS_AUTOCONF_VERSION}.tar.gz")
+    AUTOCONF_PKG=$(check_and_download "autoconf" "autoconf-${COMPOMENTS_AUTOCONF_VERSION}*.tar.gz" "$REPOSITORY_MIRROR_URL_GNU/autoconf/autoconf-${COMPOMENTS_AUTOCONF_VERSION}.tar.gz")
     if [ $? -ne 0 ]; then
       echo -e "$AUTOCONF_PKG"
       exit 1
     fi
     if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
       tar -axvf $AUTOCONF_PKG
-      AUTOCONF_DIR=$(ls -d autoconf-* | grep -v \.tar\.gz)
+      AUTOCONF_DIR=$(ls -d autoconf-${COMPOMENTS_AUTOCONF_VERSION}* | grep -v \.tar\.gz)
       cd $AUTOCONF_DIR
+      cleanup_configure_cache
+
       env LDFLAGS="${STAGE_LDFLAGS}${LDFLAGS//\$/\$\$}" CFLAGS="${STAGE_CFLAGS}${CFLAGS}" CXXFLAGS="${STAGE_CFLAGS}${CXXFLAGS}" ./configure \
         --prefix=$INSTALL_PREFIX_PATH $STAGE_CONFIGURE_OPTIONS
       make $BUILD_THREAD_OPT O='$$$$O' && make install O='$$$$O'
@@ -386,30 +404,32 @@ function build_automake() {
     STAGE_CONFIGURE_OPTIONS=""
     BUILD_BACKUP_PKG_CONFIG_PATH="$PKG_CONFIG_PATH"
     if [[ "x$BUILD_BACKUP_PKG_CONFIG_PATH" == "x" ]]; then
-      export PKG_CONFIG_PATH="$INSTALL_PREFIX_PATH/lib64/pkgconfig:$INSTALL_PREFIX_PATH/lib/pkgconfig"
+      export PKG_CONFIG_PATH="$BUILD_STAGE1_INSTALLPREFIX/lib64/pkgconfig:$BUILD_STAGE1_INSTALLPREFIX/lib/pkgconfig"
     else
-      export PKG_CONFIG_PATH="$INSTALL_PREFIX_PATH/lib64/pkgconfig:$INSTALL_PREFIX_PATH/lib/pkgconfig:$BUILD_BACKUP_PKG_CONFIG_PATH"
+      export PKG_CONFIG_PATH="$BUILD_STAGE1_INSTALLPREFIX/lib64/pkgconfig:$BUILD_STAGE1_INSTALLPREFIX/lib/pkgconfig:$BUILD_BACKUP_PKG_CONFIG_PATH"
     fi
-    STAGE_CFLAGS="-I$BUILD_STAGE1_INSTALLPREFIX/include "
+    STAGE_CFLAGS="-fPIC -I$BUILD_STAGE1_INSTALLPREFIX/include "
     STAGE_LDFLAGS="-L$BUILD_STAGE1_INSTALLPREFIX/lib64 -L$BUILD_STAGE1_INSTALLPREFIX/lib "
   else
     STAGE_CONFIGURE_OPTIONS=""
-    STAGE_CFLAGS="-I$INSTALL_PREFIX_PATH/include "
+    STAGE_CFLAGS="-fPIC -I$INSTALL_PREFIX_PATH/include "
     STAGE_LDFLAGS="-L$INSTALL_PREFIX_PATH/lib64 -L$INSTALL_PREFIX_PATH/lib "
   fi
 
   echo "$LDFLAGS" | grep -F '$ORIGIN/../lib64' || STAGE_LDFLAGS="$STAGE_LDFLAGS -Wl,-rpath=\$ORIGIN:\$ORIGIN/../lib64:\$ORIGIN/../lib"
 
   if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list automake $BUILD_TARGET_COMPOMENTS) ]]; then
-    AUTOMAKE_PKG=$(check_and_download "automake" "automake-*.tar.gz" "$REPOSITORY_MIRROR_URL_GNU/automake/automake-${COMPOMENTS_AUTOMAKE_VERSION}.tar.gz")
+    AUTOMAKE_PKG=$(check_and_download "automake" "automake-${COMPOMENTS_AUTOMAKE_VERSION}*.tar.gz" "$REPOSITORY_MIRROR_URL_GNU/automake/automake-${COMPOMENTS_AUTOMAKE_VERSION}.tar.gz")
     if [ $? -ne 0 ]; then
       echo -e "$AUTOMAKE_PKG"
       exit 1
     fi
     if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
       tar -axvf $AUTOMAKE_PKG
-      AUTOMAKE_DIR=$(ls -d automake-* | grep -v \.tar\.gz)
+      AUTOMAKE_DIR=$(ls -d automake-${COMPOMENTS_AUTOMAKE_VERSION}* | grep -v \.tar\.gz)
       cd $AUTOMAKE_DIR
+      cleanup_configure_cache
+
       env LDFLAGS="${STAGE_LDFLAGS}${LDFLAGS//\$/\$\$}" CFLAGS="${STAGE_CFLAGS}${CFLAGS}" CXXFLAGS="${STAGE_CFLAGS}${CXXFLAGS}" ./configure \
         --prefix=$INSTALL_PREFIX_PATH $STAGE_CONFIGURE_OPTIONS
       make $BUILD_THREAD_OPT O='$$$$O' && make install O='$$$$O'
@@ -432,9 +452,9 @@ function build_libtool() {
     STAGE_CONFIGURE_OPTIONS="--disable-shared --enable-static "
     BUILD_BACKUP_PKG_CONFIG_PATH="$PKG_CONFIG_PATH"
     if [[ "x$BUILD_BACKUP_PKG_CONFIG_PATH" == "x" ]]; then
-      export PKG_CONFIG_PATH="$INSTALL_PREFIX_PATH/lib64/pkgconfig:$INSTALL_PREFIX_PATH/lib/pkgconfig"
+      export PKG_CONFIG_PATH="$BUILD_STAGE1_INSTALLPREFIX/lib64/pkgconfig:$BUILD_STAGE1_INSTALLPREFIX/lib/pkgconfig"
     else
-      export PKG_CONFIG_PATH="$INSTALL_PREFIX_PATH/lib64/pkgconfig:$INSTALL_PREFIX_PATH/lib/pkgconfig:$BUILD_BACKUP_PKG_CONFIG_PATH"
+      export PKG_CONFIG_PATH="$BUILD_STAGE1_INSTALLPREFIX/lib64/pkgconfig:$BUILD_STAGE1_INSTALLPREFIX/lib/pkgconfig:$BUILD_BACKUP_PKG_CONFIG_PATH"
     fi
     STAGE_CFLAGS="-I$BUILD_STAGE1_INSTALLPREFIX/include "
     STAGE_LDFLAGS="-L$BUILD_STAGE1_INSTALLPREFIX/lib64 -L$BUILD_STAGE1_INSTALLPREFIX/lib "
@@ -447,15 +467,17 @@ function build_libtool() {
   echo "$LDFLAGS" | grep -F '$ORIGIN/../lib64' || STAGE_LDFLAGS="$STAGE_LDFLAGS -Wl,-rpath=\$ORIGIN:\$ORIGIN/../lib64:\$ORIGIN/../lib"
 
   if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list libtool $BUILD_TARGET_COMPOMENTS) ]]; then
-    LIBTOOL_PKG=$(check_and_download "libtool" "libtool-*.tar.gz" "$REPOSITORY_MIRROR_URL_GNU/libtool/libtool-${COMPOMENTS_LIBTOOL_VERSION}.tar.gz")
+    LIBTOOL_PKG=$(check_and_download "libtool" "libtool-${COMPOMENTS_LIBTOOL_VERSION}*.tar.gz" "$REPOSITORY_MIRROR_URL_GNU/libtool/libtool-${COMPOMENTS_LIBTOOL_VERSION}.tar.gz")
     if [ $? -ne 0 ]; then
       echo -e "$LIBTOOL_PKG"
       exit 1
     fi
     if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
       tar -axvf $LIBTOOL_PKG
-      LIBTOOL_DIR=$(ls -d libtool-* | grep -v \.tar\.gz)
+      LIBTOOL_DIR=$(ls -d libtool-${COMPOMENTS_LIBTOOL_VERSION}* | grep -v \.tar\.gz)
       cd $LIBTOOL_DIR
+      cleanup_configure_cache
+
       env LDFLAGS="${STAGE_LDFLAGS}${LDFLAGS//\$/\$\$}" CFLAGS="${STAGE_CFLAGS}${CFLAGS}" CXXFLAGS="${STAGE_CFLAGS}${CXXFLAGS}" \
         ./configure --prefix=$INSTALL_PREFIX_PATH --with-pic=yes $STAGE_CONFIGURE_OPTIONS
       make $BUILD_THREAD_OPT O='$$$$O' && make install O='$$$$O'
@@ -478,9 +500,9 @@ function build_pkgconfig() {
     STAGE_CONFIGURE_OPTIONS="--disable-shared --enable-static "
     BUILD_BACKUP_PKG_CONFIG_PATH="$PKG_CONFIG_PATH"
     if [[ "x$BUILD_BACKUP_PKG_CONFIG_PATH" == "x" ]]; then
-      export PKG_CONFIG_PATH="$INSTALL_PREFIX_PATH/lib64/pkgconfig:$INSTALL_PREFIX_PATH/lib/pkgconfig"
+      export PKG_CONFIG_PATH="$BUILD_STAGE1_INSTALLPREFIX/lib64/pkgconfig:$BUILD_STAGE1_INSTALLPREFIX/lib/pkgconfig"
     else
-      export PKG_CONFIG_PATH="$INSTALL_PREFIX_PATH/lib64/pkgconfig:$INSTALL_PREFIX_PATH/lib/pkgconfig:$BUILD_BACKUP_PKG_CONFIG_PATH"
+      export PKG_CONFIG_PATH="$BUILD_STAGE1_INSTALLPREFIX/lib64/pkgconfig:$BUILD_STAGE1_INSTALLPREFIX/lib/pkgconfig:$BUILD_BACKUP_PKG_CONFIG_PATH"
     fi
     STAGE_CFLAGS="-I$BUILD_STAGE1_INSTALLPREFIX/include "
     STAGE_LDFLAGS="-L$BUILD_STAGE1_INSTALLPREFIX/lib64 -L$BUILD_STAGE1_INSTALLPREFIX/lib "
@@ -493,15 +515,17 @@ function build_pkgconfig() {
   echo "$LDFLAGS" | grep -F '$ORIGIN/../lib64' || STAGE_LDFLAGS="$STAGE_LDFLAGS -Wl,-rpath=\$ORIGIN:\$ORIGIN/../lib64:\$ORIGIN/../lib"
 
   if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list pkgconfig $BUILD_TARGET_COMPOMENTS) ]]; then
-    PKGCONFIG_PKG=$(check_and_download "pkgconfig" "pkg-config-*.tar.gz" "https://pkg-config.freedesktop.org/releases/pkg-config-${COMPOMENTS_PKGCONFIG_VERSION}.tar.gz")
+    PKGCONFIG_PKG=$(check_and_download "pkgconfig" "pkg-config-${COMPOMENTS_PKGCONFIG_VERSION}*.tar.gz" "https://pkg-config.freedesktop.org/releases/pkg-config-${COMPOMENTS_PKGCONFIG_VERSION}.tar.gz")
     if [ $? -ne 0 ]; then
       echo -e "$PKGCONFIG_PKG"
       exit 1
     fi
     if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
       tar -axvf $PKGCONFIG_PKG
-      PKGCONFIG_DIR=$(ls -d pkg-config-* | grep -v \.tar\.gz)
+      PKGCONFIG_DIR=$(ls -d pkg-config-${COMPOMENTS_PKGCONFIG_VERSION}* | grep -v \.tar\.gz)
       cd $PKGCONFIG_DIR
+      cleanup_configure_cache
+
       env LDFLAGS="${STAGE_LDFLAGS}${LDFLAGS//\$/\$\$}" CFLAGS="${STAGE_CFLAGS}${CFLAGS}" CXXFLAGS="${STAGE_CFLAGS}${CXXFLAGS}" ./configure \
         --prefix=$INSTALL_PREFIX_PATH --with-pic=yes --with-internal-glib $STAGE_CONFIGURE_OPTIONS
       make $BUILD_THREAD_OPT O='$$$$O' && make install O='$$$$O'
@@ -524,9 +548,9 @@ function build_gmp() {
     STAGE_CONFIGURE_OPTIONS="--disable-shared --enable-static "
     BUILD_BACKUP_PKG_CONFIG_PATH="$PKG_CONFIG_PATH"
     if [[ "x$BUILD_BACKUP_PKG_CONFIG_PATH" == "x" ]]; then
-      export PKG_CONFIG_PATH="$INSTALL_PREFIX_PATH/lib64/pkgconfig:$INSTALL_PREFIX_PATH/lib/pkgconfig"
+      export PKG_CONFIG_PATH="$BUILD_STAGE1_INSTALLPREFIX/lib64/pkgconfig:$BUILD_STAGE1_INSTALLPREFIX/lib/pkgconfig"
     else
-      export PKG_CONFIG_PATH="$INSTALL_PREFIX_PATH/lib64/pkgconfig:$INSTALL_PREFIX_PATH/lib/pkgconfig:$BUILD_BACKUP_PKG_CONFIG_PATH"
+      export PKG_CONFIG_PATH="$BUILD_STAGE1_INSTALLPREFIX/lib64/pkgconfig:$BUILD_STAGE1_INSTALLPREFIX/lib/pkgconfig:$BUILD_BACKUP_PKG_CONFIG_PATH"
     fi
     STAGE_CFLAGS="-I$BUILD_STAGE1_INSTALLPREFIX/include "
     STAGE_LDFLAGS="-L$BUILD_STAGE1_INSTALLPREFIX/lib64 -L$BUILD_STAGE1_INSTALLPREFIX/lib "
@@ -539,19 +563,21 @@ function build_gmp() {
   echo "$LDFLAGS" | grep -F '$ORIGIN/../lib64' || STAGE_LDFLAGS="$STAGE_LDFLAGS -Wl,-rpath=\$ORIGIN:\$ORIGIN/../lib64:\$ORIGIN/../lib"
 
   if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list gmp $BUILD_TARGET_COMPOMENTS) ]]; then
-    GMP_PKG=$(check_and_download "gmp" "gmp-*.tar.xz" "$REPOSITORY_MIRROR_URL_GNU/gmp/gmp-$COMPOMENTS_GMP_VERSION.tar.xz")
+    GMP_PKG=$(check_and_download "gmp" "gmp-$COMPOMENTS_GMP_VERSION*.tar.xz" "$REPOSITORY_MIRROR_URL_GNU/gmp/gmp-$COMPOMENTS_GMP_VERSION.tar.xz")
     if [ $? -ne 0 ]; then
       echo -e "$GMP_PKG"
       exit 1
     fi
     if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
       tar -axvf $GMP_PKG
-      GMP_DIR=$(ls -d gmp-* | grep -v \.tar\.xz)
+      GMP_DIR=$(ls -d gmp-$COMPOMENTS_GMP_VERSION* | grep -v \.tar\.xz)
       cd $GMP_DIR
+      cleanup_configure_cache
+
       env "CXXFLAGS=-fexceptions ${STAGE_CFLAGS}${CXXFLAGS}" \
         CFLAGS="${STAGE_CFLAGS}${CFLAGS}" \
         LDFLAGS="${STAGE_LDFLAGS}${LDFLAGS//\$/\$\$}" \
-        ./configure --prefix=$INSTALL_PREFIX_PATH --enable-cxx --enable-assert \
+        ./configure --prefix=$INSTALL_PREFIX_PATH --enable-cxx --enable-assert --with-pic=yes \
         $BUILD_OTHER_CONF_OPTION $STAGE_CONFIGURE_OPTIONS
       make $BUILD_THREAD_OPT O='$$$$O' && make install O='$$$$O'
       if [[ $? -ne 0 ]]; then
@@ -573,9 +599,9 @@ function build_mpfr() {
     STAGE_CONFIGURE_OPTIONS="--disable-shared --enable-static "
     BUILD_BACKUP_PKG_CONFIG_PATH="$PKG_CONFIG_PATH"
     if [[ "x$BUILD_BACKUP_PKG_CONFIG_PATH" == "x" ]]; then
-      export PKG_CONFIG_PATH="$INSTALL_PREFIX_PATH/lib64/pkgconfig:$INSTALL_PREFIX_PATH/lib/pkgconfig"
+      export PKG_CONFIG_PATH="$BUILD_STAGE1_INSTALLPREFIX/lib64/pkgconfig:$BUILD_STAGE1_INSTALLPREFIX/lib/pkgconfig"
     else
-      export PKG_CONFIG_PATH="$INSTALL_PREFIX_PATH/lib64/pkgconfig:$INSTALL_PREFIX_PATH/lib/pkgconfig:$BUILD_BACKUP_PKG_CONFIG_PATH"
+      export PKG_CONFIG_PATH="$BUILD_STAGE1_INSTALLPREFIX/lib64/pkgconfig:$BUILD_STAGE1_INSTALLPREFIX/lib/pkgconfig:$BUILD_BACKUP_PKG_CONFIG_PATH"
     fi
     STAGE_CFLAGS="-I$BUILD_STAGE1_INSTALLPREFIX/include "
     STAGE_LDFLAGS="-L$BUILD_STAGE1_INSTALLPREFIX/lib64 -L$BUILD_STAGE1_INSTALLPREFIX/lib "
@@ -588,17 +614,19 @@ function build_mpfr() {
   echo "$LDFLAGS" | grep -F '$ORIGIN/../lib64' || STAGE_LDFLAGS="$STAGE_LDFLAGS -Wl,-rpath=\$ORIGIN:\$ORIGIN/../lib64:\$ORIGIN/../lib"
 
   if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list mpfr $BUILD_TARGET_COMPOMENTS) ]]; then
-    MPFR_PKG=$(check_and_download "mpfr" "mpfr-*.tar.xz" "$REPOSITORY_MIRROR_URL_GNU/mpfr/mpfr-$COMPOMENTS_MPFR_VERSION.tar.xz")
+    MPFR_PKG=$(check_and_download "mpfr" "mpfr-$COMPOMENTS_MPFR_VERSION*.tar.xz" "$REPOSITORY_MIRROR_URL_GNU/mpfr/mpfr-$COMPOMENTS_MPFR_VERSION.tar.xz")
     if [[ $? -ne 0 ]]; then
       echo -e "$MPFR_PKG"
       exit 1
     fi
     if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
       tar -axvf $MPFR_PKG
-      MPFR_DIR=$(ls -d mpfr-* | grep -v \.tar\.xz)
+      MPFR_DIR=$(ls -d mpfr-$COMPOMENTS_MPFR_VERSION* | grep -v \.tar\.xz)
       cd $MPFR_DIR
+      cleanup_configure_cache
+
       env LDFLAGS="${STAGE_LDFLAGS}${LDFLAGS//\$/\$\$}" CFLAGS="${STAGE_CFLAGS}${CFLAGS}" CXXFLAGS="${STAGE_CFLAGS}${CXXFLAGS}" ./configure \
-        --prefix=$INSTALL_PREFIX_PATH --with-gmp=$INSTALL_PREFIX_PATH --enable-assert $BUILD_OTHER_CONF_OPTION $STAGE_CONFIGURE_OPTIONS
+        --prefix=$INSTALL_PREFIX_PATH --with-gmp=$INSTALL_PREFIX_PATH --enable-assert --with-pic=yes $BUILD_OTHER_CONF_OPTION $STAGE_CONFIGURE_OPTIONS
       make $BUILD_THREAD_OPT O='$$$$O' && make install O='$$$$O'
       if [[ $? -ne 0 ]]; then
         echo -e "\\033[31;1mError: build mpfr failed.\\033[39;49;0m"
@@ -619,9 +647,9 @@ function build_mpc() {
     STAGE_CONFIGURE_OPTIONS="--disable-shared --enable-static "
     BUILD_BACKUP_PKG_CONFIG_PATH="$PKG_CONFIG_PATH"
     if [[ "x$BUILD_BACKUP_PKG_CONFIG_PATH" == "x" ]]; then
-      export PKG_CONFIG_PATH="$INSTALL_PREFIX_PATH/lib64/pkgconfig:$INSTALL_PREFIX_PATH/lib/pkgconfig"
+      export PKG_CONFIG_PATH="$BUILD_STAGE1_INSTALLPREFIX/lib64/pkgconfig:$BUILD_STAGE1_INSTALLPREFIX/lib/pkgconfig"
     else
-      export PKG_CONFIG_PATH="$INSTALL_PREFIX_PATH/lib64/pkgconfig:$INSTALL_PREFIX_PATH/lib/pkgconfig:$BUILD_BACKUP_PKG_CONFIG_PATH"
+      export PKG_CONFIG_PATH="$BUILD_STAGE1_INSTALLPREFIX/lib64/pkgconfig:$BUILD_STAGE1_INSTALLPREFIX/lib/pkgconfig:$BUILD_BACKUP_PKG_CONFIG_PATH"
     fi
     STAGE_CFLAGS="-I$BUILD_STAGE1_INSTALLPREFIX/include "
     STAGE_LDFLAGS="-L$BUILD_STAGE1_INSTALLPREFIX/lib64 -L$BUILD_STAGE1_INSTALLPREFIX/lib "
@@ -634,17 +662,20 @@ function build_mpc() {
   echo "$LDFLAGS" | grep -F '$ORIGIN/../lib64' || STAGE_LDFLAGS="$STAGE_LDFLAGS -Wl,-rpath=\$ORIGIN:\$ORIGIN/../lib64:\$ORIGIN/../lib"
 
   if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list mpc $BUILD_TARGET_COMPOMENTS) ]]; then
-    MPC_PKG=$(check_and_download "mpc" "mpc-*.tar.gz" "$REPOSITORY_MIRROR_URL_GNU/mpc/mpc-$COMPOMENTS_MPC_VERSION.tar.gz")
+    MPC_PKG=$(check_and_download "mpc" "mpc-$COMPOMENTS_MPC_VERSION*.tar.gz" "$REPOSITORY_MIRROR_URL_GNU/mpc/mpc-$COMPOMENTS_MPC_VERSION.tar.gz")
     if [[ $? -ne 0 ]]; then
       echo -e "$MPC_PKG"
       exit 1
     fi
     if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
       tar -axvf $MPC_PKG
-      MPC_DIR=$(ls -d mpc-* | grep -v \.tar\.gz)
+      MPC_DIR=$(ls -d mpc-$COMPOMENTS_MPC_VERSION* | grep -v \.tar\.gz)
       cd $MPC_DIR
+      cleanup_configure_cache
+
       env LDFLAGS="${STAGE_LDFLAGS}${LDFLAGS//\$/\$\$}" CFLAGS="${STAGE_CFLAGS}${CFLAGS}" CXXFLAGS="${STAGE_CFLAGS}${CXXFLAGS}" ./configure \
-        --prefix=$INSTALL_PREFIX_PATH --with-gmp=$INSTALL_PREFIX_PATH --with-mpfr=$INSTALL_PREFIX_PATH $BUILD_OTHER_CONF_OPTION $STAGE_CONFIGURE_OPTIONS
+        --prefix=$INSTALL_PREFIX_PATH --with-gmp=$INSTALL_PREFIX_PATH --with-mpfr=$INSTALL_PREFIX_PATH --with-pic=yes \
+        $BUILD_OTHER_CONF_OPTION $STAGE_CONFIGURE_OPTIONS
       make $BUILD_THREAD_OPT O='$$$$O' && make install O='$$$$O'
       if [[ $? -ne 0 ]]; then
         echo -e "\\033[31;1mError: build mpc failed.\\033[39;49;0m"
@@ -665,9 +696,9 @@ function build_isl() {
     STAGE_CONFIGURE_OPTIONS="--disable-shared --enable-static "
     BUILD_BACKUP_PKG_CONFIG_PATH="$PKG_CONFIG_PATH"
     if [[ "x$BUILD_BACKUP_PKG_CONFIG_PATH" == "x" ]]; then
-      export PKG_CONFIG_PATH="$INSTALL_PREFIX_PATH/lib64/pkgconfig:$INSTALL_PREFIX_PATH/lib/pkgconfig"
+      export PKG_CONFIG_PATH="$BUILD_STAGE1_INSTALLPREFIX/lib64/pkgconfig:$BUILD_STAGE1_INSTALLPREFIX/lib/pkgconfig"
     else
-      export PKG_CONFIG_PATH="$INSTALL_PREFIX_PATH/lib64/pkgconfig:$INSTALL_PREFIX_PATH/lib/pkgconfig:$BUILD_BACKUP_PKG_CONFIG_PATH"
+      export PKG_CONFIG_PATH="$BUILD_STAGE1_INSTALLPREFIX/lib64/pkgconfig:$BUILD_STAGE1_INSTALLPREFIX/lib/pkgconfig:$BUILD_BACKUP_PKG_CONFIG_PATH"
     fi
     STAGE_CFLAGS="-I$BUILD_STAGE1_INSTALLPREFIX/include "
     STAGE_LDFLAGS="-L$BUILD_STAGE1_INSTALLPREFIX/lib64 -L$BUILD_STAGE1_INSTALLPREFIX/lib "
@@ -680,18 +711,20 @@ function build_isl() {
   echo "$LDFLAGS" | grep -F '$ORIGIN/../lib64' || STAGE_LDFLAGS="$STAGE_LDFLAGS -Wl,-rpath=\$ORIGIN:\$ORIGIN/../lib64:\$ORIGIN/../lib"
 
   if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list isl $BUILD_TARGET_COMPOMENTS) ]]; then
-    ISL_PKG=$(check_and_download "isl" "isl-*.tar.bz2" "https://gcc.gnu.org/pub/gcc/infrastructure/isl-$COMPOMENTS_ISL_VERSION.tar.bz2")
+    ISL_PKG=$(check_and_download "isl" "isl-$COMPOMENTS_ISL_VERSION*.tar.bz2" "https://gcc.gnu.org/pub/gcc/infrastructure/isl-$COMPOMENTS_ISL_VERSION.tar.bz2")
     if [[ $? -ne 0 ]]; then
       echo -e "$ISL_PKG"
       exit 1
     fi
     if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
       tar -jxvf $ISL_PKG
-      ISL_DIR=$(ls -d isl-* | grep -v \.tar\.bz2)
+      ISL_DIR=$(ls -d isl-$COMPOMENTS_ISL_VERSION* | grep -v \.tar\.bz2)
       cd $ISL_DIR
+      cleanup_configure_cache
+
       autoreconf -i
       env LDFLAGS="${STAGE_LDFLAGS}${LDFLAGS//\$/\$\$}" CFLAGS="${STAGE_CFLAGS}${CFLAGS}" CXXFLAGS="${STAGE_CFLAGS}${CXXFLAGS}" ./configure \
-        --prefix=$INSTALL_PREFIX_PATH --with-gmp-prefix=$INSTALL_PREFIX_PATH $BUILD_OTHER_CONF_OPTION $STAGE_CONFIGURE_OPTIONS
+        --prefix=$INSTALL_PREFIX_PATH --with-gmp-prefix=$INSTALL_PREFIX_PATH --with-pic=yes $BUILD_OTHER_CONF_OPTION $STAGE_CONFIGURE_OPTIONS
       make $BUILD_THREAD_OPT O='$$$$O' && make install O='$$$$O'
       if [[ $? -ne 0 ]]; then
         echo -e "\\033[31;1mError: build isl failed.\\033[39;49;0m"
@@ -712,9 +745,9 @@ function build_libatomic_ops() {
     STAGE_CONFIGURE_OPTIONS="--disable-shared --enable-static "
     BUILD_BACKUP_PKG_CONFIG_PATH="$PKG_CONFIG_PATH"
     if [[ "x$BUILD_BACKUP_PKG_CONFIG_PATH" == "x" ]]; then
-      export PKG_CONFIG_PATH="$INSTALL_PREFIX_PATH/lib64/pkgconfig:$INSTALL_PREFIX_PATH/lib/pkgconfig"
+      export PKG_CONFIG_PATH="$BUILD_STAGE1_INSTALLPREFIX/lib64/pkgconfig:$BUILD_STAGE1_INSTALLPREFIX/lib/pkgconfig"
     else
-      export PKG_CONFIG_PATH="$INSTALL_PREFIX_PATH/lib64/pkgconfig:$INSTALL_PREFIX_PATH/lib/pkgconfig:$BUILD_BACKUP_PKG_CONFIG_PATH"
+      export PKG_CONFIG_PATH="$BUILD_STAGE1_INSTALLPREFIX/lib64/pkgconfig:$BUILD_STAGE1_INSTALLPREFIX/lib/pkgconfig:$BUILD_BACKUP_PKG_CONFIG_PATH"
     fi
     STAGE_CFLAGS="-I$BUILD_STAGE1_INSTALLPREFIX/include "
     STAGE_LDFLAGS="-L$BUILD_STAGE1_INSTALLPREFIX/lib64 -L$BUILD_STAGE1_INSTALLPREFIX/lib "
@@ -727,18 +760,20 @@ function build_libatomic_ops() {
   echo "$LDFLAGS" | grep -F '$ORIGIN/../lib64' || STAGE_LDFLAGS="$STAGE_LDFLAGS -Wl,-rpath=\$ORIGIN:\$ORIGIN/../lib64:\$ORIGIN/../lib"
 
   if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list libatomic_ops $BUILD_TARGET_COMPOMENTS) ]; then
-    LIBATOMIC_OPS_PKG=$(check_and_download "libatomic_ops" "libatomic_ops-*.tar.gz" "$REPOSITORY_MIRROR_URL_GITHUB/ivmai/libatomic_ops/releases/download/v$COMPOMENTS_LIBATOMIC_OPS_VERSION/libatomic_ops-$COMPOMENTS_LIBATOMIC_OPS_VERSION.tar.gz" "libatomic_ops-$COMPOMENTS_LIBATOMIC_OPS_VERSION.tar.gz")
+    LIBATOMIC_OPS_PKG=$(check_and_download "libatomic_ops" "libatomic_ops-$COMPOMENTS_LIBATOMIC_OPS_VERSION*.tar.gz" "$REPOSITORY_MIRROR_URL_GITHUB/ivmai/libatomic_ops/releases/download/v$COMPOMENTS_LIBATOMIC_OPS_VERSION/libatomic_ops-$COMPOMENTS_LIBATOMIC_OPS_VERSION.tar.gz" "libatomic_ops-$COMPOMENTS_LIBATOMIC_OPS_VERSION.tar.gz")
     if [[ $? -ne 0 ]]; then
       echo -e "$LIBATOMIC_OPS_PKG"
       exit 1
     fi
     if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
       tar -axvf $LIBATOMIC_OPS_PKG
-      LIBATOMIC_OPS_DIR=$(ls -d libatomic_ops-* | grep -v \.tar\.gz)
+      LIBATOMIC_OPS_DIR=$(ls -d libatomic_ops-$COMPOMENTS_LIBATOMIC_OPS_VERSION* | grep -v \.tar\.gz)
       # cd $LIBATOMIC_OPS_DIR;
+      # cleanup_configure_cache
+      #
       # bash ./autogen.sh ;
       # env LDFLAGS="${STAGE_LDFLAGS}${LDFLAGS//\$/\$\$}" CFLAGS="${STAGE_CFLAGS}${CFLAGS}" CXXFLAGS="${STAGE_CFLAGS}${CXXFLAGS}" ./configure \
-      #  --prefix=$INSTALL_PREFIX_PATH LDFLAGS="${LDFLAGS//\$/\$\$}" $STAGE_CONFIGURE_OPTIONS ;
+      #  --prefix=$INSTALL_PREFIX_PATH LDFLAGS="${LDFLAGS//\$/\$\$}" --with-pic=yes $STAGE_CONFIGURE_OPTIONS ;
       # make $BUILD_THREAD_OPT O='$$$$O' && make install O='$$$$O';
       if [[ $? -ne 0 ]]; then
         echo -e "\\033[31;1mError: build libatomic_ops failed.\\033[39;49;0m"
@@ -759,29 +794,34 @@ function build_bdw_gc() {
     STAGE_CONFIGURE_OPTIONS="--enable-shared=no --enable-static=yes "
     BUILD_BACKUP_PKG_CONFIG_PATH="$PKG_CONFIG_PATH"
     if [[ "x$BUILD_BACKUP_PKG_CONFIG_PATH" == "x" ]]; then
-      export PKG_CONFIG_PATH="$INSTALL_PREFIX_PATH/lib64/pkgconfig:$INSTALL_PREFIX_PATH/lib/pkgconfig"
+      export PKG_CONFIG_PATH="$BUILD_STAGE1_INSTALLPREFIX/lib64/pkgconfig:$BUILD_STAGE1_INSTALLPREFIX/lib/pkgconfig"
     else
-      export PKG_CONFIG_PATH="$INSTALL_PREFIX_PATH/lib64/pkgconfig:$INSTALL_PREFIX_PATH/lib/pkgconfig:$BUILD_BACKUP_PKG_CONFIG_PATH"
+      export PKG_CONFIG_PATH="$BUILD_STAGE1_INSTALLPREFIX/lib64/pkgconfig:$BUILD_STAGE1_INSTALLPREFIX/lib/pkgconfig:$BUILD_BACKUP_PKG_CONFIG_PATH"
     fi
     STAGE_CFLAGS="-I$BUILD_STAGE1_INSTALLPREFIX/include "
-    STAGE_LDFLAGS="-L$BUILD_STAGE1_INSTALLPREFIX/lib64 -L$BUILD_STAGE1_INSTALLPREFIX/lib "
+    STAGE_LDFLAGS_M64="-L$BUILD_STAGE1_INSTALLPREFIX/lib64 -L$BUILD_STAGE1_INSTALLPREFIX/lib "
+    STAGE_LDFLAGS_M32="-L$BUILD_STAGE1_INSTALLPREFIX/lib "
   else
     STAGE_CONFIGURE_OPTIONS="--enable-shared=yes --enable-static=yes"
     STAGE_CFLAGS="-I$INSTALL_PREFIX_PATH/include "
-    STAGE_LDFLAGS="-L$INSTALL_PREFIX_PATH/lib64 -L$INSTALL_PREFIX_PATH/lib "
+    STAGE_LDFLAGS_M64="-L$INSTALL_PREFIX_PATH/lib64 -L$INSTALL_PREFIX_PATH/lib "
+    STAGE_LDFLAGS_M32="-L$INSTALL_PREFIX_PATH/lib "
   fi
 
-  echo "$LDFLAGS" | grep -F '$ORIGIN/../lib64' || STAGE_LDFLAGS="$STAGE_LDFLAGS -Wl,-rpath=\$ORIGIN:\$ORIGIN/../lib64:\$ORIGIN/../lib"
+  echo "$LDFLAGS" | grep -F '$ORIGIN/../lib64' || STAGE_LDFLAGS_M64="$STAGE_LDFLAGS_M64 -Wl,-rpath=\$ORIGIN:\$ORIGIN/../lib64:\$ORIGIN/../lib"
+  echo "$LDFLAGS" | grep -F '$ORIGIN/../lib64' || STAGE_LDFLAGS_M32="$STAGE_LDFLAGS_M32 -Wl,-rpath=\$ORIGIN:\$ORIGIN/../lib64:\$ORIGIN/../lib"
 
   if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list bdw-gc $BUILD_TARGET_COMPOMENTS) ]]; then
-    BDWGC_PKG=$(check_and_download "bdw-gc" "gc-*.tar.gz" "$REPOSITORY_MIRROR_URL_GITHUB/ivmai/bdwgc/releases/download/v$COMPOMENTS_BDWGC_VERSION/gc-$COMPOMENTS_BDWGC_VERSION.tar.gz" "gc-$COMPOMENTS_BDWGC_VERSION.tar.gz")
+    BDWGC_PKG=$(check_and_download "bdw-gc" "gc-$COMPOMENTS_BDWGC_VERSION*.tar.gz" "$REPOSITORY_MIRROR_URL_GITHUB/ivmai/bdwgc/releases/download/v$COMPOMENTS_BDWGC_VERSION/gc-$COMPOMENTS_BDWGC_VERSION.tar.gz" "gc-$COMPOMENTS_BDWGC_VERSION.tar.gz")
     if [[ $? -ne 0 ]]; then
       echo -e "$BDWGC_PKG"
       exit 1
     fi
     if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
       tar -axvf $BDWGC_PKG
-      BDWGC_DIR=$(ls -d gc-* | grep -v \.tar\.gz)
+      BDWGC_DIR=$(ls -d gc-$COMPOMENTS_BDWGC_VERSION* | grep -v \.tar\.gz)
+      LIBATOMIC_OPS_DIR=$(ls -d libatomic_ops-$COMPOMENTS_LIBATOMIC_OPS_VERSION* | grep -v \.tar\.gz)
+
       cd $BDWGC_DIR
       if [[ ! -z "$LIBATOMIC_OPS_DIR" ]]; then
         if [[ -e libatomic_ops ]]; then
@@ -795,12 +835,9 @@ function build_bdw_gc() {
         BDWGC_LIBATOMIC_OPS=check
       fi
 
-      if [[ -e Makefile ]]; then
-        make clean
-        make distclean
-      fi
+      cleanup_configure_cache
 
-      env LDFLAGS="${STAGE_LDFLAGS}${LDFLAGS//\$/\$\$}" CFLAGS="${STAGE_CFLAGS}${CFLAGS}" CXXFLAGS="${STAGE_CFLAGS}${CXXFLAGS}" ./configure \
+      env LDFLAGS="${STAGE_LDFLAGS_M64}${LDFLAGS//\$/\$\$}" CFLAGS="${STAGE_CFLAGS}${CFLAGS}" CXXFLAGS="${STAGE_CFLAGS}${CXXFLAGS}" ./configure \
         --prefix=$INSTALL_PREFIX_PATH/multilib/$SYS_LONG_BIT --enable-cplusplus --with-pic=yes --with-libatomic-ops=$BDWGC_LIBATOMIC_OPS \
         $STAGE_CONFIGURE_OPTIONS
       make $BUILD_THREAD_OPT O='$$$$O' && make install O='$$$$O'
@@ -810,9 +847,9 @@ function build_bdw_gc() {
       fi
 
       if [[ $SYS_LONG_BIT == "64" ]] && [[ "$GCC_OPT_DISABLE_MULTILIB" == "--enable-multilib" ]]; then
-        make clean
-        make distclean
-        env "CFLAGS=-m32 ${STAGE_CFLAGS}${CFLAGS}" "CXXFLAGS=-m32 ${STAGE_CFLAGS}${CXXFLAGS}" LDFLAGS="${STAGE_LDFLAGS}${LDFLAGS//\$/\$\$}" ./configure \
+        cleanup_configure_cache
+
+        env "CFLAGS=-m32 ${STAGE_CFLAGS}${CFLAGS}" "CXXFLAGS=-m32 ${STAGE_CFLAGS}${CXXFLAGS}" LDFLAGS="${STAGE_LDFLAGS_M32}${LDFLAGS//\$/\$\$}" ./configure \
           --prefix=$INSTALL_PREFIX_PATH/multilib/32 --enable-cplusplus --with-pic=yes --with-libatomic-ops=$BDWGC_LIBATOMIC_OPS \
           $STAGE_CONFIGURE_OPTIONS
 
@@ -837,9 +874,9 @@ function build_zlib() {
     STAGE_CONFIGURE_OPTIONS="-DBUILD_SHARED_LIBS=OFF "
     BUILD_BACKUP_PKG_CONFIG_PATH="$PKG_CONFIG_PATH"
     if [[ "x$BUILD_BACKUP_PKG_CONFIG_PATH" == "x" ]]; then
-      export PKG_CONFIG_PATH="$INSTALL_PREFIX_PATH/lib64/pkgconfig:$INSTALL_PREFIX_PATH/lib/pkgconfig"
+      export PKG_CONFIG_PATH="$BUILD_STAGE1_INSTALLPREFIX/lib64/pkgconfig:$BUILD_STAGE1_INSTALLPREFIX/lib/pkgconfig"
     else
-      export PKG_CONFIG_PATH="$INSTALL_PREFIX_PATH/lib64/pkgconfig:$INSTALL_PREFIX_PATH/lib/pkgconfig:$BUILD_BACKUP_PKG_CONFIG_PATH"
+      export PKG_CONFIG_PATH="$BUILD_STAGE1_INSTALLPREFIX/lib64/pkgconfig:$BUILD_STAGE1_INSTALLPREFIX/lib/pkgconfig:$BUILD_BACKUP_PKG_CONFIG_PATH"
     fi
     STAGE_CFLAGS="-I$BUILD_STAGE1_INSTALLPREFIX/include "
     STAGE_LDFLAGS="-L$BUILD_STAGE1_INSTALLPREFIX/lib64 -L$BUILD_STAGE1_INSTALLPREFIX/lib "
@@ -852,32 +889,43 @@ function build_zlib() {
   echo "$LDFLAGS" | grep -F '$ORIGIN/../lib64' || STAGE_LDFLAGS="$STAGE_LDFLAGS -Wl,-rpath=\$ORIGIN:\$ORIGIN/../lib64:\$ORIGIN/../lib"
 
   if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list zlib $BUILD_TARGET_COMPOMENTS) ]]; then
-    ZLIB_PKG=$(check_and_download "zlib" "zlib-*.tar.gz" "$REPOSITORY_MIRROR_URL_GITHUB/madler/zlib/archive/refs/tags/v$COMPOMENTS_ZLIB_VERSION.tar.gz" "zlib-$COMPOMENTS_ZLIB_VERSION.tar.gz")
+    ZLIB_PKG=$(check_and_download "zlib" "zlib-$COMPOMENTS_ZLIB_VERSION*.tar.gz" "$REPOSITORY_MIRROR_URL_GITHUB/madler/zlib/archive/refs/tags/v$COMPOMENTS_ZLIB_VERSION.tar.gz" "zlib-$COMPOMENTS_ZLIB_VERSION.tar.gz")
     if [[ $? -ne 0 ]]; then
       echo -e "$ZLIB_PKG"
       exit 1
     fi
     if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
       tar -axvf $ZLIB_PKG
-      ZLIB_DIR=$(ls -d zlib-* | grep -v \.tar\.gz)
+      ZLIB_DIR=$(ls -d zlib-$COMPOMENTS_ZLIB_VERSION* | grep -v \.tar\.gz)
       cd "$ZLIB_DIR"
       mkdir -p build_jobs_dir
       cd build_jobs_dir
 
       if [[ -e CMakeCache.txt ]]; then
         cmake --build . --target clean
+        rm -f CMakeCache.txt
       fi
 
       env LDFLAGS="${STAGE_LDFLAGS}${LDFLAGS}" CFLAGS="${STAGE_CFLAGS}${CFLAGS}" CXXFLAGS="${STAGE_CFLAGS}${CXXFLAGS}" \
         cmake .. "-DCMAKE_POSITION_INDEPENDENT_CODE=ON" "-DBUILD_TESTING=OFF" "-DCMAKE_INSTALL_PREFIX=$INSTALL_PREFIX_PATH" \
         "-DCMAKE_FIND_ROOT_PATH=$INSTALL_PREFIX_PATH" "-DCMAKE_PREFIX_PATH=$INSTALL_PREFIX_PATH" $STAGE_CONFIGURE_OPTIONS
+      if [[ $? -ne 0 ]]; then
+        echo -e "\\033[31;1mError: configure zlib failed.\\033[39;49;0m"
+        exit 1
+      fi
+
       env LDFLAGS="${STAGE_LDFLAGS}${LDFLAGS}" CFLAGS="${STAGE_CFLAGS}${CFLAGS}" CXXFLAGS="${STAGE_CFLAGS}${CXXFLAGS}" \
         cmake --build . $BUILD_THREAD_OPT
+      if [[ $? -ne 0 ]]; then
+        echo -e "\\033[31;1mError: build zlib failed.\\033[39;49;0m"
+        exit 1
+      fi
+
       env LDFLAGS="${STAGE_LDFLAGS}${LDFLAGS}" CFLAGS="${STAGE_CFLAGS}${CFLAGS}" CXXFLAGS="${STAGE_CFLAGS}${CXXFLAGS}" \
         cmake --install . --prefix "$INSTALL_PREFIX_PATH"
 
       if [[ $? -ne 0 ]]; then
-        echo -e "\\033[31;1mError: Build zlib failed.\\033[39;49;0m"
+        echo -e "\\033[31;1mError: install zlib failed.\\033[39;49;0m"
         exit 1
       fi
       cd "$WORKING_DIR"
@@ -895,9 +943,9 @@ function build_xz() {
     STAGE_CONFIGURE_OPTIONS="--disable-shared "
     BUILD_BACKUP_PKG_CONFIG_PATH="$PKG_CONFIG_PATH"
     if [[ "x$BUILD_BACKUP_PKG_CONFIG_PATH" == "x" ]]; then
-      export PKG_CONFIG_PATH="$INSTALL_PREFIX_PATH/lib64/pkgconfig:$INSTALL_PREFIX_PATH/lib/pkgconfig"
+      export PKG_CONFIG_PATH="$BUILD_STAGE1_INSTALLPREFIX/lib64/pkgconfig:$BUILD_STAGE1_INSTALLPREFIX/lib/pkgconfig"
     else
-      export PKG_CONFIG_PATH="$INSTALL_PREFIX_PATH/lib64/pkgconfig:$INSTALL_PREFIX_PATH/lib/pkgconfig:$BUILD_BACKUP_PKG_CONFIG_PATH"
+      export PKG_CONFIG_PATH="$BUILD_STAGE1_INSTALLPREFIX/lib64/pkgconfig:$BUILD_STAGE1_INSTALLPREFIX/lib/pkgconfig:$BUILD_BACKUP_PKG_CONFIG_PATH"
     fi
     STAGE_CFLAGS="-I$BUILD_STAGE1_INSTALLPREFIX/include "
     STAGE_LDFLAGS="-L$BUILD_STAGE1_INSTALLPREFIX/lib64 -L$BUILD_STAGE1_INSTALLPREFIX/lib "
@@ -910,19 +958,17 @@ function build_xz() {
   echo "$LDFLAGS" | grep -F '$ORIGIN/../lib64' || STAGE_LDFLAGS="$STAGE_LDFLAGS -Wl,-rpath=\$ORIGIN:\$ORIGIN/../lib64:\$ORIGIN/../lib"
 
   if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list xz $BUILD_TARGET_COMPOMENTS) ]]; then
-    XZ_PKG=$(check_and_download "xz" "xz-*.tar.gz" "$REPOSITORY_MIRROR_URL_GITHUB/tukaani-project/xz/releases/download/v$COMPOMENTS_XZ_VERSION/xz-$COMPOMENTS_XZ_VERSION.tar.gz" "xz-$COMPOMENTS_XZ_VERSION.tar.gz")
+    XZ_PKG=$(check_and_download "xz" "xz-$COMPOMENTS_XZ_VERSION*.tar.gz" "$REPOSITORY_MIRROR_URL_GITHUB/tukaani-project/xz/releases/download/v$COMPOMENTS_XZ_VERSION/xz-$COMPOMENTS_XZ_VERSION.tar.gz" "xz-$COMPOMENTS_XZ_VERSION.tar.gz")
     if [[ $? -ne 0 ]]; then
       echo -e "$XZ_PKG"
       exit 1
     fi
     if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
       tar -axvf $XZ_PKG
-      XZ_DIR=$(ls -d xz-* | grep -v \.tar\.gz)
+      XZ_DIR=$(ls -d xz-$COMPOMENTS_XZ_VERSION* | grep -v \.tar\.gz)
       cd $XZ_DIR
 
-      if [[ -e Makefile ]]; then
-        make clean
-      fi
+      cleanup_configure_cache
 
       env LDFLAGS="${STAGE_LDFLAGS}${LDFLAGS//\$/\$\$}" CFLAGS="${STAGE_CFLAGS}${CFLAGS}" CXXFLAGS="${STAGE_CFLAGS}${CXXFLAGS}" ./configure \
         --prefix=$INSTALL_PREFIX_PATH --with-pic=yes $STAGE_CONFIGURE_OPTIONS
@@ -946,9 +992,9 @@ function build_zstd() {
     STAGE_CONFIGURE_OPTIONS="-DBUILD_SHARED_LIBS=OFF "
     BUILD_BACKUP_PKG_CONFIG_PATH="$PKG_CONFIG_PATH"
     if [[ "x$BUILD_BACKUP_PKG_CONFIG_PATH" == "x" ]]; then
-      export PKG_CONFIG_PATH="$INSTALL_PREFIX_PATH/lib64/pkgconfig:$INSTALL_PREFIX_PATH/lib/pkgconfig"
+      export PKG_CONFIG_PATH="$BUILD_STAGE1_INSTALLPREFIX/lib64/pkgconfig:$BUILD_STAGE1_INSTALLPREFIX/lib/pkgconfig"
     else
-      export PKG_CONFIG_PATH="$INSTALL_PREFIX_PATH/lib64/pkgconfig:$INSTALL_PREFIX_PATH/lib/pkgconfig:$BUILD_BACKUP_PKG_CONFIG_PATH"
+      export PKG_CONFIG_PATH="$BUILD_STAGE1_INSTALLPREFIX/lib64/pkgconfig:$BUILD_STAGE1_INSTALLPREFIX/lib/pkgconfig:$BUILD_BACKUP_PKG_CONFIG_PATH"
     fi
     STAGE_CFLAGS="-I$BUILD_STAGE1_INSTALLPREFIX/include "
     STAGE_LDFLAGS="-L$BUILD_STAGE1_INSTALLPREFIX/lib64 -L$BUILD_STAGE1_INSTALLPREFIX/lib "
@@ -961,36 +1007,45 @@ function build_zstd() {
   echo "$LDFLAGS" | grep -F '$ORIGIN/../lib64' || STAGE_LDFLAGS="$STAGE_LDFLAGS -Wl,-rpath=\$ORIGIN:\$ORIGIN/../lib64:\$ORIGIN/../lib"
 
   if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list zstd $BUILD_TARGET_COMPOMENTS) ]]; then
-    ZSTD_PKG=$(check_and_download "zstd" "zstd-*.tar.gz" "$REPOSITORY_MIRROR_URL_GITHUB/facebook/zstd/releases/download/v$COMPOMENTS_ZSTD_VERSION/zstd-$COMPOMENTS_ZSTD_VERSION.tar.gz" "zstd-$COMPOMENTS_ZSTD_VERSION.tar.gz")
+    ZSTD_PKG=$(check_and_download "zstd" "zstd-$COMPOMENTS_ZSTD_VERSION*.tar.gz" "$REPOSITORY_MIRROR_URL_GITHUB/facebook/zstd/releases/download/v$COMPOMENTS_ZSTD_VERSION/zstd-$COMPOMENTS_ZSTD_VERSION.tar.gz" "zstd-$COMPOMENTS_ZSTD_VERSION.tar.gz")
     if [[ $? -ne 0 ]]; then
       echo -e "$ZSTD_PKG"
       exit 1
     fi
     if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
       tar -axvf $ZSTD_PKG
-      ZSTD_DIR=$(ls -d zstd-* | grep -v \.tar\.gz)
+      ZSTD_DIR=$(ls -d zstd-$COMPOMENTS_ZSTD_VERSION* | grep -v \.tar\.gz)
       cd $ZSTD_DIR
       mkdir -p build_jobs_dir
       cd build_jobs_dir
 
       if [[ -e CMakeCache.txt ]]; then
         cmake --build . --target clean
+        rm -f CMakeCache.txt
       fi
 
-      # mkdir build_jobs_dir;
-      # cd build_jobs_dir;
-      # cmake ../build/cmake "-DCMAKE_INSTALL_PREFIX=$INSTALL_PREFIX_PATH" -DZSTD_BUILD_PROGRAMS=ON -DZSTD_BUILD_TESTS=OFF
-      # cmake --build . -j -- install
+      # Using -DCMAKE_INSTALL_LIBDIR=lib to keep the same output directory as configure settings
       env LDFLAGS="${STAGE_LDFLAGS}${LDFLAGS}" CFLAGS="${STAGE_CFLAGS}${CFLAGS}" CXXFLAGS="${STAGE_CFLAGS}${CXXFLAGS}" \
         cmake ../build/cmake "-DCMAKE_POSITION_INDEPENDENT_CODE=ON" "-DZSTD_BUILD_TESTS=OFF" "-DZSTD_BUILD_CONTRIB=0" "-DCMAKE_INSTALL_PREFIX=$INSTALL_PREFIX_PATH" \
+        -DCMAKE_INSTALL_LIBDIR=lib \
         "-DCMAKE_FIND_ROOT_PATH=$INSTALL_PREFIX_PATH" "-DCMAKE_PREFIX_PATH=$INSTALL_PREFIX_PATH" $STAGE_CONFIGURE_OPTIONS
+      if [[ $? -ne 0 ]]; then
+        echo -e "\\033[31;1mError: configure zstd failed.\\033[39;49;0m"
+        exit 1
+      fi
+
       env LDFLAGS="${STAGE_LDFLAGS}${LDFLAGS}" CFLAGS="${STAGE_CFLAGS}${CFLAGS}" CXXFLAGS="${STAGE_CFLAGS}${CXXFLAGS}" \
         cmake --build . $BUILD_THREAD_OPT
+      if [[ $? -ne 0 ]]; then
+        echo -e "\\033[31;1mError: build zstd failed.\\033[39;49;0m"
+        exit 1
+      fi
+
       env LDFLAGS="${STAGE_LDFLAGS}${LDFLAGS}" CFLAGS="${STAGE_CFLAGS}${CFLAGS}" CXXFLAGS="${STAGE_CFLAGS}${CXXFLAGS}" \
         cmake --install . --prefix "$INSTALL_PREFIX_PATH"
 
       if [[ $? -ne 0 ]]; then
-        echo -e "\\033[31;1mError: build zstd failed.\\033[39;49;0m"
+        echo -e "\\033[31;1mError: install zstd failed.\\033[39;49;0m"
         exit 1
       fi
 
@@ -1008,9 +1063,9 @@ function build_lz4() {
     STAGE_CONFIGURE_OPTIONS="-DBUILD_SHARED_LIBS=OFF "
     BUILD_BACKUP_PKG_CONFIG_PATH="$PKG_CONFIG_PATH"
     if [[ "x$BUILD_BACKUP_PKG_CONFIG_PATH" == "x" ]]; then
-      export PKG_CONFIG_PATH="$INSTALL_PREFIX_PATH/lib64/pkgconfig:$INSTALL_PREFIX_PATH/lib/pkgconfig"
+      export PKG_CONFIG_PATH="$BUILD_STAGE1_INSTALLPREFIX/lib64/pkgconfig:$BUILD_STAGE1_INSTALLPREFIX/lib/pkgconfig"
     else
-      export PKG_CONFIG_PATH="$INSTALL_PREFIX_PATH/lib64/pkgconfig:$INSTALL_PREFIX_PATH/lib/pkgconfig:$BUILD_BACKUP_PKG_CONFIG_PATH"
+      export PKG_CONFIG_PATH="$BUILD_STAGE1_INSTALLPREFIX/lib64/pkgconfig:$BUILD_STAGE1_INSTALLPREFIX/lib/pkgconfig:$BUILD_BACKUP_PKG_CONFIG_PATH"
     fi
     STAGE_CFLAGS="-I$BUILD_STAGE1_INSTALLPREFIX/include "
     STAGE_LDFLAGS="-L$BUILD_STAGE1_INSTALLPREFIX/lib64 -L$BUILD_STAGE1_INSTALLPREFIX/lib "
@@ -1023,33 +1078,46 @@ function build_lz4() {
   echo "$LDFLAGS" | grep -F '$ORIGIN/../lib64' || STAGE_LDFLAGS="$STAGE_LDFLAGS -Wl,-rpath=\$ORIGIN:\$ORIGIN/../lib64:\$ORIGIN/../lib"
 
   if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list lz4 $BUILD_TARGET_COMPOMENTS) ]]; then
-    LZ4_PKG=$(check_and_download "lz4" "lz4-*.tar.gz" "$REPOSITORY_MIRROR_URL_GITHUB/lz4/lz4/archive/v$COMPOMENTS_LZ4_VERSION.tar.gz" "lz4-$COMPOMENTS_LZ4_VERSION.tar.gz")
+    LZ4_PKG=$(check_and_download "lz4" "lz4-$COMPOMENTS_LZ4_VERSION*.tar.gz" "$REPOSITORY_MIRROR_URL_GITHUB/lz4/lz4/archive/v$COMPOMENTS_LZ4_VERSION.tar.gz" "lz4-$COMPOMENTS_LZ4_VERSION.tar.gz")
     if [[ $? -ne 0 ]]; then
       echo -e "$LZ4_PKG"
       exit 1
     fi
     if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
       tar -axvf $LZ4_PKG
-      LZ4_DIR=$(ls -d lz4-* | grep -v \.tar\.gz)
+      LZ4_DIR=$(ls -d lz4-$COMPOMENTS_LZ4_VERSION* | grep -v \.tar\.gz)
       cd $LZ4_DIR
       mkdir -p build_jobs_dir
       cd build_jobs_dir
 
       if [[ -e CMakeCache.txt ]]; then
         cmake --build . --target clean
+        rm -f CMakeCache.txt
+      fi
+
+      # Using -DCMAKE_INSTALL_LIBDIR=lib to keep the same output directory as configure settings
+      env LDFLAGS="${STAGE_LDFLAGS}${LDFLAGS}" CFLAGS="${STAGE_CFLAGS}${CFLAGS}" CXXFLAGS="${STAGE_CFLAGS}${CXXFLAGS}" \
+        cmake ../build/cmake "-DCMAKE_POSITION_INDEPENDENT_CODE=ON" "-DLZ4_POSITION_INDEPENDENT_LIB=ON" "-DLZ4_BUILD_CLI=ON" "-DLZ4_BUILD_LEGACY_LZ4C=ON" \
+        "-DCMAKE_INSTALL_PREFIX=$INSTALL_PREFIX_PATH" "-DCMAKE_FIND_ROOT_PATH=$INSTALL_PREFIX_PATH" "-DCMAKE_PREFIX_PATH=$INSTALL_PREFIX_PATH" \
+        -DCMAKE_INSTALL_LIBDIR=lib $STAGE_CONFIGURE_OPTIONS
+      if [[ $? -ne 0 ]]; then
+        echo -e "\\033[31;1mError: configure lz4 failed.\\033[39;49;0m"
+        exit 1
       fi
 
       env LDFLAGS="${STAGE_LDFLAGS}${LDFLAGS}" CFLAGS="${STAGE_CFLAGS}${CFLAGS}" CXXFLAGS="${STAGE_CFLAGS}${CXXFLAGS}" \
-        cmake ../build/cmake "-DCMAKE_POSITION_INDEPENDENT_CODE=ON" "-DLZ4_POSITION_INDEPENDENT_LIB=ON" "-DLZ4_BUILD_CLI=ON" "-DLZ4_BUILD_LEGACY_LZ4C=ON" \
-        "-DCMAKE_INSTALL_PREFIX=$INSTALL_PREFIX_PATH" "-DCMAKE_FIND_ROOT_PATH=$INSTALL_PREFIX_PATH" "-DCMAKE_PREFIX_PATH=$INSTALL_PREFIX_PATH" $STAGE_CONFIGURE_OPTIONS
-      env LDFLAGS="${STAGE_LDFLAGS}${LDFLAGS}" CFLAGS="${STAGE_CFLAGS}${CFLAGS}" CXXFLAGS="${STAGE_CFLAGS}${CXXFLAGS}" \
         cmake --build . $BUILD_THREAD_OPT
+      if [[ $? -ne 0 ]]; then
+        echo -e "\\033[31;1mError: build lz4 failed.\\033[39;49;0m"
+        exit 1
+      fi
+
       env LDFLAGS="${STAGE_LDFLAGS}${LDFLAGS}" CFLAGS="${STAGE_CFLAGS}${CFLAGS}" CXXFLAGS="${STAGE_CFLAGS}${CXXFLAGS}" \
         cmake --install . --prefix "$INSTALL_PREFIX_PATH"
 
       if [[ $? -ne 0 ]]; then
-        echo -e "\\033[31;1mError: build lz4 failed.\\033[39;49;0m"
-        # exit 1;
+        echo -e "\\033[31;1mError: install lz4 failed.\\033[39;49;0m"
+        exit 1
       fi
 
       cd "$WORKING_DIR"
@@ -1066,9 +1134,9 @@ function build_libiconv() {
     STAGE_CONFIGURE_OPTIONS="--enable-static --disable-shared "
     BUILD_BACKUP_PKG_CONFIG_PATH="$PKG_CONFIG_PATH"
     if [[ "x$BUILD_BACKUP_PKG_CONFIG_PATH" == "x" ]]; then
-      export PKG_CONFIG_PATH="$INSTALL_PREFIX_PATH/lib64/pkgconfig:$INSTALL_PREFIX_PATH/lib/pkgconfig"
+      export PKG_CONFIG_PATH="$BUILD_STAGE1_INSTALLPREFIX/lib64/pkgconfig:$BUILD_STAGE1_INSTALLPREFIX/lib/pkgconfig"
     else
-      export PKG_CONFIG_PATH="$INSTALL_PREFIX_PATH/lib64/pkgconfig:$INSTALL_PREFIX_PATH/lib/pkgconfig:$BUILD_BACKUP_PKG_CONFIG_PATH"
+      export PKG_CONFIG_PATH="$BUILD_STAGE1_INSTALLPREFIX/lib64/pkgconfig:$BUILD_STAGE1_INSTALLPREFIX/lib/pkgconfig:$BUILD_BACKUP_PKG_CONFIG_PATH"
     fi
     STAGE_CFLAGS="-I$BUILD_STAGE1_INSTALLPREFIX/include "
     STAGE_LDFLAGS="-L$BUILD_STAGE1_INSTALLPREFIX/lib64 -L$BUILD_STAGE1_INSTALLPREFIX/lib "
@@ -1081,15 +1149,17 @@ function build_libiconv() {
   echo "$LDFLAGS" | grep -F '$ORIGIN/../lib64' || STAGE_LDFLAGS="$STAGE_LDFLAGS -Wl,-rpath=\$ORIGIN:\$ORIGIN/../lib64:\$ORIGIN/../lib"
 
   if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list libiconv $BUILD_TARGET_COMPOMENTS) ]]; then
-    LIBICONV_PKG=$(check_and_download "libiconv" "libiconv-*.tar.gz" "$REPOSITORY_MIRROR_URL_GNU/libiconv/libiconv-$COMPOMENTS_LIBICONV_VERSION.tar.gz")
+    LIBICONV_PKG=$(check_and_download "libiconv" "libiconv-$COMPOMENTS_LIBICONV_VERSION*.tar.gz" "$REPOSITORY_MIRROR_URL_GNU/libiconv/libiconv-$COMPOMENTS_LIBICONV_VERSION.tar.gz")
     if [[ $? -ne 0 ]]; then
       echo -e "$LIBICONV_PKG"
       exit 1
     fi
     if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
       tar -axvf $LIBICONV_PKG
-      LIBICONV=$(ls -d libiconv-* | grep -v \.tar\.gz)
+      LIBICONV=$(ls -d libiconv-$COMPOMENTS_LIBICONV_VERSION* | grep -v \.tar\.gz)
       cd $LIBICONV
+      cleanup_configure_cache
+
       env LDFLAGS="${STAGE_LDFLAGS}${LDFLAGS//\$/\$\$}" CFLAGS="${STAGE_CFLAGS}${CFLAGS}" CXXFLAGS="${STAGE_CFLAGS}${CXXFLAGS}" ./configure \
         --prefix=$INSTALL_PREFIX_PATH --with-pic=yes --enable-relocatable $STAGE_CONFIGURE_OPTIONS
       make $BUILD_THREAD_OPT O='$$$$O' && make install O='$$$$O'
@@ -1111,34 +1181,32 @@ function build_bison() {
     STAGE_CONFIGURE_OPTIONS="--enable-static --disable-shared "
     BUILD_BACKUP_PKG_CONFIG_PATH="$PKG_CONFIG_PATH"
     if [[ "x$BUILD_BACKUP_PKG_CONFIG_PATH" == "x" ]]; then
-      export PKG_CONFIG_PATH="$INSTALL_PREFIX_PATH/lib64/pkgconfig:$INSTALL_PREFIX_PATH/lib/pkgconfig"
+      export PKG_CONFIG_PATH="$BUILD_STAGE1_INSTALLPREFIX/lib64/pkgconfig:$BUILD_STAGE1_INSTALLPREFIX/lib/pkgconfig"
     else
-      export PKG_CONFIG_PATH="$INSTALL_PREFIX_PATH/lib64/pkgconfig:$INSTALL_PREFIX_PATH/lib/pkgconfig:$BUILD_BACKUP_PKG_CONFIG_PATH"
+      export PKG_CONFIG_PATH="$BUILD_STAGE1_INSTALLPREFIX/lib64/pkgconfig:$BUILD_STAGE1_INSTALLPREFIX/lib/pkgconfig:$BUILD_BACKUP_PKG_CONFIG_PATH"
     fi
-    STAGE_CFLAGS="-I$BUILD_STAGE1_INSTALLPREFIX/include "
+    STAGE_CFLAGS="-fPIC -I$BUILD_STAGE1_INSTALLPREFIX/include "
     STAGE_LDFLAGS="-L$BUILD_STAGE1_INSTALLPREFIX/lib64 -L$BUILD_STAGE1_INSTALLPREFIX/lib "
   else
     STAGE_CONFIGURE_OPTIONS="--enable-static --enable-shared "
-    STAGE_CFLAGS="-I$INSTALL_PREFIX_PATH/include "
+    STAGE_CFLAGS="-fPIC -I$INSTALL_PREFIX_PATH/include "
     STAGE_LDFLAGS="-L$INSTALL_PREFIX_PATH/lib64 -L$INSTALL_PREFIX_PATH/lib "
   fi
 
   echo "$LDFLAGS" | grep -F '$ORIGIN/../lib64' || STAGE_LDFLAGS="$STAGE_LDFLAGS -Wl,-rpath=\$ORIGIN:\$ORIGIN/../lib64:\$ORIGIN/../lib"
 
   if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list bison $BUILD_TARGET_COMPOMENTS) ]]; then
-    BISON_PKG=$(check_and_download "bison" "bison-*.tar.xz" "$REPOSITORY_MIRROR_URL_GNU/bison/bison-$COMPOMENTS_BISON_VERSION.tar.xz")
+    BISON_PKG=$(check_and_download "bison" "bison-$COMPOMENTS_BISON_VERSION*.tar.xz" "$REPOSITORY_MIRROR_URL_GNU/bison/bison-$COMPOMENTS_BISON_VERSION.tar.xz")
     if [[ $? -ne 0 ]]; then
       echo -e "$BISON_PKG"
       exit 1
     fi
     if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
-      find . -name "bison-*" -type d | xargs -r rm -rf
+      find . -name "bison-$COMPOMENTS_BISON_VERSION*" -type d | xargs -r rm -rf
       tar -axvf $BISON_PKG
-      BISON_DIR=$(ls -d bison-* | grep -v \.tar\.xz)
+      BISON_DIR=$(ls -d bison-$COMPOMENTS_BISON_VERSION* | grep -v \.tar\.xz)
       cd $BISON_DIR
-      if [[ -e Makefile ]]; then
-        make clean || true
-      fi
+      cleanup_configure_cache
       env LDFLAGS="${STAGE_LDFLAGS}${LDFLAGS//\$/\$\$}" CFLAGS="${STAGE_CFLAGS}${CFLAGS}" CXXFLAGS="${STAGE_CFLAGS}${CXXFLAGS}" ./configure \
         --prefix=$INSTALL_PREFIX_PATH $STAGE_CONFIGURE_OPTIONS
       env LDFLAGS="${STAGE_LDFLAGS}${LDFLAGS//\$/\$\$}" CFLAGS="${STAGE_CFLAGS}${CFLAGS}" CXXFLAGS="${STAGE_CFLAGS}${CXXFLAGS}" make $BUILD_THREAD_OPT $STAGE_CONFIGURE_OPTIONS O='$$$$O' \
@@ -1168,16 +1236,16 @@ function build_bintuils() {
     STAGE_CONFIGURE_OPTIONS="--enable-static --disable-shared "
     BUILD_BACKUP_PKG_CONFIG_PATH="$PKG_CONFIG_PATH"
     if [[ "x$BUILD_BACKUP_PKG_CONFIG_PATH" == "x" ]]; then
-      export PKG_CONFIG_PATH="$INSTALL_PREFIX_PATH/lib64/pkgconfig:$INSTALL_PREFIX_PATH/lib/pkgconfig"
+      export PKG_CONFIG_PATH="$BUILD_STAGE1_INSTALLPREFIX/lib64/pkgconfig:$BUILD_STAGE1_INSTALLPREFIX/lib/pkgconfig"
     else
-      export PKG_CONFIG_PATH="$INSTALL_PREFIX_PATH/lib64/pkgconfig:$INSTALL_PREFIX_PATH/lib/pkgconfig:$BUILD_BACKUP_PKG_CONFIG_PATH"
+      export PKG_CONFIG_PATH="$BUILD_STAGE1_INSTALLPREFIX/lib64/pkgconfig:$BUILD_STAGE1_INSTALLPREFIX/lib/pkgconfig:$BUILD_BACKUP_PKG_CONFIG_PATH"
     fi
-    STAGE_CFLAGS="-I$BUILD_STAGE1_INSTALLPREFIX/include "
+    STAGE_CFLAGS="-fPIC -I$BUILD_STAGE1_INSTALLPREFIX/include "
     STAGE_LDFLAGS="-L$BUILD_STAGE1_INSTALLPREFIX/lib64 -L$BUILD_STAGE1_INSTALLPREFIX/lib "
     COMPOMENTS_USE_VERSION=$COMPOMENTS_BINUTILS_STAGE1_VERSION
   else
     STAGE_CONFIGURE_OPTIONS="--enable-gprofng "
-    STAGE_CFLAGS="-I$INSTALL_PREFIX_PATH/include "
+    STAGE_CFLAGS="-fPIC -I$INSTALL_PREFIX_PATH/include "
     STAGE_LDFLAGS="-L$INSTALL_PREFIX_PATH/lib64 -L$INSTALL_PREFIX_PATH/lib "
     COMPOMENTS_USE_VERSION=$COMPOMENTS_BINUTILS_VERSION
   fi
@@ -1199,10 +1267,8 @@ function build_bintuils() {
       tar -axvf $BINUTILS_PKG
       BINUTILS_DIR=$(ls -d binutils-$COMPOMENTS_USE_VERSION* | grep -v \.tar\.xz)
       cd $BINUTILS_DIR
-      if [[ -e Makefile ]]; then
-        make clean || true
-      fi
-      find . -name config.cache | xargs -r rm || true
+      cleanup_configure_cache
+
       BUILD_BINUTILS_OPTIONS="$STAGE_CONFIGURE_OPTIONS --with-bugurl=$REPOSITORY_MIRROR_URL_GITHUB/owent-utils/bash-shell/issues"
       BUILD_BINUTILS_OPTIONS="$BUILD_BINUTILS_OPTIONS --enable-build-with-cxx --enable-gold --enable-ld"
       BUILD_BINUTILS_OPTIONS="$BUILD_BINUTILS_OPTIONS --enable-libada --enable-lto --enable-objc-gc --enable-vtable-verify --enable-plugins --enable-host-pie"
@@ -1250,36 +1316,33 @@ function build_make() {
     STAGE_CONFIGURE_OPTIONS="--enable-static --disable-shared "
     BUILD_BACKUP_PKG_CONFIG_PATH="$PKG_CONFIG_PATH"
     if [[ "x$BUILD_BACKUP_PKG_CONFIG_PATH" == "x" ]]; then
-      export PKG_CONFIG_PATH="$INSTALL_PREFIX_PATH/lib64/pkgconfig:$INSTALL_PREFIX_PATH/lib/pkgconfig"
+      export PKG_CONFIG_PATH="$BUILD_STAGE1_INSTALLPREFIX/lib64/pkgconfig:$BUILD_STAGE1_INSTALLPREFIX/lib/pkgconfig"
     else
-      export PKG_CONFIG_PATH="$INSTALL_PREFIX_PATH/lib64/pkgconfig:$INSTALL_PREFIX_PATH/lib/pkgconfig:$BUILD_BACKUP_PKG_CONFIG_PATH"
+      export PKG_CONFIG_PATH="$BUILD_STAGE1_INSTALLPREFIX/lib64/pkgconfig:$BUILD_STAGE1_INSTALLPREFIX/lib/pkgconfig:$BUILD_BACKUP_PKG_CONFIG_PATH"
     fi
-    STAGE_CFLAGS="-I$BUILD_STAGE1_INSTALLPREFIX/include "
+    STAGE_CFLAGS="-fPIC -I$BUILD_STAGE1_INSTALLPREFIX/include "
     STAGE_LDFLAGS="-L$BUILD_STAGE1_INSTALLPREFIX/lib64 -L$BUILD_STAGE1_INSTALLPREFIX/lib "
   else
     STAGE_CONFIGURE_OPTIONS=""
-    STAGE_CFLAGS="-I$INSTALL_PREFIX_PATH/include "
+    STAGE_CFLAGS="-fPIC -I$INSTALL_PREFIX_PATH/include "
     STAGE_LDFLAGS="-L$INSTALL_PREFIX_PATH/lib64 -L$INSTALL_PREFIX_PATH/lib "
   fi
 
   echo "$LDFLAGS" | grep -F '$ORIGIN/../lib64' || STAGE_LDFLAGS="$STAGE_LDFLAGS -Wl,-rpath=\$ORIGIN:\$ORIGIN/../lib64:\$ORIGIN/../lib"
 
   if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list make $BUILD_TARGET_COMPOMENTS) ]]; then
-    MAKE_PKG=$(check_and_download "make" "make-*.tar.gz" "$REPOSITORY_MIRROR_URL_GNU/make/make-$COMPOMENTS_MAKE_VERSION.tar.gz")
+    MAKE_PKG=$(check_and_download "make" "make-$COMPOMENTS_MAKE_VERSION*.tar.gz" "$REPOSITORY_MIRROR_URL_GNU/make/make-$COMPOMENTS_MAKE_VERSION.tar.gz")
     if [[ $? -ne 0 ]]; then
       echo -e "$MAKE_PKG"
       exit 1
     fi
     if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
-      find . -name "make-*" -type d | xargs -r rm -rf
+      find . -name "make-$COMPOMENTS_MAKE_VERSION*" -type d | xargs -r rm -rf
       tar -axvf $MAKE_PKG
-      MAKE_DIR=$(ls -d make-* | grep -v \.tar\.gz)
+      MAKE_DIR=$(ls -d make-$COMPOMENTS_MAKE_VERSION* | grep -v \.tar\.gz)
       mkdir -p $MAKE_DIR/build
       cd $MAKE_DIR/build
-      if [[ -e Makefile ]]; then
-        make clean || true
-      fi
-      find . -name config.cache | xargs -r rm || true
+      cleanup_configure_cache
 
       MAKE_LDFLAGS="$LDFLAGS -Wl,-rpath=\$ORIGIN/../../lib64:\$ORIGIN/../../lib"
 
@@ -1336,16 +1399,16 @@ build_make "$BUILD_STAGE1_TOOLSPREFIX"
 # ======================= install gcc =======================
 if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list gcc $BUILD_TARGET_COMPOMENTS) ]]; then
   # ======================= gcc包 =======================
-  GCC_PKG=$(check_and_download "gcc" "gcc-*.tar.xz" "$REPOSITORY_MIRROR_URL_GNU/gcc/gcc-$COMPOMENTS_GCC_VERSION/gcc-$COMPOMENTS_GCC_VERSION.tar.xz")
+  GCC_PKG=$(check_and_download "gcc" "gcc-$COMPOMENTS_GCC_VERSION*.tar.xz" "$REPOSITORY_MIRROR_URL_GNU/gcc/gcc-$COMPOMENTS_GCC_VERSION/gcc-$COMPOMENTS_GCC_VERSION.tar.xz")
   if [[ $? -ne 0 ]]; then
     echo -e "$GCC_PKG"
     exit 1
   fi
   if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
-    GCC_DIR=$(ls -d gcc-* | grep -v \.tar\.xz)
+    GCC_DIR=$(ls -d gcc-$COMPOMENTS_GCC_VERSION* | grep -v \.tar\.xz)
     if [[ -z "$GCC_DIR" ]]; then
       tar -axvf $GCC_PKG
-      GCC_DIR=$(ls -d gcc-* | grep -v \.tar\.xz)
+      GCC_DIR=$(ls -d gcc-$COMPOMENTS_GCC_VERSION* | grep -v \.tar\.xz)
     fi
     mkdir -p objdir
     cd objdir
@@ -1456,8 +1519,8 @@ build_bintuils "$PREFIX_DIR"
 # ======================= install openssl [后面有些组件依赖] =======================
 # openssl的依赖太广泛了，所以不放进默认的查找目录，以防外部使用者会使用到这里的版本。如果需要使用，可以手动导入这里的openssl
 if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list openssl $BUILD_TARGET_COMPOMENTS) ]]; then
-  # OPENSSL_PKG=$(check_and_download "openssl" "openssl-*.tar.gz" "https://www.openssl.org/source/openssl-$COMPOMENTS_OPENSSL_VERSION.tar.gz")
-  OPENSSL_PKG=$(check_and_download "openssl" "openssl-*.tar.gz" "$REPOSITORY_MIRROR_URL_GITHUB/quictls/openssl/archive/refs/tags/openssl-$COMPOMENTS_OPENSSL_VERSION-quic1.tar.gz" "openssl-$COMPOMENTS_OPENSSL_VERSION-quic1.tar.gz")
+  # OPENSSL_PKG=$(check_and_download "openssl" "openssl-$COMPOMENTS_OPENSSL_VERSION*.tar.gz" "https://www.openssl.org/source/openssl-$COMPOMENTS_OPENSSL_VERSION.tar.gz")
+  OPENSSL_PKG=$(check_and_download "openssl" "openssl-$COMPOMENTS_OPENSSL_VERSION*.tar.gz" "$REPOSITORY_MIRROR_URL_GITHUB/quictls/openssl/archive/refs/tags/openssl-$COMPOMENTS_OPENSSL_VERSION-quic1.tar.gz" "openssl-$COMPOMENTS_OPENSSL_VERSION-quic1.tar.gz")
   if [[ $? -ne 0 ]]; then
     echo -e "$OPENSSL_PKG"
     exit 1
@@ -1465,11 +1528,9 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list openssl $BUILD_
   mkdir -p $PREFIX_DIR/internal-packages
   if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
     tar -axvf $OPENSSL_PKG
-    OPENSSL_SRC_DIR=$(ls -d openssl-* | grep -v \.tar\.gz)
+    OPENSSL_SRC_DIR=$(ls -d openssl-$COMPOMENTS_OPENSSL_VERSION* | grep -v \.tar\.gz)
     cd $OPENSSL_SRC_DIR
-    if [[ -e Makefile ]]; then
-      make clean || true
-    fi
+    cleanup_configure_cache
     # @see https://wiki.openssl.org/index.php/Compilation_and_Installation
     env LDFLAGS="${LDFLAGS//\$/\$\$}" ./config "--prefix=$PREFIX_DIR/internal-packages" "--openssldir=$PREFIX_DIR/internal-packages/ssl" "--release" \
       "no-dso" "no-tests" "no-external-tests" "no-shared" "no-idea" "no-md4" "no-mdc2" "no-rc2" \
@@ -1527,18 +1588,17 @@ fi
 
 # ======================= install libffi [后面有些组件依赖] =======================
 if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list libffi $BUILD_TARGET_COMPOMENTS) ]]; then
-  LIBFFI_PKG=$(check_and_download "libffi" "libffi-*.tar.gz" "$REPOSITORY_MIRROR_URL_GITHUB/libffi/libffi/releases/download/v$COMPOMENTS_LIBFFI_VERSION/libffi-$COMPOMENTS_LIBFFI_VERSION.tar.gz")
+  LIBFFI_PKG=$(check_and_download "libffi" "libffi-$COMPOMENTS_LIBFFI_VERSION*.tar.gz" "$REPOSITORY_MIRROR_URL_GITHUB/libffi/libffi/releases/download/v$COMPOMENTS_LIBFFI_VERSION/libffi-$COMPOMENTS_LIBFFI_VERSION.tar.gz")
   if [[ $? -ne 0 ]]; then
     echo -e "$LIBFFI_PKG"
     exit 1
   fi
   if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
     tar -axvf $LIBFFI_PKG
-    LIBFFI_DIR=$(ls -d libffi-* | grep -v \.tar\.gz)
+    LIBFFI_DIR=$(ls -d libffi-$COMPOMENTS_LIBFFI_VERSION* | grep -v \.tar\.gz)
     cd "$LIBFFI_DIR"
-    if [[ -e Makefile ]]; then
-      make clean || true
-    fi
+    cleanup_configure_cache
+
     env LDFLAGS="${LDFLAGS//\$/\$\$}" ./configure --prefix=$PREFIX_DIR --with-pic=yes
     make $BUILD_THREAD_OPT || make
     if [[ $? -ne 0 ]]; then
@@ -1552,22 +1612,20 @@ fi
 
 # ======================= install ncurses =======================
 if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list ncurses $BUILD_TARGET_COMPOMENTS) ]]; then
-  NCURSES_PKG=$(check_and_download "ncurses" "ncurses-*.tar.gz" "$REPOSITORY_MIRROR_URL_GNU/ncurses/ncurses-$COMPOMENTS_NCURSES_VERSION.tar.gz")
+  NCURSES_PKG=$(check_and_download "ncurses" "ncurses-$COMPOMENTS_NCURSES_VERSION*.tar.gz" "$REPOSITORY_MIRROR_URL_GNU/ncurses/ncurses-$COMPOMENTS_NCURSES_VERSION.tar.gz")
   if [[ $? -ne 0 ]]; then
     echo -e "$NCURSES_PKG"
     exit 1
   fi
   if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
     tar -axvf "$NCURSES_PKG"
-    NCURSES_DIR=$(ls -d ncurses-* | grep -v \.tar\.gz)
+    NCURSES_DIR=$(ls -d ncurses-$COMPOMENTS_NCURSES_VERSION* | grep -v \.tar\.gz)
     cd $NCURSES_DIR
-    if [[ -e Makefile ]]; then
-      make clean || true
-    fi
+    cleanup_configure_cache
 
     # Pyhton require shared libraries
     # expected --with-xterm-kbs=DEL for linux-gnu
-    env LDFLAGS="${LDFLAGS//\$/\$\$}" ./configure "--prefix=$PREFIX_DIR" "--with-pkg-config-libdir=$PREFIX_DIR/lib/pkgconfig" \
+    env LDFLAGS="${LDFLAGS//\$/\$\$}" CFLAGS="-fPIC ${CFLAGS}" CXXFLAGS="-fPIC ${CXXFLAGS}" ./configure "--prefix=$PREFIX_DIR" "--with-pkg-config-libdir=$PREFIX_DIR/lib/pkgconfig" \
       --with-normal --without-debug --without-ada --with-termlib --enable-termcap \
       --enable-pc-files --with-cxx-binding --with-shared --with-cxx-shared \
       --enable-ext-colors --enable-ext-mouse --enable-bsdpad --enable-opaque-curses \
@@ -1582,10 +1640,10 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list ncurses $BUILD_
     fi
     make install
 
-    make clean
+    cleanup_configure_cache
     # Pyhton require shared libraries
     # expected --with-xterm-kbs=DEL for linux-gnu
-    env LDFLAGS="${LDFLAGS//\$/\$\$}" ./configure "--prefix=$PREFIX_DIR" "--with-pkg-config-libdir=$PREFIX_DIR/lib/pkgconfig" \
+    env LDFLAGS="${LDFLAGS//\$/\$\$}" CFLAGS="-fPIC ${CFLAGS}" CXXFLAGS="-fPIC ${CXXFLAGS}" ./configure "--prefix=$PREFIX_DIR" "--with-pkg-config-libdir=$PREFIX_DIR/lib/pkgconfig" \
       --with-normal --without-debug --without-ada --with-termlib --enable-termcap \
       --enable-widec --enable-pc-files --with-cxx-binding --with-shared --with-cxx-shared \
       --enable-ext-colors --enable-ext-mouse --enable-bsdpad --enable-opaque-curses \
@@ -1604,14 +1662,14 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list ncurses $BUILD_
 fi
 
 if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list libexpat $BUILD_TARGET_COMPOMENTS) ]]; then
-  LIBEXPAT_PKG=$(check_and_download "expat" "expat-*.tar.gz" "$REPOSITORY_MIRROR_URL_GITHUB/libexpat/libexpat/releases/download/R_${COMPOMENTS_LIBEXPAT_VERSION//./_}/expat-$COMPOMENTS_LIBEXPAT_VERSION.tar.gz")
+  LIBEXPAT_PKG=$(check_and_download "expat" "expat-$COMPOMENTS_LIBEXPAT_VERSION*.tar.gz" "$REPOSITORY_MIRROR_URL_GITHUB/libexpat/libexpat/releases/download/R_${COMPOMENTS_LIBEXPAT_VERSION//./_}/expat-$COMPOMENTS_LIBEXPAT_VERSION.tar.gz")
   if [[ $? -ne 0 ]]; then
     echo -e "$LIBEXPAT_PKG"
     exit 1
   fi
   if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
     tar -axvf "$LIBEXPAT_PKG"
-    LIBEXPAT_DIR=$(ls -d expat-* | grep -v \.tar\.gz)
+    LIBEXPAT_DIR=$(ls -d expat-$COMPOMENTS_LIBEXPAT_VERSION* | grep -v \.tar\.gz)
     if [[ -e "$LIBEXPAT_DIR/build_jobs_dir" ]]; then
       rm -rf "$LIBEXPAT_DIR/build_jobs_dir"
     fi
@@ -1631,18 +1689,17 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list libexpat $BUILD
 fi
 
 if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list libxcrypt $BUILD_TARGET_COMPOMENTS) ]]; then
-  LIBXCRYPT_PKG=$(check_and_download "libxcrypt" "libxcrypt-*.tar.gz" "$REPOSITORY_MIRROR_URL_GITHUB/besser82/libxcrypt/archive/v$COMPOMENTS_LIBXCRYPT_VERSION.tar.gz" "libxcrypt-$COMPOMENTS_LIBXCRYPT_VERSION.tar.gz")
+  LIBXCRYPT_PKG=$(check_and_download "libxcrypt" "libxcrypt-$COMPOMENTS_LIBXCRYPT_VERSION*.tar.gz" "$REPOSITORY_MIRROR_URL_GITHUB/besser82/libxcrypt/archive/v$COMPOMENTS_LIBXCRYPT_VERSION.tar.gz" "libxcrypt-$COMPOMENTS_LIBXCRYPT_VERSION.tar.gz")
   if [[ $? -ne 0 ]]; then
     echo -e "$LIBXCRYPT_PKG"
     exit 1
   fi
   if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
     tar -axvf "$LIBXCRYPT_PKG"
-    LIBXCRYPT_DIR=$(ls -d libxcrypt-* | grep -v \.tar\.gz)
+    LIBXCRYPT_DIR=$(ls -d libxcrypt-$COMPOMENTS_LIBXCRYPT_VERSION* | grep -v \.tar\.gz)
     cd "$LIBXCRYPT_DIR"
-    if [[ -e Makefile ]]; then
-      make clean || true
-    fi
+    cleanup_configure_cache
+
     ./autogen.sh
     env LDFLAGS="${LDFLAGS//\$/\$\$}" ./configure "--prefix=$PREFIX_DIR" --with-pic=yes
     make $BUILD_THREAD_OPT || make
@@ -1657,18 +1714,17 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list libxcrypt $BUIL
 fi
 
 if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list gdbm $BUILD_TARGET_COMPOMENTS) ]]; then
-  GDBM_PKG=$(check_and_download "gdbm" "gdbm-*.tar.gz" "$REPOSITORY_MIRROR_URL_GNU/gdbm/gdbm-$COMPOMENTS_GDBM_VERSION.tar.gz")
+  GDBM_PKG=$(check_and_download "gdbm" "gdbm-$COMPOMENTS_GDBM_VERSION*.tar.gz" "$REPOSITORY_MIRROR_URL_GNU/gdbm/gdbm-$COMPOMENTS_GDBM_VERSION.tar.gz")
   if [[ $? -ne 0 ]]; then
     echo -e "$GDBM_PKG"
     exit 1
   fi
   if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
     tar -axvf "$GDBM_PKG"
-    GDBM_DIR=$(ls -d gdbm-* | grep -v \.tar\.gz)
+    GDBM_DIR=$(ls -d gdbm-$COMPOMENTS_GDBM_VERSION* | grep -v \.tar\.gz)
     cd "$GDBM_DIR"
-    if [[ -e Makefile ]]; then
-      make clean || true
-    fi
+    cleanup_configure_cache
+
     # add -fcommon to solve multiple definition of `parseopt_program_args'
     env CFLAGS="$CFLAGS -fcommon" LDFLAGS="${LDFLAGS//\$/\$\$}" ./configure "--prefix=$PREFIX_DIR" --with-pic=yes
     make $BUILD_THREAD_OPT || make
@@ -1683,18 +1739,17 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list gdbm $BUILD_TAR
 fi
 
 if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list readline $BUILD_TARGET_COMPOMENTS) ]]; then
-  READLINE_PKG=$(check_and_download "readline" "readline-*.tar.gz" "$REPOSITORY_MIRROR_URL_GNU/readline/readline-$COMPOMENTS_READLINE_VERSION.tar.gz")
+  READLINE_PKG=$(check_and_download "readline" "readline-$COMPOMENTS_READLINE_VERSION*.tar.gz" "$REPOSITORY_MIRROR_URL_GNU/readline/readline-$COMPOMENTS_READLINE_VERSION.tar.gz")
   if [[ $? -ne 0 ]]; then
     echo -e "$READLINE_PKG"
     exit 1
   fi
   if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
     tar -axvf "$READLINE_PKG"
-    READLINE_DIR=$(ls -d readline-* | grep -v \.tar\.gz)
+    READLINE_DIR=$(ls -d readline-$COMPOMENTS_READLINE_VERSION* | grep -v \.tar\.gz)
     cd "$READLINE_DIR"
-    if [[ -e Makefile ]]; then
-      make clean || true
-    fi
+    cleanup_configure_cache
+
     env LDFLAGS="${LDFLAGS//\$/\$\$} -static" ./configure "--prefix=$PREFIX_DIR" --with-pic=yes --enable-static=yes --enable-shared=no \
       --enable-multibyte --with-curses
     env LDFLAGS="${LDFLAGS//\$/\$\$} -static" make $BUILD_THREAD_OPT || env LDFLAGS="${LDFLAGS//\$/\$\$} -static" make
@@ -1727,7 +1782,7 @@ fi
 # ======================= install gdb =======================
 if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list gdb $BUILD_TARGET_COMPOMENTS) ]]; then
   # =======================  尝试编译安装python  =======================
-  PYTHON_PKG=$(check_and_download "python" "Python-*.tar.xz" "https://www.python.org/ftp/python/$COMPOMENTS_PYTHON_VERSION/Python-$COMPOMENTS_PYTHON_VERSION.tar.xz")
+  PYTHON_PKG=$(check_and_download "python" "Python-$COMPOMENTS_PYTHON_VERSION*.tar.xz" "https://www.python.org/ftp/python/$COMPOMENTS_PYTHON_VERSION/Python-$COMPOMENTS_PYTHON_VERSION.tar.xz")
   if [[ $? -ne 0 ]]; then
     echo -e "$PYTHON_PKG"
     exit 1
@@ -1735,21 +1790,19 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list gdb $BUILD_TARG
 
   if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
     tar -axvf $PYTHON_PKG
-    PYTHON_DIR=$(ls -d Python-* | grep -v \.tar\.xz)
+    PYTHON_DIR=$(ls -d Python-$COMPOMENTS_PYTHON_VERSION* | grep -v \.tar\.xz)
     cd $PYTHON_DIR
     # --enable-optimizations require gcc 8.1.0 or later
     PYTHON_CONFIGURE_OPTIONS=("--prefix=$PREFIX_DIR" "--enable-optimizations" "--with-ensurepip=install" "--enable-shared" "--with-system-expat" "--with-dbmliborder=gdbm:ndbm:bdb")
     if [[ ! -z "$OPENSSL_INSTALL_DIR" ]]; then
       PYTHON_CONFIGURE_OPTIONS=(${PYTHON_CONFIGURE_OPTIONS[@]} "--with-openssl=$OPENSSL_INSTALL_DIR")
     fi
-    if [[ -e Makefile ]]; then
-      make clean || true
-    fi
+    cleanup_configure_cache
 
     if [[ "$BUILD_TARGET_COMPOMENTS_PATCH_TINFO" != "0" ]]; then
-      env "LIBS=$LIBS $BUILD_TARGET_COMPOMENTS_PATCH_TINFO" LDFLAGS="${LDFLAGS//\$/\$\$}" ./configure ${PYTHON_CONFIGURE_OPTIONS[@]}
+      env "LIBS=$LIBS $BUILD_TARGET_COMPOMENTS_PATCH_TINFO" LDFLAGS="${LDFLAGS//\$/\$\$}" CFLAGS="-fPIC ${CFLAGS}" CXXFLAGS="-fPIC ${CXXFLAGS}" ./configure ${PYTHON_CONFIGURE_OPTIONS[@]}
     else
-      env LDFLAGS="${LDFLAGS//\$/\$\$}" ./configure ${PYTHON_CONFIGURE_OPTIONS[@]}
+      env LDFLAGS="${LDFLAGS//\$/\$\$}" CFLAGS="-fPIC ${CFLAGS}" CXXFLAGS="-fPIC ${CXXFLAGS}" ./configure ${PYTHON_CONFIGURE_OPTIONS[@]}
     fi
     make $BUILD_THREAD_OPT || make
     if [[ $? -ne 0 ]]; then
@@ -1762,14 +1815,14 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list gdb $BUILD_TARG
   fi
 
   # ======================= 正式安装GDB =======================
-  GDB_PKG=$(check_and_download "gdb" "gdb-*.tar.xz" "$REPOSITORY_MIRROR_URL_GNU/gdb/gdb-$COMPOMENTS_GDB_VERSION.tar.xz")
+  GDB_PKG=$(check_and_download "gdb" "gdb-$COMPOMENTS_GDB_VERSION*.tar.xz" "$REPOSITORY_MIRROR_URL_GNU/gdb/gdb-$COMPOMENTS_GDB_VERSION.tar.xz")
   if [[ $? -ne 0 ]]; then
     echo -e "$GDB_PKG"
     exit 1
   fi
   if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
     tar -axvf $GDB_PKG
-    GDB_DIR=$(ls -d gdb-* | grep -v \.tar\.xz)
+    GDB_DIR=$(ls -d gdb-$COMPOMENTS_GDB_VERSION* | grep -v \.tar\.xz)
     cd $GDB_DIR
 
     if [[ $COMPOMENTS_GDB_STATIC_BUILD -ne 0 ]]; then
@@ -1782,9 +1835,8 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list gdb $BUILD_TARG
     fi
     mkdir -p build_jobs_dir
     cd build_jobs_dir
-    if [[ -e Makefile ]]; then
-      make clean || true
-    fi
+    cleanup_configure_cache
+
     if [[ $COMPOMENTS_LIBSSP_ENABLE -ne 0 ]]; then
       GDB_DEPS_OPT=(${GDB_DEPS_OPT[@]} --enable-libssp)
     fi
@@ -1795,17 +1847,19 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list gdb $BUILD_TARG
       BDWGC_PREBIUILT="--with-target-bdw-gc=$PREFIX_DIR/multilib/$SYS_LONG_BIT"
     fi
 
-    env LDFLAGS="$COMPOMENTS_GDB_STATIC_BUILD_LDFLAGS" ../configure --prefix=$PREFIX_DIR --with-gmp=$PREFIX_DIR --with-mpc=$PREFIX_DIR --with-mpfr=$PREFIX_DIR \
+    env LDFLAGS="$COMPOMENTS_GDB_STATIC_BUILD_LDFLAGS" CFLAGS="-fPIC ${CFLAGS}" CXXFLAGS="-fPIC ${CXXFLAGS}" ../configure \
+      --prefix=$PREFIX_DIR --with-gmp=$PREFIX_DIR --with-mpc=$PREFIX_DIR --with-mpfr=$PREFIX_DIR \
       --with-isl=$PREFIX_DIR $BDWGC_PREBIUILT --enable-build-with-cxx --enable-gold --enable-libada \
       --enable-objc-gc --enable-lto --enable-vtable-verify --with-curses=$PREFIX_DIR $BDWGC_PREBIUILT \
       --with-liblzma-prefix=$PREFIX_DIR --with-libexpat-prefix=$PREFIX_DIR --with-libiconv-prefix=$PREFIX_DIR \
       ${GDB_DEPS_OPT[@]} $BUILD_TARGET_CONF_OPTION
-    env LDFLAGS="$COMPOMENTS_GDB_STATIC_BUILD_LDFLAGS" make $BUILD_THREAD_OPT O='$$$$O' || env LDFLAGS="$COMPOMENTS_GDB_STATIC_BUILD_LDFLAGS" make O='$$$$O'
+    env LDFLAGS="$COMPOMENTS_GDB_STATIC_BUILD_LDFLAGS" CFLAGS="-fPIC ${CFLAGS}" CXXFLAGS="-fPIC ${CXXFLAGS}" make $BUILD_THREAD_OPT O='$$$$O' \
+      || env LDFLAGS="$COMPOMENTS_GDB_STATIC_BUILD_LDFLAGS" CFLAGS="-fPIC ${CFLAGS}" CXXFLAGS="-fPIC ${CXXFLAGS}" make O='$$$$O'
     if [[ $? -ne 0 ]]; then
       echo -e "\\033[31;1mError: Build gdb failed.\\033[39;49;0m"
       exit 1
     fi
-    env LDFLAGS="$COMPOMENTS_GDB_STATIC_BUILD_LDFLAGS" make install O='$$$$O'
+    env LDFLAGS="$COMPOMENTS_GDB_STATIC_BUILD_LDFLAGS" CFLAGS="-fPIC ${CFLAGS}" CXXFLAGS="-fPIC ${CXXFLAGS}" make install O='$$$$O'
     cd "$WORKING_DIR"
 
     if [[ ! -e "$PREFIX_DIR/bin/gdb" ]]; then
@@ -1816,18 +1870,17 @@ fi
 
 # ======================= install global tool =======================
 if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list global $BUILD_TARGET_COMPOMENTS) ]]; then
-  GLOBAL_PKG=$(check_and_download "global" "global-*.tar.gz" "$REPOSITORY_MIRROR_URL_GNU/global/global-$COMPOMENTS_GLOBAL_VERSION.tar.gz")
+  GLOBAL_PKG=$(check_and_download "global" "global-$COMPOMENTS_GLOBAL_VERSION*.tar.gz" "$REPOSITORY_MIRROR_URL_GNU/global/global-$COMPOMENTS_GLOBAL_VERSION.tar.gz")
   if [ $? -ne 0 ]; then
     echo -e "$GLOBAL_PKG"
     exit 1
   fi
   if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
     tar -axvf $GLOBAL_PKG
-    GLOBAL_DIR=$(ls -d global-* | grep -v \.tar\.gz)
+    GLOBAL_DIR=$(ls -d global-$COMPOMENTS_GLOBAL_VERSION* | grep -v \.tar\.gz)
     cd $GLOBAL_DIR
-    if [[ -e Makefile ]]; then
-      make clean || true
-    fi
+    cleanup_configure_cache
+
     # patch for global 6.6.5 linking error
     if [[ "$BUILD_TARGET_COMPOMENTS_PATCH_TINFO" != "0" ]]; then
       env "LIBS=$LIBS $BUILD_TARGET_COMPOMENTS_PATCH_TINFO" LDFLAGS="${LDFLAGS//\$/\$\$}" ./configure --prefix=$PREFIX_DIR --with-pic=yes
