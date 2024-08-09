@@ -256,9 +256,9 @@ echo -e "\\033[31;1mcheck complete.\\033[39;49;0m"
 
 # ======================= 准备环境, 把库和二进制目录导入，否则编译会找不到库或文件 =======================
 BUILD_BACKUP_PKG_CONFIG_PATH="$PKG_CONFIG_PATH"
-export PATH=$BUILD_STAGE1_GCC_PREFIX/bin:$BUILD_STAGE1_LIBRARY_PREFIX/bin:$BUILD_STAGE1_TOOLS_PREFIX/bin:$PATH
+BUILD_BACKUP_LD_LIBRARY_PATH="$LD_LIBRARY_PATH"
 
-echo -e "\\033[32;1mNotice: reset env LD_LIBRARY_PATH=$LD_LIBRARY_PATH\\033[39;49;0m"
+export PATH=$BUILD_STAGE1_GCC_PREFIX/bin:$BUILD_STAGE1_LIBRARY_PREFIX/bin:$BUILD_STAGE1_TOOLS_PREFIX/bin:$PATH
 echo -e "\\033[32;1mNotice: reset env PATH=$PATH\\033[39;49;0m"
 
 echo "WORKING_DIR                 = $WORKING_DIR"
@@ -1499,10 +1499,10 @@ function build_gcc() {
 }
 build_gcc "$BUILD_STAGE1_GCC_PREFIX"
 
-if [[ "x$LD_LIBRARY_PATH" == "x" ]]; then
-  export LD_LIBRARY_PATH="$PREFIX_DIR/lib64:$PREFIX_DIR/lib"
+if [[ "x$BUILD_BACKUP_LD_LIBRARY_PATH" == "x" ]]; then
+  export LD_LIBRARY_PATH="$PREFIX_DIR/lib64:$PREFIX_DIR/lib:$BUILD_STAGE1_GCC_PREFIX/lib64:$BUILD_STAGE1_GCC_PREFIX/lib"
 else
-  export LD_LIBRARY_PATH="$PREFIX_DIR/lib64:$PREFIX_DIR/lib:$LD_LIBRARY_PATH"
+  export LD_LIBRARY_PATH="$PREFIX_DIR/lib64:$PREFIX_DIR/lib:$BUILD_STAGE1_GCC_PREFIX/lib64:$BUILD_STAGE1_GCC_PREFIX/lib:$BUILD_BACKUP_LD_LIBRARY_PATH"
 fi
 export PATH=$PREFIX_DIR/bin:$PATH
 
@@ -1558,6 +1558,11 @@ build_bison "$PREFIX_DIR"
 build_bintuils "$PREFIX_DIR"
 build_gcc "$PREFIX_DIR"
 
+if [[ "x$BUILD_BACKUP_LD_LIBRARY_PATH" == "x" ]]; then
+  export LD_LIBRARY_PATH="$PREFIX_DIR/lib64:$PREFIX_DIR/lib"
+else
+  export LD_LIBRARY_PATH="$PREFIX_DIR/lib64:$PREFIX_DIR/lib:$BUILD_BACKUP_LD_LIBRARY_PATH"
+fi
 export CC=$PREFIX_DIR/bin/gcc
 export CXX=$PREFIX_DIR/bin/g++
 
