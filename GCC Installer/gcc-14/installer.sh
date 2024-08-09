@@ -1397,79 +1397,104 @@ build_bintuils "$BUILD_STAGE1_TOOLSPREFIX" "$COMPOMENTS_BINUTILS_STAGE1_VERSION"
 build_make "$BUILD_STAGE1_TOOLSPREFIX"
 
 # ======================= install gcc =======================
-if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list gcc $BUILD_TARGET_COMPOMENTS) ]]; then
-  # ======================= gcc包 =======================
-  GCC_PKG=$(check_and_download "gcc" "gcc-$COMPOMENTS_GCC_VERSION*.tar.xz" "$REPOSITORY_MIRROR_URL_GNU/gcc/gcc-$COMPOMENTS_GCC_VERSION/gcc-$COMPOMENTS_GCC_VERSION.tar.xz")
-  if [[ $? -ne 0 ]]; then
-    echo -e "$GCC_PKG"
-    exit 1
+function build_gcc() {
+  INSTALL_PREFIX_PATH="$1"
+  STAGE_CFLAGS=""
+  STAGE_LDFLAGS=""
+  if [[ "$INSTALL_PREFIX_PATH" == "$BUILD_STAGE1_INSTALLPREFIX" ]] || [[ "$INSTALL_PREFIX_PATH" == "$BUILD_STAGE1_TOOLSPREFIX" ]]; then
+    STAGE_CONFIGURE_OPTIONS="--enable-shared --enable-static "
+    BUILD_BACKUP_PKG_CONFIG_PATH="$PKG_CONFIG_PATH"
+    if [[ "x$BUILD_BACKUP_PKG_CONFIG_PATH" == "x" ]]; then
+      export PKG_CONFIG_PATH="$BUILD_STAGE1_INSTALLPREFIX/lib64/pkgconfig:$BUILD_STAGE1_INSTALLPREFIX/lib/pkgconfig"
+    else
+      export PKG_CONFIG_PATH="$BUILD_STAGE1_INSTALLPREFIX/lib64/pkgconfig:$BUILD_STAGE1_INSTALLPREFIX/lib/pkgconfig:$BUILD_BACKUP_PKG_CONFIG_PATH"
+    fi
+    STAGE_CFLAGS="-fPIC"
+    STAGE_LDFLAGS=""
+  else
+    STAGE_CONFIGURE_OPTIONS="--enable-bootstrap --enable-shared --enable-static"
+    STAGE_CFLAGS="-fPIC "
+    STAGE_LDFLAGS=""
   fi
-  if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
-    GCC_DIR=$(ls -d gcc-$COMPOMENTS_GCC_VERSION* | grep -v \.tar\.xz)
-    if [[ -z "$GCC_DIR" ]]; then
-      tar -axvf $GCC_PKG
+
+  if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list gcc $BUILD_TARGET_COMPOMENTS) ]]; then
+    # ======================= gcc包 =======================
+    GCC_PKG=$(check_and_download "gcc" "gcc-$COMPOMENTS_GCC_VERSION*.tar.xz" "$REPOSITORY_MIRROR_URL_GNU/gcc/gcc-$COMPOMENTS_GCC_VERSION/gcc-$COMPOMENTS_GCC_VERSION.tar.xz")
+    if [[ $? -ne 0 ]]; then
+      echo -e "$GCC_PKG"
+      exit 1
+    fi
+    if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
       GCC_DIR=$(ls -d gcc-$COMPOMENTS_GCC_VERSION* | grep -v \.tar\.xz)
-    fi
-    mkdir -p objdir
-    cd objdir
-    # ======================= 这一行的最后一个参数请注意，如果要支持其他语言要安装依赖库并打开对该语言的支持 =======================
-    if [[ $SYS_LONG_BIT -ne 32 ]] && [[ -e "$BUILD_STAGE1_INSTALLPREFIX/multilib/$SYS_LONG_BIT" ]] && [[ -e "$BUILD_STAGE1_INSTALLPREFIX/multilib/32" ]]; then
-      BDWGC_PREBIUILT="--with-target-bdw-gc=$BUILD_STAGE1_INSTALLPREFIX/multilib/$SYS_LONG_BIT,32=$BUILD_STAGE1_INSTALLPREFIX/multilib/32"
-    else
-      BDWGC_PREBIUILT="--with-target-bdw-gc=$BUILD_STAGE1_INSTALLPREFIX/multilib/$SYS_LONG_BIT"
-    fi
+      if [[ -z "$GCC_DIR" ]]; then
+        tar -axvf $GCC_PKG
+        GCC_DIR=$(ls -d gcc-$COMPOMENTS_GCC_VERSION* | grep -v \.tar\.xz)
+      fi
+      mkdir -p objdir
+      cd objdir
+      # ======================= 这一行的最后一个参数请注意，如果要支持其他语言要安装依赖库并打开对该语言的支持 =======================
+      if [[ $SYS_LONG_BIT -ne 32 ]] && [[ -e "$INSTALL_PREFIX_PATH/multilib/$SYS_LONG_BIT" ]] && [[ -e "$INSTALL_PREFIX_PATH/multilib/32" ]]; then
+        BDWGC_PREBIUILT="--with-target-bdw-gc=$INSTALL_PREFIX_PATH/multilib/$SYS_LONG_BIT,32=$INSTALL_PREFIX_PATH/multilib/32"
+      else
+        BDWGC_PREBIUILT="--with-target-bdw-gc=$INSTALL_PREFIX_PATH/multilib/$SYS_LONG_BIT"
+      fi
 
-    GCC_CONF_OPTION_ALL="--prefix=$PREFIX_DIR --with-gmp=$BUILD_STAGE1_INSTALLPREFIX --with-mpc=$BUILD_STAGE1_INSTALLPREFIX --with-mpfr=$BUILD_STAGE1_INSTALLPREFIX"
-    GCC_CONF_OPTION_ALL="$GCC_CONF_OPTION_ALL --with-isl=$BUILD_STAGE1_INSTALLPREFIX --with-zstd=$BUILD_STAGE1_INSTALLPREFIX $BDWGC_PREBIUILT "
-    GCC_CONF_OPTION_ALL="$GCC_CONF_OPTION_ALL --enable-shared --enable-static --enable-gnu-unique-object --enable-bootstrap --enable-build-with-cxx --disable-libjava-multilib --enable-checking=release"
-    GCC_CONF_OPTION_ALL="$GCC_CONF_OPTION_ALL --enable-gold --enable-ld --enable-libada --enable-lto --enable-objc-gc --enable-gprofng --enable-vtable-verify"
-    if [[ $COMPOMENTS_LIBSSP_ENABLE -ne 0 ]]; then
-      GCC_CONF_OPTION_ALL="$GCC_CONF_OPTION_ALL --enable-libssp"
-    fi
-    GCC_CONF_OPTION_ALL="$GCC_CONF_OPTION_ALL --enable-linker-build-id --enable-rpath"
-    GCC_CONF_OPTION_ALL="$GCC_CONF_OPTION_ALL $GCC_OPT_DISABLE_MULTILIB $BUILD_TARGET_CONF_OPTION"
-    # See https://stackoverflow.com/questions/13334300/how-to-build-and-install-gcc-with-built-in-rpath
-    GCC_CONF_LDFLAGS="${LDFLAGS//\$/\$\$} -Wl,-rpath,\$\$ORIGIN/../../../../lib64:\$\$ORIGIN/../../../../lib:\$\$ORIGIN"
-    if [[ "x$LD_RUN_PATH" == "x" ]]; then
-      GCC_CONF_LD_RUN_PATH="\$ORIGIN:\$ORIGIN/../lib64:\$ORIGIN/../../../../lib64:\$ORIGIN/../lib:\$ORIGIN/../../../../lib"
-    else
-      GCC_CONF_LD_RUN_PATH="$LD_RUN_PATH \$ORIGIN:\$ORIGIN/../lib64:\$ORIGIN/../../../../lib64:\$ORIGIN/../lib:\$ORIGIN/../../../../lib"
-    fi
-    # env CFLAGS="--ggc-min-expand=0 --ggc-min-heapsize=6291456" CXXFLAGS="--ggc-min-expand=0 --ggc-min-heapsize=6291456" 老版本的gcc没有这个选项
-    env LDFLAGS="$GCC_CONF_LDFLAGS" LD_RUN_PATH="$GCC_CONF_LD_RUN_PATH" \
-      LDFLAGS_FOR_TARGET="$GCC_CONF_LDFLAGS" LDFLAGS_FOR_BUILD="$GCC_CONF_LDFLAGS" BOOT_LDFLAGS="$GCC_CONF_LDFLAGS" \
-      ../$GCC_DIR/configure $GCC_CONF_OPTION_ALL
-    if [[ $? -ne 0 ]]; then
-      echo -e "\\033[31;1mError: configure gcc failed.\\033[39;49;0m"
-      exit 1
-    fi
+      GCC_CONF_OPTION_ALL="--prefix=$INSTALL_PREFIX_PATH --with-gmp=$INSTALL_PREFIX_PATH --with-mpc=$INSTALL_PREFIX_PATH --with-mpfr=$INSTALL_PREFIX_PATH"
+      GCC_CONF_OPTION_ALL="$GCC_CONF_OPTION_ALL --with-isl=$INSTALL_PREFIX_PATH --with-zstd=$INSTALL_PREFIX_PATH $BDWGC_PREBIUILT "
+      GCC_CONF_OPTION_ALL="$GCC_CONF_OPTION_ALL --enable-gnu-unique-object --enable-build-with-cxx --disable-libjava-multilib --enable-checking=release"
+      GCC_CONF_OPTION_ALL="$GCC_CONF_OPTION_ALL --enable-gold --enable-ld --enable-libada --enable-lto --enable-objc-gc --enable-gprofng --enable-vtable-verify"
+      if [[ $COMPOMENTS_LIBSSP_ENABLE -ne 0 ]]; then
+        GCC_CONF_OPTION_ALL="$GCC_CONF_OPTION_ALL --enable-libssp"
+      fi
+      GCC_CONF_OPTION_ALL="$GCC_CONF_OPTION_ALL --enable-linker-build-id --enable-rpath"
+      GCC_CONF_OPTION_ALL="$GCC_CONF_OPTION_ALL $GCC_OPT_DISABLE_MULTILIB $BUILD_TARGET_CONF_OPTION"
+      # See https://stackoverflow.com/questions/13334300/how-to-build-and-install-gcc-with-built-in-rpath
+      GCC_CONF_LDFLAGS="${STAGE_LDFLAGS}${LDFLAGS//\$/\$\$} -Wl,-rpath,\$\$ORIGIN/../../../../lib64:\$\$ORIGIN/../../../../lib:\$\$ORIGIN"
+      if [[ "x$LD_RUN_PATH" == "x" ]]; then
+        GCC_CONF_LD_RUN_PATH="\$ORIGIN:\$ORIGIN/../lib64:\$ORIGIN/../../../../lib64:\$ORIGIN/../lib:\$ORIGIN/../../../../lib"
+      else
+        GCC_CONF_LD_RUN_PATH="$LD_RUN_PATH \$ORIGIN:\$ORIGIN/../lib64:\$ORIGIN/../../../../lib64:\$ORIGIN/../lib:\$ORIGIN/../../../../lib"
+      fi
+      # env CFLAGS="--ggc-min-expand=0 --ggc-min-heapsize=6291456" CXXFLAGS="--ggc-min-expand=0 --ggc-min-heapsize=6291456" 老版本的gcc没有这个选项
+      env LDFLAGS="$GCC_CONF_LDFLAGS" LD_RUN_PATH="$GCC_CONF_LD_RUN_PATH" \
+        LDFLAGS_FOR_TARGET="$GCC_CONF_LDFLAGS" LDFLAGS_FOR_BUILD="$GCC_CONF_LDFLAGS" BOOT_LDFLAGS="$GCC_CONF_LDFLAGS" \
+        CFLAGS="${STAGE_CFLAGS}${CFLAGS}" CXXFLAGS="${STAGE_CFLAGS}${CXXFLAGS}" \
+        ../$GCC_DIR/configure $GCC_CONF_OPTION_ALL $STAGE_CONFIGURE_OPTIONS
+      if [[ $? -ne 0 ]]; then
+        echo -e "\\033[31;1mError: configure gcc failed.\\033[39;49;0m"
+        exit 1
+      fi
 
-    env LDFLAGS="$GCC_CONF_LDFLAGS" LD_RUN_PATH="$GCC_CONF_LD_RUN_PATH" \
-      LDFLAGS_FOR_TARGET="$GCC_CONF_LDFLAGS" LDFLAGS_FOR_BUILD="$GCC_CONF_LDFLAGS" BOOT_LDFLAGS="$GCC_CONF_LDFLAGS" \
-      make $BUILD_THREAD_OPT O='$$$$O'
-    if [[ $? -ne 0 ]]; then
-      echo -e "\\033[31;1mError: build gcc failed.\\033[39;49;0m"
-      exit 1
+      env LDFLAGS="$GCC_CONF_LDFLAGS" LD_RUN_PATH="$GCC_CONF_LD_RUN_PATH" \
+        LDFLAGS_FOR_TARGET="$GCC_CONF_LDFLAGS" LDFLAGS_FOR_BUILD="$GCC_CONF_LDFLAGS" BOOT_LDFLAGS="$GCC_CONF_LDFLAGS" \
+        CFLAGS="${STAGE_CFLAGS}${CFLAGS}" CXXFLAGS="${STAGE_CFLAGS}${CXXFLAGS}" \
+        make $BUILD_THREAD_OPT O='$$$$O'
+      if [[ $? -ne 0 ]]; then
+        echo -e "\\033[31;1mError: build gcc failed.\\033[39;49;0m"
+        exit 1
+      fi
+
+      env LDFLAGS="$GCC_CONF_LDFLAGS" LD_RUN_PATH="$GCC_CONF_LD_RUN_PATH" \
+        LDFLAGS_FOR_TARGET="$GCC_CONF_LDFLAGS" LDFLAGS_FOR_BUILD="$GCC_CONF_LDFLAGS" BOOT_LDFLAGS="$GCC_CONF_LDFLAGS" \
+        CFLAGS="${STAGE_CFLAGS}${CFLAGS}" CXXFLAGS="${STAGE_CFLAGS}${CXXFLAGS}" \
+        make install O='$$$$O'
+      cd "$WORKING_DIR"
+
+      ls $INSTALL_PREFIX_PATH/bin/*gcc
+      if [[ $? -ne 0 ]]; then
+        echo -e "\\033[31;1mError: install gcc failed.\\033[39;49;0m"
+        exit 1
+      fi
+
+      # ======================= 建立cc软链接 =======================
+      ln -s $INSTALL_PREFIX_PATH/bin/gcc $INSTALL_PREFIX_PATH/bin/cc
     fi
-
-    env LDFLAGS="$GCC_CONF_LDFLAGS" LD_RUN_PATH="$GCC_CONF_LD_RUN_PATH" \
-      LDFLAGS_FOR_TARGET="$GCC_CONF_LDFLAGS" LDFLAGS_FOR_BUILD="$GCC_CONF_LDFLAGS" BOOT_LDFLAGS="$GCC_CONF_LDFLAGS" \
-      make install O='$$$$O'
-    cd "$WORKING_DIR"
-
-    ls $PREFIX_DIR/bin/*gcc
-    if [[ $? -ne 0 ]]; then
-      echo -e "\\033[31;1mError: install gcc failed.\\033[39;49;0m"
-      exit 1
-    fi
-
-    # ======================= 建立cc软链接 =======================
-    ln -s $PREFIX_DIR/bin/gcc $PREFIX_DIR/bin/cc
   fi
-fi
+}
+build_gcc "$BUILD_STAGE1_INSTALLPREFIX"
 
-export CC=$PREFIX_DIR/bin/gcc
-export CXX=$PREFIX_DIR/bin/g++
+export CC=$BUILD_STAGE1_INSTALLPREFIX/bin/gcc
+export CXX=$BUILD_STAGE1_INSTALLPREFIX/bin/g++
 if [[ "x$BUILD_BACKUP_PKG_CONFIG_PATH" == "x" ]]; then
   export PKG_CONFIG_PATH="$PREFIX_DIR/internal-packages/lib/pkgconfig"
 else
@@ -1515,6 +1540,10 @@ build_libiconv "$PREFIX_DIR"
 build_make "$PREFIX_DIR"
 build_bison "$PREFIX_DIR"
 build_bintuils "$PREFIX_DIR"
+build_gcc "$PREFIX_DIR"
+
+export CC=$PREFIX_DIR/bin/gcc
+export CXX=$PREFIX_DIR/bin/g++
 
 # ======================= install openssl [后面有些组件依赖] =======================
 # openssl的依赖太广泛了，所以不放进默认的查找目录，以防外部使用者会使用到这里的版本。如果需要使用，可以手动导入这里的openssl
