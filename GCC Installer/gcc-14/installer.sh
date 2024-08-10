@@ -15,6 +15,7 @@ COMPOMENTS_ISL_VERSION=0.24
 COMPOMENTS_LIBATOMIC_OPS_VERSION=7.8.2
 COMPOMENTS_BDWGC_VERSION=8.2.6
 COMPOMENTS_GCC_VERSION=14.2.0
+COMPOMENTS_INTERNAL_GLIBC_VERSION=2.38
 COMPOMENTS_BISON_VERSION=3.8.2
 # binutils 2.40+ add --with-zstd=$INSTALL_PREFIX_PATH, maybe need env CXXFLAGS="-fpermissive"
 COMPOMENTS_BINUTILS_STAGE1_VERSION=2.41
@@ -67,6 +68,9 @@ else
   export LDFLAGS="$LDFLAGS $BUILD_LDFLAGS"
 fi
 export ORIGIN='$ORIGIN'
+if [[ -z "$BUILD_WITH_INTERNAL_GLIBC" ]]; then
+  BUILD_WITH_INTERNAL_GLIBC=0
+fi
 
 # ======================= 交叉编译配置示例(暂不可用) =======================
 # BUILD_TARGET_CONF_OPTION="--target=arm-linux --enable-multilib --enable-interwork --disable-shared"
@@ -78,7 +82,7 @@ export ORIGIN='$ORIGIN'
 CHECK_INFO_SLEEP=3
 
 # ======================= 安装目录初始化/工作目录清理 =======================
-while getopts "dp:cht:d:g:n" OPTION; do
+while getopts "dp:cht:u:g:ln" OPTION; do
   case $OPTION in
     p)
       PREFIX_DIR="$OPTARG"
@@ -100,7 +104,7 @@ while getopts "dp:cht:d:g:n" OPTION; do
       echo "-d                          download only."
       echo "-h                          help message."
       echo "-t [build target]           set build target(m4 autoconf automake libtool pkgconfig gmp mpfr mpc isl xz zstd lz4 zlib libiconv libffi gcc bison binutils make openssl readline ncurses libexpat libxcrypt gdbm gdb libatomic_ops bdw-gc global)."
-      echo "-d [compoment option]       add dependency compoments build options."
+      echo "-u [compoment option]       add dependency compoments build options."
       echo "-g [gnu option]             add gcc,binutils,gdb build options."
       echo "-n                          print toolchain version and exit."
       exit 0
@@ -108,11 +112,14 @@ while getopts "dp:cht:d:g:n" OPTION; do
     t)
       BUILD_TARGET_COMPOMENTS="$BUILD_TARGET_COMPOMENTS $OPTARG"
       ;;
-    d)
+    u)
       BUILD_OTHER_CONF_OPTION="$BUILD_OTHER_CONF_OPTION $OPTARG"
       ;;
     g)
       BUILD_TARGET_CONF_OPTION="$BUILD_TARGET_CONF_OPTION $OPTARG"
+      ;;
+    l)
+      BUILD_WITH_INTERNAL_GLIBC=1
       ;;
     n)
       echo $COMPOMENTS_GCC_VERSION
@@ -1361,7 +1368,7 @@ function build_make() {
       env LDFLAGS="${STAGE_LDFLAGS}${MAKE_LDFLAGS//\$/\$\$}" PATH="$INSTALL_PREFIX_PATH/bin:$PATH" make install O='\$$O'
 
       if [[ $? -ne 0 ]] || [[ ! -e "$INSTALL_PREFIX_PATH/bin/make" ]]; then
-        echo -e "\\033[31;1mError: Build make failed - install.\\033[39;49;0m"
+        echo -e "\\033[31;1mError: Install make failed - install.\\033[39;49;0m"
         exit 1
       fi
       cd "$WORKING_DIR"
@@ -1369,34 +1376,67 @@ function build_make() {
   fi
 }
 
-# Build stage1 libraries and tools
-if [[ "x$BUILD_BACKUP_PKG_CONFIG_PATH" == "x" ]]; then
-  export PKG_CONFIG_PATH="$BUILD_STAGE1_LIBRARY_PREFIX/lib64/pkgconfig:$BUILD_STAGE1_LIBRARY_PREFIX/lib/pkgconfig:$BUILD_STAGE1_TOOLS_PREFIX/lib64/pkgconfig:$BUILD_STAGE1_TOOLS_PREFIX/lib/pkgconfig"
-else
-  export PKG_CONFIG_PATH="$BUILD_STAGE1_LIBRARY_PREFIX/lib64/pkgconfig:$BUILD_STAGE1_LIBRARY_PREFIX/lib/pkgconfig:$BUILD_STAGE1_TOOLS_PREFIX/lib64/pkgconfig:$BUILD_STAGE1_TOOLS_PREFIX/lib/pkgconfig:$BUILD_BACKUP_PKG_CONFIG_PATH"
-fi
+# ======================= build internal glibc =======================
+function build_glibc() {
+  INSTALL_PREFIX_PATH="$1"
+  STAGE_CFLAGS=""
+  STAGE_LDFLAGS=""
+  if [[ "$INSTALL_PREFIX_PATH" == "$BUILD_STAGE1_LIBRARY_PREFIX" ]] || [[ "$INSTALL_PREFIX_PATH" == "$BUILD_STAGE1_TOOLS_PREFIX" ]]; then
+    STAGE_CONFIGURE_OPTIONS="--enable-static --enable-shared "
+    BUILD_BACKUP_PKG_CONFIG_PATH="$PKG_CONFIG_PATH"
+    if [[ "x$BUILD_BACKUP_PKG_CONFIG_PATH" == "x" ]]; then
+      export PKG_CONFIG_PATH="$BUILD_STAGE1_LIBRARY_PREFIX/lib64/pkgconfig:$BUILD_STAGE1_LIBRARY_PREFIX/lib/pkgconfig"
+    else
+      export PKG_CONFIG_PATH="$BUILD_STAGE1_LIBRARY_PREFIX/lib64/pkgconfig:$BUILD_STAGE1_LIBRARY_PREFIX/lib/pkgconfig:$BUILD_BACKUP_PKG_CONFIG_PATH"
+    fi
+    STAGE_CFLAGS="-fPIC -I$BUILD_STAGE1_LIBRARY_PREFIX/include "
+    STAGE_LDFLAGS="-L$BUILD_STAGE1_LIBRARY_PREFIX/lib64 -L$BUILD_STAGE1_LIBRARY_PREFIX/lib "
+  else
+    STAGE_CONFIGURE_OPTIONS="--enable-static --enable-shared "
+    STAGE_CFLAGS="-fPIC -I$INSTALL_PREFIX_PATH/include "
+    STAGE_LDFLAGS="-L$INSTALL_PREFIX_PATH/lib64 -L$INSTALL_PREFIX_PATH/lib "
+  fi
 
-build_m4 "$BUILD_STAGE1_TOOLS_PREFIX"
-build_autoconf "$BUILD_STAGE1_TOOLS_PREFIX"
-build_automake "$BUILD_STAGE1_TOOLS_PREFIX"
-build_libtool "$BUILD_STAGE1_TOOLS_PREFIX"
-build_pkgconfig "$BUILD_STAGE1_TOOLS_PREFIX"
-build_gmp "$BUILD_STAGE1_LIBRARY_PREFIX"
-build_mpfr "$BUILD_STAGE1_LIBRARY_PREFIX"
-build_mpc "$BUILD_STAGE1_LIBRARY_PREFIX"
-build_isl "$BUILD_STAGE1_LIBRARY_PREFIX"
-build_libatomic_ops "$BUILD_STAGE1_LIBRARY_PREFIX"
-build_bdw_gc "$BUILD_STAGE1_LIBRARY_PREFIX"
-build_zlib "$BUILD_STAGE1_LIBRARY_PREFIX"
-build_xz "$BUILD_STAGE1_LIBRARY_PREFIX"
-build_zstd "$BUILD_STAGE1_LIBRARY_PREFIX"
-build_lz4 "$BUILD_STAGE1_LIBRARY_PREFIX"
-build_libiconv "$BUILD_STAGE1_LIBRARY_PREFIX"
-build_bison "$BUILD_STAGE1_LIBRARY_PREFIX"
-build_bintuils "$BUILD_STAGE1_TOOLS_PREFIX" "$COMPOMENTS_BINUTILS_STAGE1_VERSION"
-build_make "$BUILD_STAGE1_TOOLS_PREFIX"
+  echo "$LDFLAGS" | grep -F '$ORIGIN/../lib64' || STAGE_LDFLAGS="$STAGE_LDFLAGS -Wl,-rpath=\$ORIGIN:\$ORIGIN/../lib64:\$ORIGIN/../lib"
 
-# ======================= install gcc =======================
+  GLIBC_PKG=$(check_and_download "glibc" "glibc-$COMPOMENTS_INTERNAL_GLIBC_VERSION*.tar.xz" "$REPOSITORY_MIRROR_URL_GNU/glibc/glibc-$COMPOMENTS_INTERNAL_GLIBC_VERSION.tar.xz")
+  if [[ $? -ne 0 ]]; then
+    echo -e "$GLIBC_PKG"
+    exit 1
+  fi
+  if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
+    find . -name "glibc-$COMPOMENTS_INTERNAL_GLIBC_VERSION*" -type d | xargs -r rm -rf
+    tar -axvf $GLIBC_PKG
+    GLIBC_DIR=$(ls -d glibc-$COMPOMENTS_INTERNAL_GLIBC_VERSION* | grep -v \.tar\.xz)
+    mkdir -p glibc_build_dir
+    cd glibc_build_dir
+    cleanup_configure_cache
+
+    BUILD_GLIBC_OPTIONS="$STAGE_CONFIGURE_OPTIONS --with-bugurl=$REPOSITORY_MIRROR_URL_GITHUB/owent-utils/bash-shell/issues"
+
+    GLIBC_LDFLAGS="$LDFLAGS -Wl,-rpath=\$ORIGIN:\$ORIGIN/../../lib64:\$ORIGIN/../../lib"
+
+    env LDFLAGS="${STAGE_LDFLAGS}${GLIBC_LDFLAGS//\$/\$\$}" PATH="$INSTALL_PREFIX_PATH/bin:$PATH" CFLAGS="${STAGE_CFLAGS}${CFLAGS}" CXXFLAGS="${STAGE_CFLAGS}${CXXFLAGS}" ./configure --prefix=$INSTALL_PREFIX_PATH/internal-runtime \
+      $BUILD_GLIBC_OPTIONS $BUILD_TARGET_CONF_OPTION
+
+    env LDFLAGS="${STAGE_LDFLAGS}${GLIBC_LDFLAGS//\$/\$\$}" PATH="$INSTALL_PREFIX_PATH/bin:$PATH" CFLAGS="${STAGE_CFLAGS}${CFLAGS}" CXXFLAGS="${STAGE_CFLAGS}${CXXFLAGS}" make $BUILD_THREAD_OPT O='$$$$O' \
+      || env LDFLAGS="${STAGE_LDFLAGS}${GLIBC_LDFLAGS//\$/\$\$}" PATH="$INSTALL_PREFIX_PATH/bin:$PATH" CFLAGS="${STAGE_CFLAGS}${CFLAGS}" CXXFLAGS="${STAGE_CFLAGS}${CXXFLAGS}" make O='$$$$O'
+    if [[ $? -ne 0 ]]; then
+      echo -e "\\033[31;1mError: Build glibc failed - make.\\033[39;49;0m"
+      exit 1
+    fi
+
+    env LDFLAGS="${STAGE_LDFLAGS}${GLIBC_LDFLAGS//\$/\$\$}" PATH="$INSTALL_PREFIX_PATH/bin:$PATH" CFLAGS="${STAGE_CFLAGS}${CFLAGS}" CXXFLAGS="${STAGE_CFLAGS}${CXXFLAGS}" make install $BUILD_THREAD_OPT O='$$$$O' \
+      || env LDFLAGS="${STAGE_LDFLAGS}${GLIBC_LDFLAGS//\$/\$\$}" PATH="$INSTALL_PREFIX_PATH/bin:$PATH" CFLAGS="${STAGE_CFLAGS}${CFLAGS}" CXXFLAGS="${STAGE_CFLAGS}${CXXFLAGS}" make install O='$$$$O'
+    if [[ $? -ne 0 ]] || [[ ! -e "$INSTALL_PREFIX_PATH/bin/ld" ]]; then
+      echo -e "\\033[31;1mError: Install glibc failed - install.\\033[39;49;0m"
+      exit 1
+    fi
+    cd "$WORKING_DIR"
+  fi
+}
+
+# ======================= build gcc =======================
 function build_gcc() {
   INSTALL_PREFIX_PATH="$1"
   STAGE_CFLAGS=""
@@ -1455,7 +1495,7 @@ function build_gcc() {
       GCC_CONF_OPTION_ALL="$GCC_CONF_OPTION_ALL --enable-linker-build-id --enable-rpath"
       GCC_CONF_OPTION_ALL="$GCC_CONF_OPTION_ALL $GCC_OPT_DISABLE_MULTILIB $BUILD_TARGET_CONF_OPTION"
       # See https://stackoverflow.com/questions/13334300/how-to-build-and-install-gcc-with-built-in-rpath
-      GCC_CONF_LDFLAGS="${STAGE_LDFLAGS}${LDFLAGS//\$/\$\$} -Wl,-rpath,\$\$ORIGIN/../../../../lib64:\$\$ORIGIN/../../../../lib:\$\$ORIGIN"
+      GCC_CONF_LDFLAGS="${STAGE_LDFLAGS}${LDFLAGS//\$/\$\$} -Wl,-rpath,\$\$ORIGIN:\$\$ORIGIN/../../../../lib64:\$\$ORIGIN/../../../../lib"
       if [[ "x$LD_RUN_PATH" == "x" ]]; then
         GCC_CONF_LD_RUN_PATH="\$ORIGIN:\$ORIGIN/../lib64:\$ORIGIN/../../../../lib64:\$ORIGIN/../lib:\$ORIGIN/../../../../lib"
       else
@@ -1497,6 +1537,38 @@ function build_gcc() {
     fi
   fi
 }
+
+# Build stage1 libraries and tools
+if [[ "x$BUILD_BACKUP_PKG_CONFIG_PATH" == "x" ]]; then
+  export PKG_CONFIG_PATH="$BUILD_STAGE1_LIBRARY_PREFIX/lib64/pkgconfig:$BUILD_STAGE1_LIBRARY_PREFIX/lib/pkgconfig:$BUILD_STAGE1_TOOLS_PREFIX/lib64/pkgconfig:$BUILD_STAGE1_TOOLS_PREFIX/lib/pkgconfig"
+else
+  export PKG_CONFIG_PATH="$BUILD_STAGE1_LIBRARY_PREFIX/lib64/pkgconfig:$BUILD_STAGE1_LIBRARY_PREFIX/lib/pkgconfig:$BUILD_STAGE1_TOOLS_PREFIX/lib64/pkgconfig:$BUILD_STAGE1_TOOLS_PREFIX/lib/pkgconfig:$BUILD_BACKUP_PKG_CONFIG_PATH"
+fi
+
+# Prepare directories
+mkdir -p "$BUILD_STAGE1_LIBRARY_PREFIX/include"
+mkdir -p "$BUILD_STAGE1_LIBRARY_PREFIX/lib"
+mkdir -p "$BUILD_STAGE1_LIBRARY_PREFIX/lib64"
+
+build_m4 "$BUILD_STAGE1_TOOLS_PREFIX"
+build_autoconf "$BUILD_STAGE1_TOOLS_PREFIX"
+build_automake "$BUILD_STAGE1_TOOLS_PREFIX"
+build_libtool "$BUILD_STAGE1_TOOLS_PREFIX"
+build_pkgconfig "$BUILD_STAGE1_TOOLS_PREFIX"
+build_gmp "$BUILD_STAGE1_LIBRARY_PREFIX"
+build_mpfr "$BUILD_STAGE1_LIBRARY_PREFIX"
+build_mpc "$BUILD_STAGE1_LIBRARY_PREFIX"
+build_isl "$BUILD_STAGE1_LIBRARY_PREFIX"
+build_libatomic_ops "$BUILD_STAGE1_LIBRARY_PREFIX"
+build_bdw_gc "$BUILD_STAGE1_LIBRARY_PREFIX"
+build_zlib "$BUILD_STAGE1_LIBRARY_PREFIX"
+build_xz "$BUILD_STAGE1_LIBRARY_PREFIX"
+build_zstd "$BUILD_STAGE1_LIBRARY_PREFIX"
+build_lz4 "$BUILD_STAGE1_LIBRARY_PREFIX"
+build_libiconv "$BUILD_STAGE1_LIBRARY_PREFIX"
+build_bison "$BUILD_STAGE1_LIBRARY_PREFIX"
+build_bintuils "$BUILD_STAGE1_TOOLS_PREFIX" "$COMPOMENTS_BINUTILS_STAGE1_VERSION"
+build_make "$BUILD_STAGE1_TOOLS_PREFIX"
 build_gcc "$BUILD_STAGE1_GCC_PREFIX"
 
 if [[ "x$BUILD_BACKUP_LD_LIBRARY_PATH" == "x" ]]; then
@@ -1537,6 +1609,10 @@ else
 fi
 
 # bootstrap
+mkdir -p "$PREFIX_DIR/include"
+mkdir -p "$PREFIX_DIR/lib"
+mkdir -p "$PREFIX_DIR/lib64"
+
 build_m4 "$PREFIX_DIR"
 build_autoconf "$PREFIX_DIR"
 build_automake "$PREFIX_DIR"
