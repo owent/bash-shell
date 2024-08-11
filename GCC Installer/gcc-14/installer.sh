@@ -1497,9 +1497,9 @@ function build_gcc() {
       # See https://stackoverflow.com/questions/13334300/how-to-build-and-install-gcc-with-built-in-rpath
       GCC_CONF_LDFLAGS="${STAGE_LDFLAGS}${LDFLAGS//\$/\$\$} -Wl,-rpath,\$\$ORIGIN:\$\$ORIGIN/../../../../lib64:\$\$ORIGIN/../../../../lib"
       if [[ "x$LD_RUN_PATH" == "x" ]]; then
-        GCC_CONF_LD_RUN_PATH="\$ORIGIN:\$ORIGIN/../lib64:\$ORIGIN/../../../../lib64:\$ORIGIN/../lib:\$ORIGIN/../../../../lib"
+        GCC_CONF_LD_RUN_PATH="\$ORIGIN:\$ORIGIN/../lib64:\$ORIGIN/../lib:\$ORIGIN/../../../../lib64:\$ORIGIN/../../../../lib"
       else
-        GCC_CONF_LD_RUN_PATH="$LD_RUN_PATH \$ORIGIN:\$ORIGIN/../lib64:\$ORIGIN/../../../../lib64:\$ORIGIN/../lib:\$ORIGIN/../../../../lib"
+        GCC_CONF_LD_RUN_PATH="$LD_RUN_PATH \$ORIGIN:\$ORIGIN/../lib64:\$ORIGIN/../lib:\$ORIGIN/../../../../lib:\$ORIGIN/../../../../lib"
       fi
       # env CFLAGS="--ggc-min-expand=0 --ggc-min-heapsize=6291456" CXXFLAGS="--ggc-min-expand=0 --ggc-min-heapsize=6291456" 老版本的gcc没有这个选项
       env LDFLAGS="$GCC_CONF_LDFLAGS" LD_RUN_PATH="$GCC_CONF_LD_RUN_PATH" \
