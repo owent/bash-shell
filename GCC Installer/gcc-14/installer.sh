@@ -1662,7 +1662,15 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list openssl $BUILD_
       "no-dso" "no-tests" "no-external-tests" "no-shared" "no-idea" "no-md4" "no-mdc2" "no-rc2" \
       "no-ssl3" "no-weak-ssl-ciphers" "enable-ec_nistp_64_gcc_128" "enable-static-engine" # "--api=1.1.1"
     make $BUILD_THREAD_OPT || make
+    if [[ $? -ne 0 ]]; then
+      echo -e "\\033[31;1mError: build openssl failed.\\033[39;49;0m"
+      exit 1
+    fi
     make install_sw install_ssldirs
+    if [[ $? -ne 0 ]]; then
+      echo -e "\\033[31;1mError: install openssl failed.\\033[39;49;0m"
+      exit 1
+    fi
     if [[ $? -eq 0 ]]; then
       OPENSSL_INSTALL_DIR=$PREFIX_DIR/internal-packages
       mkdir -p "$OPENSSL_INSTALL_DIR/ssl"
