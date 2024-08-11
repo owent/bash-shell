@@ -196,7 +196,7 @@ function check_and_download() {
   PKG_MATCH_EXPR="$2"
   PKG_URL="$3"
 
-  PKG_VAR_VAL=($(find . -maxdepth 1 -name "$PKG_MATCH_EXPR"))
+  PKG_VAR_VAL=($(find . -maxdepth 1 -type f -name "$PKG_MATCH_EXPR"))
   if [[ ${#PKG_VAR_VAL[@]} -gt 0 ]]; then
     echo "${PKG_VAR_VAL[0]}"
     return 0
@@ -904,7 +904,7 @@ function build_zlib() {
     fi
     if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
       tar -axvf $ZLIB_PKG
-      ZLIB_DIR=$(ls -d zlib-$COMPOMENTS_ZLIB_VERSION* | grep -v \.tar\.gz)
+      ZLIB_DIR=$(ls -d zlib-*$COMPOMENTS_ZLIB_VERSION* | grep -v \.tar\.gz)
       cd "$ZLIB_DIR"
       mkdir -p build_jobs_dir
       cd build_jobs_dir
@@ -1654,7 +1654,7 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list openssl $BUILD_
   mkdir -p $PREFIX_DIR/internal-packages
   if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
     tar -axvf $OPENSSL_PKG
-    OPENSSL_SRC_DIR=$(ls -d openssl-$COMPOMENTS_OPENSSL_VERSION* | grep -v \.tar\.gz)
+    OPENSSL_SRC_DIR=$(ls -d openssl-*$COMPOMENTS_OPENSSL_VERSION* | grep -v \.tar\.gz)
     cd $OPENSSL_SRC_DIR
     cleanup_configure_cache
     # @see https://wiki.openssl.org/index.php/Compilation_and_Installation
