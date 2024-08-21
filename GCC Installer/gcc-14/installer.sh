@@ -11,6 +11,7 @@ COMPOMENTS_PKGCONFIG_VERSION=0.29.2
 COMPOMENTS_GMP_VERSION=6.3.0
 COMPOMENTS_MPFR_VERSION=4.2.1
 COMPOMENTS_MPC_VERSION=1.3.1
+# See https://gcc.gnu.org/pub/gcc/infrastructure/
 COMPOMENTS_ISL_VERSION=0.24
 COMPOMENTS_LIBATOMIC_OPS_VERSION=7.8.2
 COMPOMENTS_BDWGC_VERSION=8.2.6
@@ -719,14 +720,14 @@ function build_isl() {
   echo "$LDFLAGS" | grep -F '$ORIGIN/../lib64' || STAGE_LDFLAGS="$STAGE_LDFLAGS -Wl,-rpath=\$ORIGIN:\$ORIGIN/../lib64:\$ORIGIN/../lib"
 
   if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list isl $BUILD_TARGET_COMPOMENTS) ]]; then
-    ISL_PKG=$(check_and_download "isl" "isl-$COMPOMENTS_ISL_VERSION*.tar.bz2" "https://gcc.gnu.org/pub/gcc/infrastructure/isl-$COMPOMENTS_ISL_VERSION.tar.bz2")
+    ISL_PKG=$(check_and_download "isl" "isl-*$COMPOMENTS_ISL_VERSION*.tar.gz" "$REPOSITORY_MIRROR_URL_GITHUB/Meinersbur/isl/archive/refs/tags/isl-$COMPOMENTS_ISL_VERSION.tar.gz" "isl-$COMPOMENTS_ISL_VERSION.tar.gz")
     if [[ $? -ne 0 ]]; then
       echo -e "$ISL_PKG"
       exit 1
     fi
     if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
-      tar -jxvf $ISL_PKG
-      ISL_DIR=$(ls -d isl-$COMPOMENTS_ISL_VERSION* | grep -v \.tar\.bz2)
+      tar -axvf $ISL_PKG
+      ISL_DIR=$(ls -d isl-*$COMPOMENTS_ISL_VERSION* | grep -v \.tar\.gz)
       cd $ISL_DIR
       cleanup_configure_cache
 
