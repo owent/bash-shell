@@ -1454,11 +1454,13 @@ function build_gcc() {
     STAGE_CFLAGS="-fPIC"
     STAGE_LDFLAGS=""
     STAGE_LIBRARY_PREFIX="$BUILD_STAGE1_LIBRARY_PREFIX"
+    GCC_CONF_OPTION_LD_RPATH=""
   else
     STAGE_CONFIGURE_OPTIONS="--enable-bootstrap --enable-shared --enable-static"
     STAGE_CFLAGS="-fPIC "
     STAGE_LDFLAGS=""
     STAGE_LIBRARY_PREFIX="$INSTALL_PREFIX_PATH"
+    GCC_CONF_OPTION_LD_RPATH="-Wl,-rpath=\$ORIGIN:$INSTALL_PREFIX_PATH/lib64:$INSTALL_PREFIX_PATH/lib:\$ORIGIN/../lib64:\$ORIGIN/../lib:\$ORIGIN/../../../../lib64:\$ORIGIN/../../../../lib"
   fi
 
   if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list gcc $BUILD_TARGET_COMPOMENTS) ]]; then
@@ -1493,16 +1495,17 @@ function build_gcc() {
       if [[ $COMPOMENTS_LIBSSP_ENABLE -ne 0 ]]; then
         GCC_CONF_OPTION_ALL="$GCC_CONF_OPTION_ALL --enable-libssp"
       fi
-      GCC_CONF_OPTION_ALL="$GCC_CONF_OPTION_ALL --enable-linker-build-id"
-      GCC_CONF_OPTION_LD_RPATH="\$ORIGIN:$INSTALL_PREFIX_PATH/lib64:$INSTALL_PREFIX_PATH/lib:\$ORIGIN/../lib64:\$ORIGIN/../lib:\$ORIGIN/../../../../lib64:\$ORIGIN/../../../../lib"
+      GCC_CONF_OPTION_ALL="$GCC_CONF_OPTION_ALL --enable-linker-build-id --enable-rpath"
       # See https://stackoverflow.com/questions/13334300/how-to-build-and-install-gcc-with-built-in-rpath
-      GCC_CONF_LDFLAGS="${STAGE_LDFLAGS}${LDFLAGS//\$/\$\$} -Wl,-rpath=${GCC_CONF_OPTION_LD_RPATH//\$/\$\$}"
+      GCC_CONF_LDFLAGS="${STAGE_LDFLAGS}${LDFLAGS//\$/\$\$} ${GCC_CONF_OPTION_LD_RPATH//\$/\$\$}"
       if [[ "x$LD_RUN_PATH" == "x" ]]; then
-        GCC_CONF_LD_RUN_PATH="-Wl,-rpath=${GCC_CONF_OPTION_LD_RPATH}"
+        GCC_CONF_LD_RUN_PATH="${GCC_CONF_OPTION_LD_RPATH}"
       else
-        GCC_CONF_LD_RUN_PATH="$LD_RUN_PATH -Wl,-rpath=${GCC_CONF_OPTION_LD_RPATH}"
+        GCC_CONF_LD_RUN_PATH="$LD_RUN_PATH ${GCC_CONF_OPTION_LD_RPATH}"
       fi
-      GCC_CONF_OPTION_ALL="$GCC_CONF_OPTION_ALL --with-boot-ldflags=-Wl,-rpath=${GCC_CONF_OPTION_LD_RPATH//\$/\\\$}"
+      if [[ ! -z "$GCC_CONF_OPTION_LD_RPATH" ]]; then
+        GCC_CONF_OPTION_ALL="$GCC_CONF_OPTION_ALL --with-boot-ldflags=${GCC_CONF_OPTION_LD_RPATH//\$/\\\$}"
+      fi
       GCC_CONF_OPTION_ALL="$GCC_CONF_OPTION_ALL $GCC_OPT_DISABLE_MULTILIB $BUILD_TARGET_CONF_OPTION"
       # env CFLAGS="--ggc-min-expand=0 --ggc-min-heapsize=6291456" CXXFLAGS="--ggc-min-expand=0 --ggc-min-heapsize=6291456" 老版本的gcc没有这个选项
       env LDFLAGS="$GCC_CONF_LDFLAGS" LD_RUN_PATH="$GCC_CONF_LD_RUN_PATH" \
