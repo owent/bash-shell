@@ -6,7 +6,7 @@ COMPOMENTS_M4_VERSION=latest
 COMPOMENTS_MAKE_VERSION=4.4.1
 COMPOMENTS_AUTOCONF_VERSION=latest
 COMPOMENTS_AUTOMAKE_VERSION=1.17
-COMPOMENTS_LIBTOOL_VERSION=2.4.7
+COMPOMENTS_LIBTOOL_VERSION=2.5.3
 COMPOMENTS_PKGCONFIG_VERSION=0.29.2
 COMPOMENTS_GMP_VERSION=6.3.0
 COMPOMENTS_MPFR_VERSION=4.2.1
@@ -14,27 +14,27 @@ COMPOMENTS_MPC_VERSION=1.3.1
 # See https://gcc.gnu.org/pub/gcc/infrastructure/
 COMPOMENTS_ISL_VERSION=0.24
 COMPOMENTS_LIBATOMIC_OPS_VERSION=7.8.2
-COMPOMENTS_BDWGC_VERSION=8.2.6
+COMPOMENTS_BDWGC_VERSION=8.2.8
 COMPOMENTS_GCC_VERSION=14.2.0
-COMPOMENTS_INTERNAL_GLIBC_VERSION=2.38
+COMPOMENTS_INTERNAL_GLIBC_VERSION=2.40
 COMPOMENTS_BISON_VERSION=3.8.2
 # binutils 2.40+ add --with-zstd=$INSTALL_PREFIX_PATH, maybe need env CXXFLAGS="-fpermissive"
 COMPOMENTS_BINUTILS_STAGE1_VERSION=2.41
 COMPOMENTS_BINUTILS_VERSION=2.43
-COMPOMENTS_OPENSSL_VERSION=3.1.5
+COMPOMENTS_OPENSSL_VERSION=3.3.0
 COMPOMENTS_ZLIB_VERSION=1.3.1
 COMPOMENTS_LIBFFI_VERSION=3.4.6
 COMPOMENTS_NCURSES_VERSION=6.5
-COMPOMENTS_LIBEXPAT_VERSION=2.6.2
+COMPOMENTS_LIBEXPAT_VERSION=2.6.4
 COMPOMENTS_LIBXCRYPT_VERSION=4.4.36
 COMPOMENTS_GDBM_VERSION=latest
 COMPOMENTS_READLINE_VERSION=8.2
 # distcc 3.4 use distutils which is removed from python 3.12.2, we use python 3.11 by now
-COMPOMENTS_PYTHON_VERSION=3.11.9
-COMPOMENTS_GDB_VERSION=15.1 # Previous 14.2
-COMPOMENTS_GLOBAL_VERSION=6.6.13
-COMPOMENTS_LIBICONV_VERSION=1.17
-COMPOMENTS_XZ_VERSION=5.6.2
+COMPOMENTS_PYTHON_VERSION=3.11.11
+COMPOMENTS_GDB_VERSION=15.2 # Previous 15.1
+COMPOMENTS_GLOBAL_VERSION=6.6.14
+COMPOMENTS_LIBICONV_VERSION=1.18
+COMPOMENTS_XZ_VERSION=5.6.3
 COMPOMENTS_ZSTD_VERSION=1.5.6
 COMPOMENTS_LZ4_VERSION=1.10.0
 # 大多数发行版并没有开启 libssp , 开启会导致需要增加链接选项 -fstack-protector-all
@@ -85,51 +85,51 @@ CHECK_INFO_SLEEP=3
 # ======================= 安装目录初始化/工作目录清理 =======================
 while getopts "dp:cht:u:g:ln" OPTION; do
   case $OPTION in
-    p)
-      PREFIX_DIR="$OPTARG"
-      ;;
-    c)
-      rm -rf $(ls -A -d -p * | grep -E "(.*)/$" | grep -v "addition/")
-      echo -e "\\033[32;1mnotice: clear work dir(s) done.\\033[39;49;0m"
-      exit 0
-      ;;
-    d)
-      BUILD_DOWNLOAD_ONLY=1
-      echo -e "\\033[32;1mDownload mode.\\033[39;49;0m"
-      ;;
-    h)
-      echo "usage: $0 [options] -p=prefix_dir -c -h"
-      echo "options:"
-      echo "-p [prefix_dir]             set prefix directory."
-      echo "-c                          clean build cache."
-      echo "-d                          download only."
-      echo "-h                          help message."
-      echo "-t [build target]           set build target(m4 autoconf automake libtool pkgconfig gmp mpfr mpc isl xz zstd lz4 zlib libiconv libffi gcc bison binutils make openssl readline ncurses libexpat libxcrypt gdbm gdb libatomic_ops bdw-gc global)."
-      echo "-u [compoment option]       add dependency compoments build options."
-      echo "-g [gnu option]             add gcc,binutils,gdb build options."
-      echo "-n                          print toolchain version and exit."
-      exit 0
-      ;;
-    t)
-      BUILD_TARGET_COMPOMENTS="$BUILD_TARGET_COMPOMENTS $OPTARG"
-      ;;
-    u)
-      BUILD_OTHER_CONF_OPTION="$BUILD_OTHER_CONF_OPTION $OPTARG"
-      ;;
-    g)
-      BUILD_TARGET_CONF_OPTION="$BUILD_TARGET_CONF_OPTION $OPTARG"
-      ;;
-    l)
-      BUILD_WITH_INTERNAL_GLIBC=1
-      ;;
-    n)
-      echo $COMPOMENTS_GCC_VERSION
-      exit 0
-      ;;
-    ?) #当有不认识的选项的时候arg为?
-      echo "unkonw argument detected"
-      exit 1
-      ;;
+  p)
+    PREFIX_DIR="$OPTARG"
+    ;;
+  c)
+    rm -rf $(ls -A -d -p * | grep -E "(.*)/$" | grep -v "addition/")
+    echo -e "\\033[32;1mnotice: clear work dir(s) done.\\033[39;49;0m"
+    exit 0
+    ;;
+  d)
+    BUILD_DOWNLOAD_ONLY=1
+    echo -e "\\033[32;1mDownload mode.\\033[39;49;0m"
+    ;;
+  h)
+    echo "usage: $0 [options] -p=prefix_dir -c -h"
+    echo "options:"
+    echo "-p [prefix_dir]             set prefix directory."
+    echo "-c                          clean build cache."
+    echo "-d                          download only."
+    echo "-h                          help message."
+    echo "-t [build target]           set build target(m4 autoconf automake libtool pkgconfig gmp mpfr mpc isl xz zstd lz4 zlib libiconv libffi gcc bison binutils make openssl readline ncurses libexpat libxcrypt gdbm gdb libatomic_ops bdw-gc global)."
+    echo "-u [compoment option]       add dependency compoments build options."
+    echo "-g [gnu option]             add gcc,binutils,gdb build options."
+    echo "-n                          print toolchain version and exit."
+    exit 0
+    ;;
+  t)
+    BUILD_TARGET_COMPOMENTS="$BUILD_TARGET_COMPOMENTS $OPTARG"
+    ;;
+  u)
+    BUILD_OTHER_CONF_OPTION="$BUILD_OTHER_CONF_OPTION $OPTARG"
+    ;;
+  g)
+    BUILD_TARGET_CONF_OPTION="$BUILD_TARGET_CONF_OPTION $OPTARG"
+    ;;
+  l)
+    BUILD_WITH_INTERNAL_GLIBC=1
+    ;;
+  n)
+    echo $COMPOMENTS_GCC_VERSION
+    exit 0
+    ;;
+  ?) #当有不认识的选项的时候arg为?
+    echo "unkonw argument detected"
+    exit 1
+    ;;
   esac
 done
 
@@ -1218,8 +1218,8 @@ function build_bison() {
       cleanup_configure_cache
       env LDFLAGS="${STAGE_LDFLAGS}${LDFLAGS//\$/\$\$}" CFLAGS="${STAGE_CFLAGS}${CFLAGS}" CXXFLAGS="${STAGE_CFLAGS}${CXXFLAGS}" ./configure \
         --prefix=$INSTALL_PREFIX_PATH $STAGE_CONFIGURE_OPTIONS
-      env LDFLAGS="${STAGE_LDFLAGS}${LDFLAGS//\$/\$\$}" CFLAGS="${STAGE_CFLAGS}${CFLAGS}" CXXFLAGS="${STAGE_CFLAGS}${CXXFLAGS}" make $BUILD_THREAD_OPT $STAGE_CONFIGURE_OPTIONS O='$$$$O' \
-        || env LDFLAGS="${STAGE_LDFLAGS}${LDFLAGS//\$/\$\$}" make
+      env LDFLAGS="${STAGE_LDFLAGS}${LDFLAGS//\$/\$\$}" CFLAGS="${STAGE_CFLAGS}${CFLAGS}" CXXFLAGS="${STAGE_CFLAGS}${CXXFLAGS}" make $BUILD_THREAD_OPT $STAGE_CONFIGURE_OPTIONS O='$$$$O' ||
+        env LDFLAGS="${STAGE_LDFLAGS}${LDFLAGS//\$/\$\$}" make
       if [[ $? -ne 0 ]]; then
         echo -e "\\033[31;1mError: Build bison failed - make.\\033[39;49;0m"
         exit 1
@@ -1299,8 +1299,8 @@ function build_bintuils() {
         --with-gmp=$INSTALL_PREFIX_PATH --with-mpc=$INSTALL_PREFIX_PATH --with-mpfr=$INSTALL_PREFIX_PATH --with-isl=$INSTALL_PREFIX_PATH $BDWGC_PREBIUILT \
         $BUILD_BINUTILS_OPTIONS $BUILD_TARGET_CONF_OPTION
 
-      env LDFLAGS="${STAGE_LDFLAGS}${BINUTILS_LDFLAGS//\$/\$\$}" PATH="$INSTALL_PREFIX_PATH/bin:$PATH" CFLAGS="${STAGE_CFLAGS}${CFLAGS}" CXXFLAGS="${STAGE_CFLAGS}${CXXFLAGS}" make $BUILD_THREAD_OPT O='$$$$O' \
-        || env LDFLAGS="${STAGE_LDFLAGS}${BINUTILS_LDFLAGS//\$/\$\$}" PATH="$INSTALL_PREFIX_PATH/bin:$PATH" CFLAGS="${STAGE_CFLAGS}${CFLAGS}" CXXFLAGS="${STAGE_CFLAGS}${CXXFLAGS}" make O='$$$$O'
+      env LDFLAGS="${STAGE_LDFLAGS}${BINUTILS_LDFLAGS//\$/\$\$}" PATH="$INSTALL_PREFIX_PATH/bin:$PATH" CFLAGS="${STAGE_CFLAGS}${CFLAGS}" CXXFLAGS="${STAGE_CFLAGS}${CXXFLAGS}" make $BUILD_THREAD_OPT O='$$$$O' ||
+        env LDFLAGS="${STAGE_LDFLAGS}${BINUTILS_LDFLAGS//\$/\$\$}" PATH="$INSTALL_PREFIX_PATH/bin:$PATH" CFLAGS="${STAGE_CFLAGS}${CFLAGS}" CXXFLAGS="${STAGE_CFLAGS}${CXXFLAGS}" make O='$$$$O'
       if [[ $? -ne 0 ]]; then
         echo -e "\\033[31;1mError: Build binutils failed - make.\\033[39;49;0m"
         exit 1
@@ -1359,8 +1359,8 @@ function build_make() {
         --with-libiconv-prefix=$INSTALL_PREFIX_PATH --with-guile --enable-year2038 \
         $BUILD_TARGET_CONF_OPTION $STAGE_CONFIGURE_OPTIONS
 
-      env LDFLAGS="${STAGE_LDFLAGS}${MAKE_LDFLAGS//\$/\$\$}" PATH="$INSTALL_PREFIX_PATH/bin:$PATH" make $BUILD_THREAD_OPT O='\$$O' \
-        || env LDFLAGS="${STAGE_LDFLAGS}${MAKE_LDFLAGS//\$/\$\$}" PATH="$INSTALL_PREFIX_PATH/bin:$PATH" make O='\$$O'
+      env LDFLAGS="${STAGE_LDFLAGS}${MAKE_LDFLAGS//\$/\$\$}" PATH="$INSTALL_PREFIX_PATH/bin:$PATH" make $BUILD_THREAD_OPT O='\$$O' ||
+        env LDFLAGS="${STAGE_LDFLAGS}${MAKE_LDFLAGS//\$/\$\$}" PATH="$INSTALL_PREFIX_PATH/bin:$PATH" make O='\$$O'
       if [[ $? -ne 0 ]]; then
         echo -e "\\033[31;1mError: Build make failed - make.\\033[39;49;0m"
         exit 1
@@ -1420,15 +1420,15 @@ function build_glibc() {
     env LDFLAGS="${STAGE_LDFLAGS}${GLIBC_LDFLAGS//\$/\$\$}" PATH="$INSTALL_PREFIX_PATH/bin:$PATH" CFLAGS="${STAGE_CFLAGS}${CFLAGS}" CXXFLAGS="${STAGE_CFLAGS}${CXXFLAGS}" ./configure --prefix=$INSTALL_PREFIX_PATH/internal-runtime \
       $BUILD_GLIBC_OPTIONS $BUILD_TARGET_CONF_OPTION
 
-    env LDFLAGS="${STAGE_LDFLAGS}${GLIBC_LDFLAGS//\$/\$\$}" PATH="$INSTALL_PREFIX_PATH/bin:$PATH" CFLAGS="${STAGE_CFLAGS}${CFLAGS}" CXXFLAGS="${STAGE_CFLAGS}${CXXFLAGS}" make $BUILD_THREAD_OPT O='$$$$O' \
-      || env LDFLAGS="${STAGE_LDFLAGS}${GLIBC_LDFLAGS//\$/\$\$}" PATH="$INSTALL_PREFIX_PATH/bin:$PATH" CFLAGS="${STAGE_CFLAGS}${CFLAGS}" CXXFLAGS="${STAGE_CFLAGS}${CXXFLAGS}" make O='$$$$O'
+    env LDFLAGS="${STAGE_LDFLAGS}${GLIBC_LDFLAGS//\$/\$\$}" PATH="$INSTALL_PREFIX_PATH/bin:$PATH" CFLAGS="${STAGE_CFLAGS}${CFLAGS}" CXXFLAGS="${STAGE_CFLAGS}${CXXFLAGS}" make $BUILD_THREAD_OPT O='$$$$O' ||
+      env LDFLAGS="${STAGE_LDFLAGS}${GLIBC_LDFLAGS//\$/\$\$}" PATH="$INSTALL_PREFIX_PATH/bin:$PATH" CFLAGS="${STAGE_CFLAGS}${CFLAGS}" CXXFLAGS="${STAGE_CFLAGS}${CXXFLAGS}" make O='$$$$O'
     if [[ $? -ne 0 ]]; then
       echo -e "\\033[31;1mError: Build glibc failed - make.\\033[39;49;0m"
       exit 1
     fi
 
-    env LDFLAGS="${STAGE_LDFLAGS}${GLIBC_LDFLAGS//\$/\$\$}" PATH="$INSTALL_PREFIX_PATH/bin:$PATH" CFLAGS="${STAGE_CFLAGS}${CFLAGS}" CXXFLAGS="${STAGE_CFLAGS}${CXXFLAGS}" make install $BUILD_THREAD_OPT O='$$$$O' \
-      || env LDFLAGS="${STAGE_LDFLAGS}${GLIBC_LDFLAGS//\$/\$\$}" PATH="$INSTALL_PREFIX_PATH/bin:$PATH" CFLAGS="${STAGE_CFLAGS}${CFLAGS}" CXXFLAGS="${STAGE_CFLAGS}${CXXFLAGS}" make install O='$$$$O'
+    env LDFLAGS="${STAGE_LDFLAGS}${GLIBC_LDFLAGS//\$/\$\$}" PATH="$INSTALL_PREFIX_PATH/bin:$PATH" CFLAGS="${STAGE_CFLAGS}${CFLAGS}" CXXFLAGS="${STAGE_CFLAGS}${CXXFLAGS}" make install $BUILD_THREAD_OPT O='$$$$O' ||
+      env LDFLAGS="${STAGE_LDFLAGS}${GLIBC_LDFLAGS//\$/\$\$}" PATH="$INSTALL_PREFIX_PATH/bin:$PATH" CFLAGS="${STAGE_CFLAGS}${CFLAGS}" CXXFLAGS="${STAGE_CFLAGS}${CXXFLAGS}" make install O='$$$$O'
     if [[ $? -ne 0 ]] || [[ ! -e "$INSTALL_PREFIX_PATH/bin/ld" ]]; then
       echo -e "\\033[31;1mError: Install glibc failed - install.\\033[39;49;0m"
       exit 1
@@ -1993,8 +1993,8 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list gdb $BUILD_TARG
       --enable-objc-gc --enable-lto --enable-vtable-verify --with-curses=$PREFIX_DIR $BDWGC_PREBIUILT \
       --with-liblzma-prefix=$PREFIX_DIR --with-libexpat-prefix=$PREFIX_DIR --with-libiconv-prefix=$PREFIX_DIR \
       ${GDB_DEPS_OPT[@]} $BUILD_TARGET_CONF_OPTION
-    env LDFLAGS="$COMPOMENTS_GDB_STATIC_BUILD_LDFLAGS" CFLAGS="-fPIC ${CFLAGS}" CXXFLAGS="-fPIC ${CXXFLAGS}" make $BUILD_THREAD_OPT O='$$$$O' \
-      || env LDFLAGS="$COMPOMENTS_GDB_STATIC_BUILD_LDFLAGS" CFLAGS="-fPIC ${CFLAGS}" CXXFLAGS="-fPIC ${CXXFLAGS}" make O='$$$$O'
+    env LDFLAGS="$COMPOMENTS_GDB_STATIC_BUILD_LDFLAGS" CFLAGS="-fPIC ${CFLAGS}" CXXFLAGS="-fPIC ${CXXFLAGS}" make $BUILD_THREAD_OPT O='$$$$O' ||
+      env LDFLAGS="$COMPOMENTS_GDB_STATIC_BUILD_LDFLAGS" CFLAGS="-fPIC ${CFLAGS}" CXXFLAGS="-fPIC ${CXXFLAGS}" make O='$$$$O'
     if [[ $? -ne 0 ]]; then
       echo -e "\\033[31;1mError: Build gdb failed.\\033[39;49;0m"
       exit 1
