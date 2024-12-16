@@ -375,6 +375,11 @@ function cleanup_build_dir() {
 
 trap cleanup_build_dir EXIT
 
+if [[ ! -z "$BUILD_USE_GCC_TOOLCHAIN" ]]; then
+  BUILD_USE_GCC_INSTALL_DIR="$(dirname "$(find "$BUILD_USE_GCC_TOOLCHAIN/lib/gcc" -name crtbegin.o | head -n 1)")"
+  BUILD_USE_GCC_TRIPLE="$(basename "$(dirname "$BUILD_USE_GCC_INSTALL_DIR")")"
+fi
+
 function build_llvm_toolchain() {
   STAGE_BUILD_EXT_COMPILER_FLAGS=("-DCMAKE_FIND_ROOT_PATH=$PREFIX_DIR"
     "-DCMAKE_PREFIX_PATH=$PREFIX_DIR"
@@ -400,13 +405,19 @@ function build_llvm_toolchain() {
   if [[ ! -z "$BUILD_USE_GCC_TOOLCHAIN" ]]; then
     export CMAKE_CXX_COMPILER_EXTERNAL_TOOLCHAIN=$BUILD_USE_GCC_TOOLCHAIN
     STAGE_BUILD_EXT_COMPILER_FLAGS=("${STAGE_BUILD_EXT_COMPILER_FLAGS[@]}"
-      # "-DBOOTSTRAP_CMAKE_CXX_FLAGS=--gcc-toolchain=$BUILD_USE_GCC_TOOLCHAIN"
-      # "-DBOOTSTRAP_CMAKE_C_FLAGS=--gcc-toolchain=$BUILD_USE_GCC_TOOLCHAIN"
+      "-DBOOTSTRAP_CMAKE_CXX_FLAGS=--gcc-install-dir=$BUILD_USE_GCC_INSTALL_DIR --gcc-triple=$BUILD_USE_GCC_TRIPLE"
+      "-DBOOTSTRAP_CMAKE_C_FLAGS=--gcc-install-dir=$BUILD_USE_GCC_INSTALL_DIR --gcc-triple=$BUILD_USE_GCC_TRIPLE"
       "-DCMAKE_CXX_COMPILER_EXTERNAL_TOOLCHAIN=$BUILD_USE_GCC_TOOLCHAIN"
       "-DBOOTSTRAP_CMAKE_CXX_COMPILER_EXTERNAL_TOOLCHAIN=$BUILD_USE_GCC_TOOLCHAIN"
-      "-DGCC_INSTALL_PREFIX=$BUILD_USE_GCC_TOOLCHAIN"
-      "-DBOOTSTRAP_GCC_INSTALL_PREFIX=$BUILD_USE_GCC_TOOLCHAIN"
     )
+
+    export CXXFLAGS="$CXXFLAGS --gcc-install-dir=$BUILD_USE_GCC_INSTALL_DIR --gcc-triple=$BUILD_USE_GCC_TRIPLE"
+
+    if [[ "x$CFLAGS" == "x" ]]; then
+      export CFLAGS="--gcc-install-dir=$BUILD_USE_GCC_INSTALL_DIR --gcc-triple=$BUILD_USE_GCC_TRIPLE"
+    else
+      export CFLAGS="$CFLAGS --gcc-install-dir=$BUILD_USE_GCC_INSTALL_DIR --gcc-triple=$BUILD_USE_GCC_TRIPLE"
+    fi
   fi
 
   if [[ ! -z "$BUILD_USE_LD" ]]; then
@@ -676,7 +687,7 @@ function build_with_llvm_clang() {
   export OBJDUMP="$LLVM_HOME_DIR/bin/llvm-objdump" ;
   export READELF="$LLVM_HOME_DIR/bin/llvm-readelf" ;
 
-  # Maybe need add --gcc-toolchain=$GCC_HOME_DIR to compile options
+  # Maybe need add --gcc-install-dir=$BUILD_USE_GCC_INSTALL_DIR --gcc-triple=$BUILD_USE_GCC_TRIPLE to compile options
   "$@"
 }
 if [[ $# -gt 0 ]]; then
@@ -771,7 +782,7 @@ if [ $BUILD_DOWNLOAD_ONLY -eq 0 ]; then
     echo -e "\\033[35;1m\tCXXFLAGS=$($LLVM_CONFIG_PATH --cxxflags)\\033[39;49;0m"
     echo -e "\\033[35;1m\tLDFLAGS=$($LLVM_CONFIG_PATH --ldflags)\\033[39;49;0m"
   fi
-  echo -e "\\033[35;1m\tMaybe need add --gcc-toolchain=$GCC_HOME_DIR to compile options\\033[39;49;0m"
+  echo -e "\\033[35;1m\tMaybe need add --gcc-install-dir=$BUILD_USE_GCC_INSTALL_DIR --gcc-triple=$BUILD_USE_GCC_TRIPLE to compile options\\033[39;49;0m"
 
   echo "Using:"
   echo "    mkdir -pv \$HOME/rpmbuild/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}"

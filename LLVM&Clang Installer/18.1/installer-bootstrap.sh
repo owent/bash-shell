@@ -93,72 +93,72 @@ CHECK_INFO_SLEEP=3
 # ======================= 安装目录初始化/工作目录清理 =======================
 while getopts "b:cde:g:hi:j:np:s-" OPTION; do
   case $OPTION in
-    p)
-      PREFIX_DIR="$OPTARG"
-      ;;
-    b)
-      BUILD_TYPE="$OPTARG"
-      ;;
-    c)
-      for CLEANUP_DIR in $(find . -maxdepth 1 -mindepth 1 -type d -name "*"); do
-        if [[ -e "$CLEANUP_DIR/.git" ]]; then
-          cd "$CLEANUP_DIR"
-          git reset --hard
-          git clean -dfx
-          cd -
-        else
-          rm -rf "$CLEANUP_DIR"
-        fi
-      done
-      echo -e "\\033[32;1mnotice: clear work dir(s) done.\\033[39;49;0m"
-      exit 0
-      ;;
-    d)
-      BUILD_DOWNLOAD_ONLY=1
-      echo -e "\\033[32;1mDownload mode.\\033[39;49;0m"
-      ;;
-    e)
-      BUILD_STAGE_CACHE_FILE="$OPTARG"
-      ;;
-    h)
-      echo "usage: $0 [options] -p=prefix_dir -c -h"
-      echo "options:"
-      echo "-b [build type]             Release (default), RelWithDebInfo, MinSizeRel, Debug"
-      echo "-c                          clean build cache."
-      echo "-d                          download only."
-      echo "-e                          set cmake cache file for stage 1."
-      echo "-h                          help message."
-      echo "-j [parallel jobs]          build in parallel using the given number of jobs."
-      echo "-i [install targets]        set install targets(stage2-install,stage2-install-distribution,install,install-distribution or other targets)."
-      echo "-g [gcc toolchain]          set gcc toolchain."
-      echo "-n                          print toolchain version and exit."
-      echo "-p [prefix_dir]             set prefix directory."
-      echo "-s                          use shared memory to build targets when support."
-      exit 0
-      ;;
-    i)
-      BUILD_INSTALL_TARGETS="$OPTARG"
-      ;;
-    j)
-      BUILD_JOBS_OPTION="-j$OPTARG"
-      ;;
-    n)
-      echo $LLVM_VERSION
-      exit 0
-      ;;
-    s)
-      BUILD_USE_SHM=1
-      ;;
-    g)
-      BUILD_USE_GCC_TOOLCHAIN="$OPTARG"
-      ;;
-    -)
-      break
-      ;;
-    ?) #当有不认识的选项的时候arg为?
-      echo "unkonw argument detected"
-      exit 1
-      ;;
+  p)
+    PREFIX_DIR="$OPTARG"
+    ;;
+  b)
+    BUILD_TYPE="$OPTARG"
+    ;;
+  c)
+    for CLEANUP_DIR in $(find . -maxdepth 1 -mindepth 1 -type d -name "*"); do
+      if [[ -e "$CLEANUP_DIR/.git" ]]; then
+        cd "$CLEANUP_DIR"
+        git reset --hard
+        git clean -dfx
+        cd -
+      else
+        rm -rf "$CLEANUP_DIR"
+      fi
+    done
+    echo -e "\\033[32;1mnotice: clear work dir(s) done.\\033[39;49;0m"
+    exit 0
+    ;;
+  d)
+    BUILD_DOWNLOAD_ONLY=1
+    echo -e "\\033[32;1mDownload mode.\\033[39;49;0m"
+    ;;
+  e)
+    BUILD_STAGE_CACHE_FILE="$OPTARG"
+    ;;
+  h)
+    echo "usage: $0 [options] -p=prefix_dir -c -h"
+    echo "options:"
+    echo "-b [build type]             Release (default), RelWithDebInfo, MinSizeRel, Debug"
+    echo "-c                          clean build cache."
+    echo "-d                          download only."
+    echo "-e                          set cmake cache file for stage 1."
+    echo "-h                          help message."
+    echo "-j [parallel jobs]          build in parallel using the given number of jobs."
+    echo "-i [install targets]        set install targets(stage2-install,stage2-install-distribution,install,install-distribution or other targets)."
+    echo "-g [gcc toolchain]          set gcc toolchain."
+    echo "-n                          print toolchain version and exit."
+    echo "-p [prefix_dir]             set prefix directory."
+    echo "-s                          use shared memory to build targets when support."
+    exit 0
+    ;;
+  i)
+    BUILD_INSTALL_TARGETS="$OPTARG"
+    ;;
+  j)
+    BUILD_JOBS_OPTION="-j$OPTARG"
+    ;;
+  n)
+    echo $LLVM_VERSION
+    exit 0
+    ;;
+  s)
+    BUILD_USE_SHM=1
+    ;;
+  g)
+    BUILD_USE_GCC_TOOLCHAIN="$OPTARG"
+    ;;
+  -)
+    break
+    ;;
+  ?) #当有不认识的选项的时候arg为?
+    echo "unkonw argument detected"
+    exit 1
+    ;;
   esac
 done
 
@@ -375,6 +375,11 @@ function cleanup_build_dir() {
 
 trap cleanup_build_dir EXIT
 
+if [[ ! -z "$BUILD_USE_GCC_TOOLCHAIN" ]]; then
+  BUILD_USE_GCC_INSTALL_DIR="$(dirname "$(find "$BUILD_USE_GCC_TOOLCHAIN/lib/gcc" -name crtbegin.o | head -n 1)")"
+  BUILD_USE_GCC_TRIPLE="$(basename "$(dirname "$BUILD_USE_GCC_INSTALL_DIR")")"
+fi
+
 function build_llvm_toolchain() {
   STAGE_BUILD_EXT_COMPILER_FLAGS=("-DCMAKE_FIND_ROOT_PATH=$PREFIX_DIR"
     "-DCMAKE_PREFIX_PATH=$PREFIX_DIR"
@@ -400,13 +405,19 @@ function build_llvm_toolchain() {
   if [[ ! -z "$BUILD_USE_GCC_TOOLCHAIN" ]]; then
     export CMAKE_CXX_COMPILER_EXTERNAL_TOOLCHAIN=$BUILD_USE_GCC_TOOLCHAIN
     STAGE_BUILD_EXT_COMPILER_FLAGS=("${STAGE_BUILD_EXT_COMPILER_FLAGS[@]}"
-      # "-DBOOTSTRAP_CMAKE_CXX_FLAGS=--gcc-toolchain=$BUILD_USE_GCC_TOOLCHAIN"
-      # "-DBOOTSTRAP_CMAKE_C_FLAGS=--gcc-toolchain=$BUILD_USE_GCC_TOOLCHAIN"
+      "-DBOOTSTRAP_CMAKE_CXX_FLAGS=--gcc-install-dir=$BUILD_USE_GCC_INSTALL_DIR --gcc-triple=$BUILD_USE_GCC_TRIPLE"
+      "-DBOOTSTRAP_CMAKE_C_FLAGS=--gcc-install-dir=$BUILD_USE_GCC_INSTALL_DIR --gcc-triple=$BUILD_USE_GCC_TRIPLE"
       "-DCMAKE_CXX_COMPILER_EXTERNAL_TOOLCHAIN=$BUILD_USE_GCC_TOOLCHAIN"
       "-DBOOTSTRAP_CMAKE_CXX_COMPILER_EXTERNAL_TOOLCHAIN=$BUILD_USE_GCC_TOOLCHAIN"
-      "-DGCC_INSTALL_PREFIX=$BUILD_USE_GCC_TOOLCHAIN"
-      "-DBOOTSTRAP_GCC_INSTALL_PREFIX=$BUILD_USE_GCC_TOOLCHAIN"
     )
+
+    export CXXFLAGS="$CXXFLAGS --gcc-install-dir=$BUILD_USE_GCC_INSTALL_DIR --gcc-triple=$BUILD_USE_GCC_TRIPLE"
+
+    if [[ "x$CFLAGS" == "x" ]]; then
+      export CFLAGS="--gcc-install-dir=$BUILD_USE_GCC_INSTALL_DIR --gcc-triple=$BUILD_USE_GCC_TRIPLE"
+    else
+      export CFLAGS="$CFLAGS --gcc-install-dir=$BUILD_USE_GCC_INSTALL_DIR --gcc-triple=$BUILD_USE_GCC_TRIPLE"
+    fi
   fi
 
   if [[ ! -z "$BUILD_USE_LD" ]]; then
@@ -449,9 +460,9 @@ function build_llvm_toolchain() {
   fi
 
   # 这里会消耗茫茫多内存，所以尝试先开启多进程编译，失败之后降级到单进程
-  cmake --build . $BUILD_JOBS_OPTION --config $BUILD_TYPE --target stage2 stage2-distribution \
-    || cmake --build . -j2 --config $BUILD_TYPE --target stage2 stage2-distribution \
-    || cmake --build . --config $BUILD_TYPE --target stage2 stage2-distribution
+  cmake --build . $BUILD_JOBS_OPTION --config $BUILD_TYPE --target stage2 stage2-distribution ||
+    cmake --build . -j2 --config $BUILD_TYPE --target stage2 stage2-distribution ||
+    cmake --build . --config $BUILD_TYPE --target stage2 stage2-distribution
 
   if [[ 0 -ne $? ]]; then
     echo -e "\\033[31;1mError: build llvm failed when run cmake --build .\\033[39;49;0m"
@@ -676,7 +687,7 @@ function build_with_llvm_clang() {
   export OBJDUMP="$LLVM_HOME_DIR/bin/llvm-objdump" ;
   export READELF="$LLVM_HOME_DIR/bin/llvm-readelf" ;
 
-  # Maybe need add --gcc-toolchain=$GCC_HOME_DIR to compile options
+  # Maybe need add --gcc-install-dir=$BUILD_USE_GCC_INSTALL_DIR --gcc-triple=$BUILD_USE_GCC_TRIPLE to compile options
   "$@"
 }
 if [[ $# -gt 0 ]]; then
@@ -771,7 +782,7 @@ if [ $BUILD_DOWNLOAD_ONLY -eq 0 ]; then
     echo -e "\\033[35;1m\tCXXFLAGS=$($LLVM_CONFIG_PATH --cxxflags)\\033[39;49;0m"
     echo -e "\\033[35;1m\tLDFLAGS=$($LLVM_CONFIG_PATH --ldflags)\\033[39;49;0m"
   fi
-  echo -e "\\033[35;1m\tMaybe need add --gcc-toolchain=$GCC_HOME_DIR to compile options\\033[39;49;0m"
+  echo -e "\\033[35;1m\tMaybe need add --gcc-install-dir=$BUILD_USE_GCC_INSTALL_DIR --gcc-triple=$BUILD_USE_GCC_TRIPLE to compile options\\033[39;49;0m"
 
   echo "Using:"
   echo "    mkdir -pv \$HOME/rpmbuild/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}"
