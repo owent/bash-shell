@@ -410,14 +410,6 @@ function build_llvm_toolchain() {
       "-DCMAKE_CXX_COMPILER_EXTERNAL_TOOLCHAIN=$BUILD_USE_GCC_TOOLCHAIN"
       "-DBOOTSTRAP_CMAKE_CXX_COMPILER_EXTERNAL_TOOLCHAIN=$BUILD_USE_GCC_TOOLCHAIN"
     )
-
-    export CXXFLAGS="$CXXFLAGS --gcc-install-dir=$BUILD_USE_GCC_INSTALL_DIR --gcc-triple=$BUILD_USE_GCC_TRIPLE"
-
-    if [[ "x$CFLAGS" == "x" ]]; then
-      export CFLAGS="--gcc-install-dir=$BUILD_USE_GCC_INSTALL_DIR --gcc-triple=$BUILD_USE_GCC_TRIPLE"
-    else
-      export CFLAGS="$CFLAGS --gcc-install-dir=$BUILD_USE_GCC_INSTALL_DIR --gcc-triple=$BUILD_USE_GCC_TRIPLE"
-    fi
   fi
 
   if [[ ! -z "$BUILD_USE_LD" ]]; then
