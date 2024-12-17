@@ -410,6 +410,10 @@ function build_llvm_toolchain() {
       "-DBOOTSTRAP_CMAKE_C_FLAGS=--gcc-install-dir=$BUILD_USE_GCC_INSTALL_DIR --gcc-triple=$BUILD_USE_GCC_TRIPLE"
       "-DCMAKE_CXX_COMPILER_EXTERNAL_TOOLCHAIN=$BUILD_USE_GCC_TOOLCHAIN"
       "-DBOOTSTRAP_CMAKE_CXX_COMPILER_EXTERNAL_TOOLCHAIN=$BUILD_USE_GCC_TOOLCHAIN"
+      # 临时采用这种方案替换默认的gcc查找路径，后续看是不是直接改 clang/include/clang/Config/config.h.cmake 文件
+      # @see getGCCToolchainDir in <llvm-projects>/clang/lib/Driver/ToolChains/Gnu.cpp
+      "-DGCC_INSTALL_PREFIX=$BUILD_USE_GCC_TOOLCHAIN -DUSE_DEPRECATED_GCC_INSTALL_PREFIX=ON"
+      "-DBOOTSTRAP_GCC_INSTALL_PREFIX=$BUILD_USE_GCC_TOOLCHAIN -DBOOTSTRAP_USE_DEPRECATED_GCC_INSTALL_PREFIX=ON"
     )
   fi
 
@@ -667,6 +671,9 @@ else
 fi
 
 function build_with_llvm_clang() {
+  BUILD_USE_GCC_INSTALL_DIR="$(dirname "$(find "$GCC_HOME_DIR/lib/gcc" -name crtbegin.o | head -n 1)")"
+  BUILD_USE_GCC_TRIPLE="$(basename "$(dirname "$BUILD_USE_GCC_INSTALL_DIR")")"
+
   export CC="$LLVM_HOME_DIR/bin/clang" ;
   export CXX="$LLVM_HOME_DIR/bin/clang++" ;
   export AR="$LLVM_HOME_DIR/bin/llvm-ar" ;
