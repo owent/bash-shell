@@ -7,8 +7,8 @@ set(PACKAGE_VENDOR OWenT CACHE STRING "")
 set(LLVM_ENABLE_PROJECTS "bolt;clang;clang-tools-extra;lld;llvm;lldb;libclc;mlir;polly;pstl" CACHE STRING "")
 set(LLVM_ENABLE_RUNTIMES "compiler-rt;libcxx;libcxxabi;libunwind" CACHE STRING "")
 
-# 临时采用这种方案替换默认的gcc查找路径，后续看是不是直接改 clang/include/clang/Config/config.h.cmake 文件
-# @see getGCCToolchainDir in <llvm-projects>/clang/lib/Driver/ToolChains/Gnu.cpp
+# 临时采用这种方案替换默认的gcc查找路径，后续看是不是直接改 clang/include/clang/Config/config.h.cmake 文件 @see getGCCToolchainDir in
+# <llvm-projects>/clang/lib/Driver/ToolChains/Gnu.cpp
 set(USE_DEPRECATED_GCC_INSTALL_PREFIX ON CACHE BOOL "")
 
 set(LLVM_ENABLE_BACKTRACES OFF CACHE BOOL "")
@@ -140,7 +140,7 @@ if(CMAKE_HOST_SYSTEM_NAME MATCHES "Linux|Windows")
   set(LLVM_USE_INTEL_JITEVENTS ON CACHE BOOL "")
 endif()
 # Cross compiling
-if("${LLVM_TARGETS_TO_BUILD}" MATCHES "Native|X86")
+if("${LLVM_TARGETS_TO_BUILD}" MATCHES "Native|X86" AND NOT LINUX_NATIVE_TARGET)
   if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Linux")
     cmake_host_system_information(RESULT LINUX_NATIVE_IS_64BIT QUERY IS_64BIT)
     if(CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "x86_64" OR ("${CMAKE_HOST_SYSTEM_PROCESSOR}" STREQUAL ""
@@ -158,7 +158,11 @@ message(STATUS "Stage2: LLVM_TARGETS_TO_BUILD=${LLVM_TARGETS_TO_BUILD}")
 message(STATUS "Stage2: LINUX_NATIVE_IS_64BIT=${LINUX_NATIVE_IS_64BIT}")
 message(STATUS "Stage2: LINUX_NATIVE_TARGET=${LINUX_NATIVE_TARGET}")
 
-foreach(target aarch64-unknown-linux-gnu;armv7-unknown-linux-gnueabihf;i386-unknown-linux-gnu;x86_64-unknown-linux-gnu)
+set(LINUX_SCAN_TARGETS
+    "aarch64-unknown-linux-gnu;armv7-unknown-linux-gnueabihf;i386-unknown-linux-gnu;x86_64-unknown-linux-gnu;${LINUX_NATIVE_TARGET}"
+)
+list(REMOVE_DUPLICATES LINUX_SCAN_TARGETS)
+foreach(target ${LINUX_SCAN_TARGETS})
   if(LINUX_${target}_SYSROOT OR target STREQUAL "${LINUX_NATIVE_TARGET}")
     # Set the per-target builtins options.
     list(APPEND BUILTIN_TARGETS "${target}")
@@ -209,6 +213,8 @@ foreach(target aarch64-unknown-linux-gnu;armv7-unknown-linux-gnueabihf;i386-unkn
 
     # Use .build-id link.
     list(APPEND RUNTIME_BUILD_ID_LINK "${target}")
+
+    break()
   endif()
 endforeach()
 
