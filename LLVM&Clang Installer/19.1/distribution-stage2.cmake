@@ -7,6 +7,10 @@ set(PACKAGE_VENDOR OWenT CACHE STRING "")
 set(LLVM_ENABLE_PROJECTS "bolt;clang;clang-tools-extra;lld;llvm;lldb;libclc;mlir;polly;pstl" CACHE STRING "")
 set(LLVM_ENABLE_RUNTIMES "compiler-rt;libcxx;libcxxabi;libunwind" CACHE STRING "")
 
+# 临时采用这种方案替换默认的gcc查找路径，后续看是不是直接改 clang/include/clang/Config/config.h.cmake 文件
+# @see getGCCToolchainDir in <llvm-projects>/clang/lib/Driver/ToolChains/Gnu.cpp
+set(USE_DEPRECATED_GCC_INSTALL_PREFIX ON CACHE BOOL "")
+
 set(LLVM_ENABLE_BACKTRACES OFF CACHE BOOL "")
 set(LLVM_ENABLE_DIA_SDK OFF CACHE BOOL "")
 set(LLVM_ENABLE_LIBCXX ON CACHE BOOL "")
