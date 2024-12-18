@@ -1488,7 +1488,12 @@ function build_gcc() {
         BDWGC_PREBIUILT="--with-target-bdw-gc=$STAGE_LIBRARY_PREFIX/multilib/$SYS_LONG_BIT"
       fi
 
-      GCC_CONF_OPTION_ALL="--prefix=$INSTALL_PREFIX_PATH --with-gmp=$STAGE_LIBRARY_PREFIX --with-mpc=$STAGE_LIBRARY_PREFIX --with-mpfr=$STAGE_LIBRARY_PREFIX"
+      GCC_CONF_OPTION_ALL="--prefix=$INSTALL_PREFIX_PATH"
+      BUILD_TARGET_TRIPLE=$(env LANG=en_US.UTF-8 LANGUAGE=en_US.UTF-8 LC_ALL=en_US.UTF-8 "$CC" -v 2>&1 | grep -i 'target:' | awk '{print $NF}')
+      if [[ ! -z "$BUILD_TARGET_TRIPLE" ]]; then
+        GCC_CONF_OPTION_ALL="$GCC_CONF_OPTION_ALL --build=$BUILD_TARGET_TRIPLE"
+      fi
+      GCC_CONF_OPTION_ALL="$GCC_CONF_OPTION_ALL --with-gmp=$STAGE_LIBRARY_PREFIX --with-mpc=$STAGE_LIBRARY_PREFIX --with-mpfr=$STAGE_LIBRARY_PREFIX"
       GCC_CONF_OPTION_ALL="$GCC_CONF_OPTION_ALL --with-isl=$STAGE_LIBRARY_PREFIX --with-zstd=$STAGE_LIBRARY_PREFIX $BDWGC_PREBIUILT "
       GCC_CONF_OPTION_ALL="$GCC_CONF_OPTION_ALL --enable-gnu-unique-object --enable-build-with-cxx --disable-libjava-multilib --enable-checking=release"
       GCC_CONF_OPTION_ALL="$GCC_CONF_OPTION_ALL --enable-gold --enable-ld --enable-libada --enable-lto --enable-objc-gc --enable-gprofng --enable-vtable-verify"

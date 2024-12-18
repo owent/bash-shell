@@ -403,6 +403,13 @@ function build_llvm_toolchain() {
     export LDFLAGS="$LDFLAGS -L$PREFIX_DIR/lib"
   fi
 
+  # Try to use the same triple as gcc, so we can find the correct libgcc
+  BUILD_TARGET_TRIPLE=$(env LANG=en_US.UTF-8 LANGUAGE=en_US.UTF-8 LC_ALL=en_US.UTF-8 "$CC" -v 2>&1 | grep -i 'target:' | awk '{print $NF}')
+  if [[ ! -z "$BUILD_TARGET_TRIPLE" ]]; then
+    STAGE_BUILD_EXT_COMPILER_FLAGS=("${STAGE_BUILD_EXT_COMPILER_FLAGS[@]}"
+      "-DLLVM_DEFAULT_TARGET_TRIPLE=$BUILD_TARGET_TRIPLE" "-DBOOTSTRAP_LLVM_DEFAULT_TARGET_TRIPLE=$BUILD_TARGET_TRIPLE")
+  fi
+
   if [[ ! -z "$BUILD_USE_GCC_TOOLCHAIN" ]]; then
     export CMAKE_CXX_COMPILER_EXTERNAL_TOOLCHAIN=$BUILD_USE_GCC_TOOLCHAIN
     STAGE_BUILD_EXT_COMPILER_FLAGS=("${STAGE_BUILD_EXT_COMPILER_FLAGS[@]}"
@@ -632,6 +639,12 @@ fi
 echo -e "\\033[32;1mbuild llvm success.\\033[39;49;0m"
 
 if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
+
+  if [[ ! -z "$BUILD_USE_GCC_TOOLCHAIN" ]]; then
+    echo "gcc-toolchain: $BUILD_USE_GCC_TOOLCHAIN
+gcc-install-dir: $BUILD_USE_GCC_INSTALL_DIR
+gcc-triple: $BUILD_USE_GCC_TRIPLE" >"$PREFIX_DIR/llvm.gcc-toolchain.conf"
+  fi
 
   DEP_COMPILER_HOME="$(dirname "$(dirname "$ORIGIN_COMPILER_CXX")")"
   echo "#!/bin/bash
