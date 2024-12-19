@@ -404,11 +404,11 @@ function build_llvm_toolchain() {
   fi
 
   # Try to use the same triple as gcc, so we can find the correct libgcc
-  BUILD_TARGET_TRIPLE=$(env LANG=en_US.UTF-8 LANGUAGE=en_US.UTF-8 LC_ALL=en_US.UTF-8 "$CC" -v 2>&1 | grep -i 'target:' | awk '{print $NF}')
+  BUILD_TARGET_TRIPLE=$(env LANG=en_US.UTF-8 LANGUAGE=en_US.UTF-8 LC_ALL=en_US.UTF-8 "$CC" -v 2>&1 | grep -i 'Target:' | awk '{print $NF}')
   if [[ ! -z "$BUILD_TARGET_TRIPLE" ]]; then
     STAGE_BUILD_EXT_COMPILER_FLAGS=("${STAGE_BUILD_EXT_COMPILER_FLAGS[@]}"
       "-DLLVM_DEFAULT_TARGET_TRIPLE=$BUILD_TARGET_TRIPLE" "-DBOOTSTRAP_LLVM_DEFAULT_TARGET_TRIPLE=$BUILD_TARGET_TRIPLE"
-      "-DLLVM_NATIVE_TARGET=$BUILD_TARGET_TRIPLE" "-DBOOTSTRAP_LLVM_NATIVE_TARGET=$BUILD_TARGET_TRIPLE")
+      "-DLLVM_HOST_TRIPLE=$BUILD_TARGET_TRIPLE" "-DBOOTSTRAP_LLVM_HOST_TRIPLE=$BUILD_TARGET_TRIPLE")
   fi
 
   if [[ ! -z "$BUILD_USE_GCC_TOOLCHAIN" ]]; then
