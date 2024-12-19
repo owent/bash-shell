@@ -418,11 +418,13 @@ function build_llvm_toolchain() {
       "-DBOOTSTRAP_CMAKE_C_FLAGS=--gcc-install-dir=$BUILD_USE_GCC_INSTALL_DIR --gcc-triple=$BUILD_USE_GCC_TRIPLE"
       "-DCMAKE_CXX_COMPILER_EXTERNAL_TOOLCHAIN=$BUILD_USE_GCC_TOOLCHAIN"
       "-DBOOTSTRAP_CMAKE_CXX_COMPILER_EXTERNAL_TOOLCHAIN=$BUILD_USE_GCC_TOOLCHAIN"
-      # 临时采用这种方案替换默认的gcc查找路径，后续看是不是直接改 clang/include/clang/Config/config.h.cmake 文件
-      # @see getGCCToolchainDir in <llvm-projects>/clang/lib/Driver/ToolChains/Gnu.cpp
-      "-DGCC_INSTALL_PREFIX=$BUILD_USE_GCC_TOOLCHAIN -DUSE_DEPRECATED_GCC_INSTALL_PREFIX=ON"
-      "-DBOOTSTRAP_GCC_INSTALL_PREFIX=$BUILD_USE_GCC_TOOLCHAIN -DBOOTSTRAP_USE_DEPRECATED_GCC_INSTALL_PREFIX=ON"
     )
+    # 替换默认的gcc查找路径，直接改 clang/include/clang/Config/config.h.cmake 文件
+    # @see getGCCToolchainDir in <llvm-projects>/clang/lib/Driver/ToolChains/Gnu.cpp
+    sed -i.bak -E "s;define[[:space:]]+GCC_INSTALL_PREFIX[[:space:]]+\".*\";define GCC_INSTALL_PREFIX \"$BUILD_USE_GCC_INSTALL_DIR\";g" "$LLVM_DIR/clang/include/clang/Config/config.h.cmake"
+
+    echo "============ Patched GCC_INSTALL_PREFIX in $LLVM_DIR/clang/include/clang/Config/config.h.cmake ============"
+    cat "$LLVM_DIR/clang/include/clang/Config/config.h.cmake"
   fi
 
   if [[ ! -z "$BUILD_USE_LD" ]]; then
