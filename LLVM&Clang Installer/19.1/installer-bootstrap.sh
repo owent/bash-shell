@@ -421,7 +421,7 @@ function build_llvm_toolchain() {
     )
     # 替换默认的gcc查找路径，直接改 clang/include/clang/Config/config.h.cmake 文件
     # @see getGCCToolchainDir in <llvm-projects>/clang/lib/Driver/ToolChains/Gnu.cpp
-    sed -i.bak -E "s;define[[:space:]]+GCC_INSTALL_PREFIX[[:space:]]+\".*\";define GCC_INSTALL_PREFIX \"$BUILD_USE_GCC_INSTALL_DIR\";g" "$LLVM_DIR/clang/include/clang/Config/config.h.cmake"
+    sed -i.bak -E "s;define[[:space:]]+GCC_INSTALL_PREFIX[[:space:]]+\".*\";define GCC_INSTALL_PREFIX \"$BUILD_USE_GCC_TOOLCHAIN\";g" "$LLVM_DIR/clang/include/clang/Config/config.h.cmake"
 
     echo "============ Patched GCC_INSTALL_PREFIX in $LLVM_DIR/clang/include/clang/Config/config.h.cmake ============"
     cat "$LLVM_DIR/clang/include/clang/Config/config.h.cmake"
