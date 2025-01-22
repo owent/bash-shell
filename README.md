@@ -745,6 +745,14 @@ apm config set git "C:\Program Files\Git\bin\git.exe"
 
 ### SSH/SFTP
 
+```bash
+# sshd版本过老导致 sign_and_send_pubkey: no mutual signature supported 。
+# 配置 ~/.ssh/config 文件，添加如下内容
+Host *
+    PubkeyAcceptedKeyTypes=+ssh-rsa
+    HostKeyAlgorithms=+ssh-rsa
+```
+
 + \(首选,推荐\)[Tabby](https://tabby.sh/)
 + \(推荐\)[Terminal](https://github.com/Microsoft/Terminal)+[OpenSSH](https://www.openssh.com/)
   >
