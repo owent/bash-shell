@@ -2045,15 +2045,17 @@ fi
 echo '#!/bin/bash
 ' >"$PREFIX_DIR/load-gcc-envs.sh"
 echo "GCC_HOME_DIR=\"$PREFIX_DIR\"" >>"$PREFIX_DIR/load-gcc-envs.sh"
-echo '
-if [[ "x$LD_LIBRARY_PATH" == "x" ]]; then
+echo 'if [[ ! ( "$LD_LIBRARY_PATH" =~ (^|:)"$GCC_HOME_DIR/lib"(:|$) ) ]]; then
+  if [[ -z "$LD_LIBRARY_PATH" ]]; then
     export LD_LIBRARY_PATH="$GCC_HOME_DIR/lib64:$GCC_HOME_DIR/lib" ;
-else
+  else
     export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$GCC_HOME_DIR/lib64:$GCC_HOME_DIR/lib" ;
+  fi
 fi
 
-export PATH="$GCC_HOME_DIR/bin:$PATH" ;
-
+if [[ ! ( "$PATH" =~ (^|:)"$GCC_HOME_DIR/bin"(:|$) ) ]]; then
+  export PATH="$GCC_HOME_DIR/bin:$PATH" ;
+fi
 
 if [[ $# -gt 0 ]]; then
   env CC="$GCC_HOME_DIR/bin/gcc"        \
@@ -2071,6 +2073,17 @@ if [[ $# -gt 0 ]]; then
 fi
 ' >>"$PREFIX_DIR/load-gcc-envs.sh"
 chmod +x "$PREFIX_DIR/load-gcc-envs.sh"
+
+echo '#!/bin/bash
+' >"$PREFIX_DIR/load-gcc-envs.sh"
+
+echo "GCC_HOME_DIR=\"$PREFIX_DIR\"" >>"$PREFIX_DIR/load-gcc-envs-no-default.sh"
+echo 'if [[ ! ( "$PATH" =~ (^|:)"$GCC_HOME_DIR/bin"(:|$) ) ]]; then
+  export PATH="$PATH:$GCC_HOME_DIR/bin" ;
+fi
+
+' >>"$PREFIX_DIR/load-gcc-envs-no-default.sh"
+chmod +x "$PREFIX_DIR/load-gcc-envs-no-default.sh"
 
 echo "# -*- python -*-
 import sys

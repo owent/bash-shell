@@ -667,23 +667,34 @@ LLVM_HOME_DIR=\"$PREFIX_DIR\"" >"$PREFIX_DIR/load-llvm-envs.sh"
   done
 
   echo "LLVM_LD_LIBRARY_PATH=\"$LLVM_LD_LIBRARY_PATH\" ;" >>"$PREFIX_DIR/load-llvm-envs.sh"
+  cat "$PREFIX_DIR/load-llvm-envs.sh" >"$PREFIX_DIR/load-llvm-envs-no-default.sh"
+
   echo '
-if [[ "x/" == "x$GCC_HOME_DIR" ]] || [[ "x/usr" == "x$GCC_HOME_DIR" ]] || [[ "x/usr/local" == "x$GCC_HOME_DIR" ]] || [[ "x$LLVM_HOME_DIR" == "x$GCC_HOME_DIR" ]]; then
-    if [[ "x$LD_LIBRARY_PATH" == "x" ]]; then
-        export LD_LIBRARY_PATH="$LLVM_LD_LIBRARY_PATH" ;
+
+if [[ "/" != "$GCC_HOME_DIR" ]] && [[ "$LLVM_HOME_DIR" != "$GCC_HOME_DIR" ]]; then
+  if [[ ! ( "$PATH" =~ (^|:)"$GCC_HOME_DIR/bin"(:|$) ) ]]; then
+    export PATH="$GCC_HOME_DIR/bin:$PATH" ;
+  fi
+
+  if [[ ! ( "$LD_LIBRARY_PATH" =~ (^|:)"$GCC_HOME_DIR/lib"(:|$) ) ]]; then
+    if [[ -z "$LD_LIBRARY_PATH" ]]; then
+      export LD_LIBRARY_PATH="$GCC_HOME_DIR/lib64:$GCC_HOME_DIR/lib" ;
     else
-        export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$LLVM_LD_LIBRARY_PATH" ;
+      export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$GCC_HOME_DIR/lib64:$GCC_HOME_DIR/lib" ;
     fi
-    
-    export PATH="$LLVM_HOME_DIR/bin:$LLVM_HOME_DIR/libexec:$PATH" ;
-else
-    if [[ "x$LD_LIBRARY_PATH" == "x" ]]; then
-        export LD_LIBRARY_PATH="$LLVM_LD_LIBRARY_PATH:$GCC_HOME_DIR/lib64:$GCC_HOME_DIR/lib" ;
-    else
-        export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$LLVM_LD_LIBRARY_PATH:$GCC_HOME_DIR/lib64:$GCC_HOME_DIR/lib" ;
-    fi
-    
-    export PATH="$LLVM_HOME_DIR/bin:$LLVM_HOME_DIR/libexec:$GCC_HOME_DIR/bin:$PATH" ;
+  fi
+fi
+
+if [[ ! ( "$PATH" =~ (^|:)"$LLVM_HOME_DIR/bin"(:|$) ) ]]; then
+  export PATH="$LLVM_HOME_DIR/bin:$LLVM_HOME_DIR/libexec:$PATH" ;
+fi
+
+if [[ ! ( "$LD_LIBRARY_PATH" =~ (^|:)"$LLVM_LD_LIBRARY_PATH"(:|$) ) ]]; then
+  if [[ -z "$LD_LIBRARY_PATH" ]]; then
+    export LD_LIBRARY_PATH="$LLVM_LD_LIBRARY_PATH" ;
+  else
+    export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$LLVM_LD_LIBRARY_PATH" ;
+  fi
 fi
 
 function build_with_llvm_clang() {
@@ -694,9 +705,7 @@ function build_with_llvm_clang() {
   export CXX="$LLVM_HOME_DIR/bin/clang++" ;
   export AR="$LLVM_HOME_DIR/bin/llvm-ar" ;
   export AS="$LLVM_HOME_DIR/bin/llvm-as" ;
-' >>"$PREFIX_DIR/load-llvm-envs.sh"
-  echo "  $LD_LOADER_SCRIPT" >>"$PREFIX_DIR/load-llvm-envs.sh"
-  echo '  export RANLIB="$LLVM_HOME_DIR/bin/llvm-ranlib" ;
+  export RANLIB="$LLVM_HOME_DIR/bin/llvm-ranlib" ;
   export NM="$LLVM_HOME_DIR/bin/llvm-nm" ;
   export STRIP="$LLVM_HOME_DIR/bin/llvm-strip" ;
   export OBJCOPY="$LLVM_HOME_DIR/bin/llvm-objcopy" ;
@@ -711,6 +720,42 @@ if [[ $# -gt 0 ]]; then
 fi
 ' >>"$PREFIX_DIR/load-llvm-envs.sh"
   chmod +x "$PREFIX_DIR/load-llvm-envs.sh"
+
+  echo '
+
+if [[ "/" != "$GCC_HOME_DIR" ]] && [[ "$LLVM_HOME_DIR" != "$GCC_HOME_DIR" ]]; then
+  if [[ ! ( "$PATH" =~ (^|:)"$GCC_HOME_DIR/bin"(:|$) ) ]]; then
+    export PATH="$PATH:$GCC_HOME_DIR/bin" ;
+  fi
+fi
+
+if [[ ! ( "$PATH" =~ (^|:)"$LLVM_HOME_DIR/bin"(:|$) ) ]]; then
+  export PATH="$PATH:$LLVM_HOME_DIR/bin:$LLVM_HOME_DIR/libexec" ;
+fi
+
+function build_with_llvm_clang() {
+  BUILD_USE_GCC_INSTALL_DIR="$(dirname "$(find "$GCC_HOME_DIR/lib/gcc" -name crtbegin.o | head -n 1)")"
+  BUILD_USE_GCC_TRIPLE="$(basename "$(dirname "$BUILD_USE_GCC_INSTALL_DIR")")"
+
+  export CC="$LLVM_HOME_DIR/bin/clang" ;
+  export CXX="$LLVM_HOME_DIR/bin/clang++" ;
+  export AR="$LLVM_HOME_DIR/bin/llvm-ar" ;
+  export AS="$LLVM_HOME_DIR/bin/llvm-as" ;
+  export RANLIB="$LLVM_HOME_DIR/bin/llvm-ranlib" ;
+  export NM="$LLVM_HOME_DIR/bin/llvm-nm" ;
+  export STRIP="$LLVM_HOME_DIR/bin/llvm-strip" ;
+  export OBJCOPY="$LLVM_HOME_DIR/bin/llvm-objcopy" ;
+  export OBJDUMP="$LLVM_HOME_DIR/bin/llvm-objdump" ;
+  export READELF="$LLVM_HOME_DIR/bin/llvm-readelf" ;
+
+  # Maybe need add --gcc-install-dir=$BUILD_USE_GCC_INSTALL_DIR --gcc-triple=$BUILD_USE_GCC_TRIPLE to compile options
+  "$@"
+}
+if [[ $# -gt 0 ]]; then
+  build_with_llvm_clang "$@"
+fi
+' >>"$PREFIX_DIR/load-llvm-envs-no-default.sh"
+  chmod +x "$PREFIX_DIR/load-llvm-envs-no-default.sh"
 
 else
   echo -e "\\033[35;1mDownloaded.\\033[39;49;0m"
