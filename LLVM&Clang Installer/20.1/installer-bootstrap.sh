@@ -71,6 +71,20 @@ if [[ -z "$CC" ]]; then
   fi
 fi
 
+TEST_SYSTEM_LIBRARIES=(rt pthread dl m)
+for TEST_LIB in ${TEST_SYSTEM_LIBRARIES[@]}; do
+  echo "#include <cstdio>
+int main() { return 0; }" | "$CXX" -o /dev/null -x c++ -l$TEST_LIB -pipe -
+  if [[ $? -eq 0 ]]; then
+    if [[ -z "$LDFLAGS" ]]; then
+      export LDFLAGS="-l$TEST_LIB"
+    else
+      export LDFLAGS="$LDFLAGS -l$TEST_LIB"
+    fi
+  fi
+done
+export LDFLAGS="$LDFLAGS"
+
 ORIGIN_COMPILER_CC="$(readlink -f "$CC")"
 ORIGIN_COMPILER_CXX="$(readlink -f "$CXX")"
 

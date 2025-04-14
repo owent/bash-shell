@@ -125,7 +125,7 @@ CentOS 7 & CentOS 8
   + global -> 6.6.14
   + xz -> 5.6.3
   + libiconv -> 1.18
-+ 2025-04-14    Update
++ 2025-04-14    Add experimental python without GIL, Update
   + libtool -> 2.5.4
   + mpfr -> 4.2.2
   + binutils -> 2.44

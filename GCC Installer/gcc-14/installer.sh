@@ -61,14 +61,6 @@ PREFIX_DIR=/usr/local/gcc-$COMPOMENTS_GCC_VERSION
 BUILD_TARGET_CONF_OPTION=""
 BUILD_OTHER_CONF_OPTION=""
 BUILD_DOWNLOAD_ONLY=0
-BUILD_LDFLAGS="-Wl,-rpath=\$ORIGIN:\$ORIGIN/../lib64:\$ORIGIN/../lib"
-# See https://stackoverflow.com/questions/42344932/how-to-include-correctly-wl-rpath-origin-linker-argument-in-a-makefile
-if [[ "owent$LDFLAGS" == "owent" ]]; then
-  export LDFLAGS="$BUILD_LDFLAGS"
-else
-  export LDFLAGS="$LDFLAGS $BUILD_LDFLAGS"
-fi
-export ORIGIN='$ORIGIN'
 if [[ -z "$BUILD_WITH_INTERNAL_GLIBC" ]]; then
   BUILD_WITH_INTERNAL_GLIBC=0
 fi
@@ -138,12 +130,31 @@ if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
   PREFIX_DIR="$(cd "$PREFIX_DIR" && pwd)"
 fi
 
+BUILD_LDFLAGS="-Wl,-rpath=\$ORIGIN:\$ORIGIN/../lib64:\$ORIGIN/../lib:$PREFIX_DIR/lib64:$PREFIX_DIR/lib"
+# See https://stackoverflow.com/questions/42344932/how-to-include-correctly-wl-rpath-origin-linker-argument-in-a-makefile
+if [[ "owent$LDFLAGS" == "owent" ]]; then
+  export LDFLAGS="$BUILD_LDFLAGS"
+else
+  export LDFLAGS="$LDFLAGS $BUILD_LDFLAGS"
+fi
+export ORIGIN='$ORIGIN'
+
 # ======================= 转到脚本目录 =======================
 WORKING_DIR="$PWD"
 if [[ -z "$CC" ]]; then
   export CC=gcc
   export CXX=g++
 fi
+
+TEST_SYSTEM_LIBRARIES=(rt pthread dl m)
+for TEST_LIB in ${TEST_SYSTEM_LIBRARIES[@]}; do
+  echo "#include <cstdio>
+int main() { return 0; }" | "$CXX" -o /dev/null -x c++ -l$TEST_LIB -pipe -
+  if [[ $? -eq 0 ]]; then
+    LDFLAGS="$LDFLAGS -l$TEST_LIB"
+  fi
+done
+export LDFLAGS="$LDFLAGS"
 
 PREFIX_BASE_NAME="$(basename "$PREFIX_DIR")"
 BUILD_STAGE1_LIBRARY_PREFIX="$WORKING_DIR/stage1-$PREFIX_BASE_NAME-library"
@@ -1871,7 +1882,7 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list gdbm $BUILD_TAR
     cleanup_configure_cache
 
     # add -fcommon to solve multiple definition of `parseopt_program_args'
-    env CFLAGS="$CFLAGS -fcommon" LDFLAGS="${LDFLAGS//\$/\$\$}" ./configure "--prefix=$PREFIX_DIR" --with-pic=yes
+    env CFLAGS="$CFLAGS -fcommon" LDFLAGS="${LDFLAGS//\$/\$\$}" ./configure "--prefix=$PREFIX_DIR" --with-pic=yes --enable-libgdbm-compat
     make $BUILD_THREAD_OPT || make
     if [[ $? -ne 0 ]]; then
       echo -e "\\033[31;1mError: Build gdbm failed.\\033[39;49;0m"
@@ -1895,9 +1906,9 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list readline $BUILD
     cd "$READLINE_DIR"
     cleanup_configure_cache
 
-    env LDFLAGS="${LDFLAGS//\$/\$\$} -static" ./configure "--prefix=$PREFIX_DIR" --with-pic=yes --enable-static=yes --enable-shared=no \
+    env LDFLAGS="${LDFLAGS//\$/\$\$} -static" CFLAGS="${CFLAGS} -fPIC" ./configure "--prefix=$PREFIX_DIR" --with-pic=yes --enable-static=yes --enable-shared=no \
       --enable-multibyte --with-curses
-    env LDFLAGS="${LDFLAGS//\$/\$\$} -static" make $BUILD_THREAD_OPT || env LDFLAGS="${LDFLAGS//\$/\$\$} -static" make
+    env LDFLAGS="${LDFLAGS//\$/\$\$} -static" CFLAGS="${CFLAGS} -fPIC" make $BUILD_THREAD_OPT || env LDFLAGS="${LDFLAGS//\$/\$\$} -static" CFLAGS="${CFLAGS} -fPIC" make
     if [[ $? -ne 0 ]]; then
       echo -e "\\033[31;1mError: Build readline failed.\\033[39;49;0m"
       exit 1
@@ -1925,8 +1936,10 @@ else
 fi
 
 # ======================= install gdb =======================
-if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list gdb $BUILD_TARGET_COMPOMENTS) ]]; then
-  # =======================  尝试编译安装python  =======================
+function build_python() {
+  INSTALL_PREFIX_PATH="$1"
+  shift
+
   PYTHON_PKG=$(check_and_download "python" "Python-$COMPOMENTS_PYTHON_VERSION*.tar.xz" "https://www.python.org/ftp/python/$COMPOMENTS_PYTHON_VERSION/Python-$COMPOMENTS_PYTHON_VERSION.tar.xz")
   if [[ $? -ne 0 ]]; then
     echo -e "$PYTHON_PKG"
@@ -1938,28 +1951,37 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list gdb $BUILD_TARG
     PYTHON_DIR=$(ls -d Python-$COMPOMENTS_PYTHON_VERSION* | grep -v \.tar\.xz)
     cd $PYTHON_DIR
     # --enable-optimizations require gcc 8.1.0 or later
-    PYTHON_CONFIGURE_OPTIONS=("--prefix=$PREFIX_DIR" "--enable-optimizations" "--with-ensurepip=install" "--enable-shared" "--with-system-expat" "--with-dbmliborder=gdbm:ndbm:bdb")
+    PYTHON_CONFIGURE_OPTIONS=("--prefix=$INSTALL_PREFIX_PATH" "--enable-optimizations" "--with-ensurepip=install" "--enable-shared" "--with-dbmliborder=gdbm:ndbm:bdb")
     if [[ ! -z "$OPENSSL_INSTALL_DIR" ]]; then
       PYTHON_CONFIGURE_OPTIONS=(${PYTHON_CONFIGURE_OPTIONS[@]} "--with-openssl=$OPENSSL_INSTALL_DIR")
     fi
     cleanup_configure_cache
 
     if [[ "$BUILD_TARGET_COMPOMENTS_PATCH_TINFO" != "0" ]]; then
-      env "LIBS=$LIBS $BUILD_TARGET_COMPOMENTS_PATCH_TINFO" LDFLAGS="${LDFLAGS//\$/\$\$}" CFLAGS="-fPIC ${CFLAGS}" CXXFLAGS="-fPIC ${CXXFLAGS}" ./configure ${PYTHON_CONFIGURE_OPTIONS[@]}
+      env "LIBS=$LIBS $BUILD_TARGET_COMPOMENTS_PATCH_TINFO" LDFLAGS="${LDFLAGS//\$/\$\$}" CFLAGS="-fPIC ${CFLAGS}" CXXFLAGS="-fPIC ${CXXFLAGS}" ./configure ${PYTHON_CONFIGURE_OPTIONS[@]} "$@"
     else
-      env LDFLAGS="${LDFLAGS//\$/\$\$}" CFLAGS="-fPIC ${CFLAGS}" CXXFLAGS="-fPIC ${CXXFLAGS}" ./configure ${PYTHON_CONFIGURE_OPTIONS[@]}
+      env LDFLAGS="${LDFLAGS//\$/\$\$}" CFLAGS="-fPIC ${CFLAGS}" CXXFLAGS="-fPIC ${CXXFLAGS}" ./configure ${PYTHON_CONFIGURE_OPTIONS[@]} "$@"
     fi
     make $BUILD_THREAD_OPT || make
     if [[ $? -ne 0 ]]; then
       echo -e "\\033[31;1mError: Build python failed.\\033[39;49;0m"
       exit 1
     fi
-    make install && GDB_DEPS_OPT=(${GDB_DEPS_OPT[@]} "--with-python=$PREFIX_DIR/bin/python3")
+    make install
 
     cd "$WORKING_DIR"
   fi
+}
+
+if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list gdb $BUILD_TARGET_COMPOMENTS) ]]; then
+  # =======================  先尝试编译安装体验版本python(--disable-gil)  =======================
+  build_python "$PREFIX_DIR/experimental" "--disable-gil"
+
+  # =======================  再尝试正常编译安装python  =======================
+  build_python "$PREFIX_DIR"
 
   # ======================= 正式安装GDB =======================
+  GDB_DEPS_OPT=(${GDB_DEPS_OPT[@]} "--with-python=$INSTALL_PREFIX_PATH/bin/python3")
   GDB_PKG=$(check_and_download "gdb" "gdb-$COMPOMENTS_GDB_VERSION*.tar.xz" "$REPOSITORY_MIRROR_URL_GNU/gdb/gdb-$COMPOMENTS_GDB_VERSION.tar.xz")
   if [[ $? -ne 0 ]]; then
     echo -e "$GDB_PKG"
