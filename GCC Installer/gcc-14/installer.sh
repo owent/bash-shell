@@ -1789,7 +1789,7 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list ncurses $BUILD_
       --with-terminfo-dirs=/etc/terminfo:/usr/share/terminfo:/lib/terminfo \
       --with-termpath=/etc/termcap:/usr/share/misc/termcap
 
-    make $BUILD_THREAD_OPT || make
+    make $BUILD_THREAD_OPT O='$$$$O' || make O='$$$$O'
     if [[ $? -ne 0 ]]; then
       echo -e "\\033[31;1mError: Build ncurse failed.\\033[39;49;0m"
       exit 1
@@ -1807,7 +1807,7 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list ncurses $BUILD_
       --with-terminfo-dirs=/etc/terminfo:/usr/share/terminfo:/lib/terminfo \
       --with-termpath=/etc/termcap:/usr/share/misc/termcap
 
-    make $BUILD_THREAD_OPT || make
+    make $BUILD_THREAD_OPT O='$$$$O' || make O='$$$$O'
     if [[ $? -ne 0 ]]; then
       echo -e "\\033[31;1mError: Build ncursew failed.\\033[39;49;0m"
       exit 1
