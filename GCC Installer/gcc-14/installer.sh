@@ -1681,8 +1681,8 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list openssl $BUILD_
     cleanup_configure_cache
     # @see https://wiki.openssl.org/index.php/Compilation_and_Installation
     env LDFLAGS="${LDFLAGS//\$/\$\$}" ./config "--prefix=$PREFIX_DIR/internal-packages" "--openssldir=$PREFIX_DIR/internal-packages/ssl" "--release" \
-      "no-dso" "no-tests" "no-external-tests" "no-shared" "no-idea" "no-md4" "no-mdc2" "no-rc2" \
-      "no-ssl3" "no-weak-ssl-ciphers" "enable-ec_nistp_64_gcc_128" "enable-static-engine" # "--api=1.1.1"
+      "no-dso" "no-tests" "no-external-tests" "no-idea" "no-md4" "no-mdc2" "no-rc2" \
+      "no-ssl3" "no-weak-ssl-ciphers" "enable-ec_nistp_64_gcc_128" "-fpic" "shared" "enable-static-engine" # "--api=1.1.1"
     make $BUILD_THREAD_OPT || make
     if [[ $? -ne 0 ]]; then
       echo -e "\\033[31;1mError: build openssl failed.\\033[39;49;0m"
@@ -1741,6 +1741,9 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list openssl $BUILD_
     cd "$WORKING_DIR"
   fi
 fi
+
+# Add rpath of internal-packages
+export LDFLAGS="$LDFLAGS -Wl,-rpath=\$ORIGIN/../internal-packages/lib64:\$ORIGIN/../internal-packages/lib:$PREFIX_DIR/internal-packages/lib64:$PREFIX_DIR/internal-packages/lib"
 
 # ======================= install libffi [后面有些组件依赖] =======================
 if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list libffi $BUILD_TARGET_COMPOMENTS) ]]; then

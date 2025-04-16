@@ -53,6 +53,13 @@ if [[ -z "$CHECK_TOTAL_MEMORY" ]]; then
   CHECK_TOTAL_MEMORY=0
 fi
 
+BUILD_LDFLAGS="-Wl,-rpath=\$ORIGIN:\$ORIGIN/../lib64:\$ORIGIN/../lib:$PREFIX_DIR/lib64:$PREFIX_DIR/lib"
+# See https://stackoverflow.com/questions/42344932/how-to-include-correctly-wl-rpath-origin-linker-argument-in-a-makefile
+if [[ "owent$LDFLAGS" == "owent" ]]; then
+  export LDFLAGS="$BUILD_LDFLAGS"
+else
+  export LDFLAGS="$LDFLAGS $BUILD_LDFLAGS"
+fi
 export ORIGIN='$ORIGIN'
 export BUILD_LLVM_PATCHED_OPTION="$BUILD_LLVM_LLVM_OPTION"
 
@@ -608,6 +615,8 @@ elif [[ -z "$(find $PREFIX_DIR -name Python.h)" ]]; then
   OPENSSL_INSTALL_DIR=""
   if [[ -e "$(dirname "$ORIGIN_COMPILER_CC")/../internal-packages/lib/libssl.a" ]]; then
     OPENSSL_INSTALL_DIR="$(readlink -f "$(dirname "$ORIGIN_COMPILER_CC")"/../internal-packages)"
+    # Add rpath of internal-packages
+    export LDFLAGS="$LDFLAGS -Wl,-rpath=\$ORIGIN/../internal-packages/lib64:\$ORIGIN/../internal-packages/lib:$PREFIX_DIR/internal-packages/lib64:$PREFIX_DIR/internal-packages/lib"
   fi
   # --enable-optimizations require gcc 8.1.0 or later
   PYTHON_CONFIGURE_OPTIONS=("--prefix=$PREFIX_DIR" "--enable-optimizations" "--with-normal" "--with-cxx-binding"
