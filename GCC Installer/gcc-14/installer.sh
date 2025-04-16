@@ -2100,7 +2100,7 @@ fi
 chmod +x "$PREFIX_DIR/load-gcc-envs.sh"
 
 echo '#!/bin/bash
-' >"$PREFIX_DIR/load-gcc-envs.sh"
+' >"$PREFIX_DIR/load-gcc-envs-no-default.sh"
 
 echo "GCC_HOME_DIR=\"$PREFIX_DIR\"" >>"$PREFIX_DIR/load-gcc-envs-no-default.sh"
 echo 'if [[ ! ( "$PATH" =~ (^|:)"$GCC_HOME_DIR/bin"(:|$) ) ]]; then
