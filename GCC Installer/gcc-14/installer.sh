@@ -1499,7 +1499,7 @@ function build_gcc() {
         BDWGC_PREBIUILT="--with-target-bdw-gc=$STAGE_LIBRARY_PREFIX/multilib/$SYS_LONG_BIT"
       fi
 
-      GCC_CONF_OPTION_ALL="--prefix=$INSTALL_PREFIX_PATH"
+      GCC_CONF_OPTION_ALL="--prefix=$INSTALL_PREFIX_PATH --with-pkgversion='OWenT GCC $COMPOMENTS_GCC_VERSION'"
       BUILD_TARGET_TRIPLE=$(env LANG=en_US.UTF-8 LANGUAGE=en_US.UTF-8 LC_ALL=en_US.UTF-8 "$CC" -v 2>&1 | grep -i 'target:' | awk '{print $NF}')
       if [[ ! -z "$BUILD_TARGET_TRIPLE" ]]; then
         GCC_CONF_OPTION_ALL="$GCC_CONF_OPTION_ALL --build=$BUILD_TARGET_TRIPLE"
