@@ -1499,7 +1499,7 @@ function build_gcc() {
         BDWGC_PREBIUILT="--with-target-bdw-gc=$STAGE_LIBRARY_PREFIX/multilib/$SYS_LONG_BIT"
       fi
 
-      GCC_CONF_OPTION_ALL="--prefix=$INSTALL_PREFIX_PATH --with-pkgversion='OWenT GCC $COMPOMENTS_GCC_VERSION'"
+      GCC_CONF_OPTION_ALL="--prefix=$INSTALL_PREFIX_PATH"
       BUILD_TARGET_TRIPLE=$(env LANG=en_US.UTF-8 LANGUAGE=en_US.UTF-8 LC_ALL=en_US.UTF-8 "$CC" -v 2>&1 | grep -i 'target:' | awk '{print $NF}')
       if [[ ! -z "$BUILD_TARGET_TRIPLE" ]]; then
         GCC_CONF_OPTION_ALL="$GCC_CONF_OPTION_ALL --build=$BUILD_TARGET_TRIPLE"
@@ -1527,7 +1527,7 @@ function build_gcc() {
       env LDFLAGS="$GCC_CONF_LDFLAGS" LD_RUN_PATH="$GCC_CONF_LD_RUN_PATH" \
         LDFLAGS_FOR_TARGET="$GCC_CONF_LDFLAGS" LDFLAGS_FOR_BUILD="$GCC_CONF_LDFLAGS" BOOT_LDFLAGS="$GCC_CONF_LDFLAGS" \
         CFLAGS="${STAGE_CFLAGS}${CFLAGS}" CXXFLAGS="${STAGE_CFLAGS}${CXXFLAGS}" \
-        ../$GCC_DIR/configure $GCC_CONF_OPTION_ALL $STAGE_CONFIGURE_OPTIONS
+        ../$GCC_DIR/configure --with-pkgversion="OWenT GCC $COMPOMENTS_GCC_VERSION" $GCC_CONF_OPTION_ALL $STAGE_CONFIGURE_OPTIONS
       if [[ $? -ne 0 ]]; then
         echo -e "\\033[31;1mError: configure gcc failed.\\033[39;49;0m"
         exit 1
