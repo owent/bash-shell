@@ -67,9 +67,9 @@ CentOS 7&CentOS 8
 
 #### 编译的依赖项
 
-+ [x] libc++ 20.1.2
-+ [x] libc++abi 20.1.2
-+ [x] libunwind 20.1.2
++ [x] libc++ 20.1.3
++ [x] libc++abi 20.1.3
++ [x] libunwind 20.1.3
 + [x] [libedit][2] 20240808-3.1
 + [x] [Python][3] 3.13.3
 + [x] [swig][4] v4.3.0
@@ -79,12 +79,12 @@ CentOS 7&CentOS 8
 
 #### 默认编译目标
 
-+ [x] llvm 20.1.2
-+ [x] clang 20.1.2
-+ [x] compiler-rt 20.1.2
-+ [x] clang-tools-extra 20.1.2
-+ [x] lldb 20.1.2
-+ [x] lld 20.1.2
++ [x] llvm 20.1.3
++ [x] clang 20.1.3
++ [x] compiler-rt 20.1.3
++ [x] clang-tools-extra 20.1.3
++ [x] lldb 20.1.3
++ [x] lld 20.1.3
 + [ ] libc: 提示不支持
 + [x] libclc
 + [x] openmp
@@ -102,7 +102,7 @@ CentOS 7&CentOS 8
 
 + 2024-03-13    Created
 + 2024-05-23    Add `include-what-you-use`, Add github mirror, Update ports
-  + llvm -> 20.1.2
+  + llvm -> 20.1.3
   + python -> 3.11.9
   + libxml2 -> 2.13.3
   + libedit -> 20240517-3.1

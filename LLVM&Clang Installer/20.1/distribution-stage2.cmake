@@ -450,7 +450,7 @@ set(LLVM_DISTRIBUTION_ADDTIONAL_COMPONENTS
     clang-change-namespace
     clang-check
     clang-extdef-mapping
-    clang-rename
+    clang-sycl-linker
     find-all-symbols
     diagtool
     modularize
@@ -516,7 +516,6 @@ set(LLVM_DISTRIBUTION_COMPONENTS
     clang-move
     clang-query
     clang-include-cleaner
-    clang-pseudo
     clang-linker-wrapper
     clang-resource-headers
     clang-include-fixer
