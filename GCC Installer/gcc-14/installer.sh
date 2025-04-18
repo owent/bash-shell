@@ -192,15 +192,19 @@ if [[ ! -z "$GCC_OPT_DISABLE_MULTILIB" ]] && [[ "$GCC_OPT_DISABLE_MULTILIB"=="--
 fi
 
 # ======================= 检测CPU数量，编译线程数按CPU核心数来 =======================
-BUILD_THREAD_OPT=6
-BUILD_CPU_NUMBER=$(cat /proc/cpuinfo | grep -c "^processor[[:space:]]*:[[:space:]]*[0-9]*")
-BUILD_THREAD_OPT=$BUILD_CPU_NUMBER
-if [[ $BUILD_THREAD_OPT -gt 6 ]]; then
-  BUILD_THREAD_OPT=$(($BUILD_CPU_NUMBER - 1))
+BUILD_JOBS_MAX_NUMBER=$(nproc)
+if [[ $BUILD_JOBS_MAX_NUMBER -gt 6 ]]; then
+  BUILD_JOBS_MAX_NUMBER=$(($BUILD_JOBS_MAX_NUMBER - 1))
 fi
-BUILD_THREAD_OPT="-j$BUILD_THREAD_OPT"
+if [[ "x$GCC_PARALLEL_BUILD_MAX_JOBS" != "x" ]]; then
+  if [[ $BUILD_JOBS_MAX_NUMBER -gt $GCC_PARALLEL_BUILD_MAX_JOBS ]]; then
+    BUILD_JOBS_MAX_NUMBER=$GCC_PARALLEL_BUILD_MAX_JOBS
+  fi
+fi
+
+BUILD_THREAD_OPT="-j$BUILD_JOBS_MAX_NUMBER"
 # BUILD_THREAD_OPT="";
-echo -e "\\033[32;1mnotice: $BUILD_CPU_NUMBER cpu(s) detected. use $BUILD_THREAD_OPT for multi-process compile."
+echo -e "\\033[32;1mnotice: $(nproc) cpu(s) detected. use $BUILD_THREAD_OPT for multi-process compile."
 
 # ======================= 统一的包检查和下载函数 =======================
 function check_and_download() {
@@ -1229,7 +1233,7 @@ function build_bison() {
       cleanup_configure_cache
       env LDFLAGS="${STAGE_LDFLAGS}${LDFLAGS//\$/\$\$}" CFLAGS="${STAGE_CFLAGS}${CFLAGS}" CXXFLAGS="${STAGE_CFLAGS}${CXXFLAGS}" ./configure \
         --prefix=$INSTALL_PREFIX_PATH $STAGE_CONFIGURE_OPTIONS
-      env LDFLAGS="${STAGE_LDFLAGS}${LDFLAGS//\$/\$\$}" CFLAGS="${STAGE_CFLAGS}${CFLAGS}" CXXFLAGS="${STAGE_CFLAGS}${CXXFLAGS}" make $BUILD_THREAD_OPT $STAGE_CONFIGURE_OPTIONS O='$$$$O' ||
+      env LDFLAGS="${STAGE_LDFLAGS}${LDFLAGS//\$/\$\$}" CFLAGS="${STAGE_CFLAGS}${CFLAGS}" CXXFLAGS="${STAGE_CFLAGS}${CXXFLAGS}" make $BUILD_THREAD_OPT O='$$$$O' ||
         env LDFLAGS="${STAGE_LDFLAGS}${LDFLAGS//\$/\$\$}" make
       if [[ $? -ne 0 ]]; then
         echo -e "\\033[31;1mError: Build bison failed - make.\\033[39;49;0m"
