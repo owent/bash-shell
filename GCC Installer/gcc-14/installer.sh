@@ -784,7 +784,7 @@ function build_libatomic_ops() {
   echo "$LDFLAGS" | grep -F '$ORIGIN/../lib64' || STAGE_LDFLAGS="$STAGE_LDFLAGS -Wl,-rpath=\$ORIGIN:\$ORIGIN/../lib64:\$ORIGIN/../lib"
 
   if [ -z "$BUILD_TARGET_COMPOMENTS" ] || [ "0" == $(is_in_list libatomic_ops $BUILD_TARGET_COMPOMENTS) ]; then
-    LIBATOMIC_OPS_PKG=$(check_and_download "libatomic_ops" "libatomic_ops-$COMPOMENTS_LIBATOMIC_OPS_VERSION*.tar.gz" "$REPOSITORY_MIRROR_URL_GITHUB/ivmai/libatomic_ops/releases/download/v$COMPOMENTS_LIBATOMIC_OPS_VERSION/libatomic_ops-$COMPOMENTS_LIBATOMIC_OPS_VERSION.tar.gz" "libatomic_ops-$COMPOMENTS_LIBATOMIC_OPS_VERSION.tar.gz")
+    LIBATOMIC_OPS_PKG=$(check_and_download "libatomic_ops" "libatomic_ops-$COMPOMENTS_LIBATOMIC_OPS_VERSION*.tar.gz" "$REPOSITORY_MIRROR_URL_GITHUB/bdwgc/libatomic_ops/releases/download/v$COMPOMENTS_LIBATOMIC_OPS_VERSION/libatomic_ops-$COMPOMENTS_LIBATOMIC_OPS_VERSION.tar.gz" "libatomic_ops-$COMPOMENTS_LIBATOMIC_OPS_VERSION.tar.gz")
     if [[ $? -ne 0 ]]; then
       echo -e "$LIBATOMIC_OPS_PKG"
       exit 1
