@@ -564,7 +564,7 @@ function build_pkgconfig() {
       cleanup_configure_cache
 
       env LDFLAGS="${STAGE_LDFLAGS}${LDFLAGS//\$/\$\$}" CFLAGS="${STAGE_CFLAGS}${CFLAGS}" CXXFLAGS="${STAGE_CFLAGS}${CXXFLAGS}" ./configure \
-        --prefix=$INSTALL_PREFIX_PATH --with-pic=yes --with-internal-glib $STAGE_CONFIGURE_OPTIONS
+        --prefix=$INSTALL_PREFIX_PATH --with-pic=yes --with-internal-glib --with-libiconv=gnu $STAGE_CONFIGURE_OPTIONS
       make $BUILD_THREAD_OPT O='$$$$O' && make install O='$$$$O'
       if [[ $? -ne 0 ]]; then
         echo -e "\\033[31;1mError: build pkgconfig failed.\\033[39;49;0m"
@@ -1593,6 +1593,7 @@ build_m4 "$BUILD_STAGE1_TOOLS_PREFIX"
 build_autoconf "$BUILD_STAGE1_TOOLS_PREFIX"
 build_automake "$BUILD_STAGE1_TOOLS_PREFIX"
 build_libtool "$BUILD_STAGE1_TOOLS_PREFIX"
+build_libiconv "$BUILD_STAGE1_LIBRARY_PREFIX"
 build_pkgconfig "$BUILD_STAGE1_TOOLS_PREFIX"
 build_gmp "$BUILD_STAGE1_LIBRARY_PREFIX"
 build_mpfr "$BUILD_STAGE1_LIBRARY_PREFIX"
@@ -1604,7 +1605,6 @@ build_zlib "$BUILD_STAGE1_LIBRARY_PREFIX"
 build_xz "$BUILD_STAGE1_LIBRARY_PREFIX"
 build_zstd "$BUILD_STAGE1_LIBRARY_PREFIX"
 build_lz4 "$BUILD_STAGE1_LIBRARY_PREFIX"
-build_libiconv "$BUILD_STAGE1_LIBRARY_PREFIX"
 build_bison "$BUILD_STAGE1_LIBRARY_PREFIX"
 build_bintuils "$BUILD_STAGE1_TOOLS_PREFIX" "$COMPOMENTS_BINUTILS_STAGE1_VERSION"
 build_make "$BUILD_STAGE1_TOOLS_PREFIX"
@@ -1656,6 +1656,7 @@ build_m4 "$PREFIX_DIR"
 build_autoconf "$PREFIX_DIR"
 build_automake "$PREFIX_DIR"
 build_libtool "$PREFIX_DIR"
+build_libiconv "$PREFIX_DIR"
 build_pkgconfig "$PREFIX_DIR"
 build_gmp "$PREFIX_DIR"
 build_mpfr "$PREFIX_DIR"
@@ -1667,7 +1668,6 @@ build_zlib "$PREFIX_DIR"
 build_xz "$PREFIX_DIR"
 build_zstd "$PREFIX_DIR"
 build_lz4 "$PREFIX_DIR"
-build_libiconv "$PREFIX_DIR"
 build_make "$PREFIX_DIR"
 build_bison "$PREFIX_DIR"
 build_bintuils "$PREFIX_DIR"
