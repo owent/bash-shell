@@ -558,7 +558,7 @@ function build_pkgconfig() {
       cleanup_configure_cache
 
       env LDFLAGS="${STAGE_LDFLAGS}${LDFLAGS//\$/\$\$}" CFLAGS="${STAGE_CFLAGS}${CFLAGS}" CXXFLAGS="${STAGE_CFLAGS}${CXXFLAGS}" ./configure \
-        --prefix=$INSTALL_PREFIX_PATH --with-pic=yes --with-internal-glib $STAGE_CONFIGURE_OPTIONS
+        --prefix=$INSTALL_PREFIX_PATH --with-pic=yes --with-internal-glib --with-libiconv=gnu $STAGE_CONFIGURE_OPTIONS
       make $BUILD_THREAD_OPT O='$$$$O' && make install O='$$$$O'
       if [[ $? -ne 0 ]]; then
         echo -e "\\033[31;1mError: build pkgconfig failed.\\033[39;49;0m"
