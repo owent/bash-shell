@@ -536,6 +536,13 @@ function build_pkgconfig() {
     STAGE_LDFLAGS="-L$INSTALL_PREFIX_PATH/lib64 -L$INSTALL_PREFIX_PATH/lib "
   fi
 
+  # pkg-config do not support c23
+  CC_SUPPORT_C23=1
+  echo "int main() { return 0; }" | "$CC" -o /dev/null -x c -std=c23 -pipe - || CC_SUPPORT_C23=0
+  if [[ $CC_SUPPORT_C23 -ne 0 ]]; then
+    STAGE_CFLAGS="$STAGE_CFLAGS -std=c17"
+  fi
+
   echo "$LDFLAGS" | grep -F '$ORIGIN/../lib64' || STAGE_LDFLAGS="$STAGE_LDFLAGS -Wl,-rpath=\$ORIGIN:\$ORIGIN/../lib64:\$ORIGIN/../lib"
 
   if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list pkgconfig $BUILD_TARGET_COMPOMENTS) ]]; then
