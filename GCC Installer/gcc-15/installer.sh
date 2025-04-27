@@ -540,7 +540,13 @@ function build_pkgconfig() {
   CC_SUPPORT_C23=1
   echo "int main() { return 0; }" | "$CC" -o /dev/null -x c -std=c23 -pipe - || CC_SUPPORT_C23=0
   if [[ $CC_SUPPORT_C23 -ne 0 ]]; then
-    STAGE_CFLAGS="$STAGE_CFLAGS -std=c17"
+    CC_SUPPORT_GNU17=1
+    echo "int main() { return 0; }" | "$CC" -o /dev/null -x c -std=gnu17 -pipe - || CC_SUPPORT_GNU17=0
+    if [[ $CC_SUPPORT_GNU17 -ne 0 ]]; then
+      CFLAGS="$CFLAGS -std=gnu17"
+    else
+      CFLAGS="$CFLAGS -std=c17"
+    fi
   fi
 
   echo "$LDFLAGS" | grep -F '$ORIGIN/../lib64' || STAGE_LDFLAGS="$STAGE_LDFLAGS -Wl,-rpath=\$ORIGIN:\$ORIGIN/../lib64:\$ORIGIN/../lib"
