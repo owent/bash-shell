@@ -15,6 +15,9 @@ COMPOMENTS_MPC_VERSION=1.3.1
 COMPOMENTS_ISL_VERSION=0.24
 COMPOMENTS_LIBATOMIC_OPS_VERSION=7.8.2
 COMPOMENTS_BDWGC_VERSION=8.2.8
+# According to https://gcc.gnu.org/install/prerequisites.html
+# Bootstrap gcc with a middle version if local version is too low
+COMPOMENTS_BOOTSTRAP_GCC_VERSION=9.5.0
 COMPOMENTS_GCC_VERSION=15.1.0
 COMPOMENTS_INTERNAL_GLIBC_VERSION=2.41
 COMPOMENTS_BISON_VERSION=3.8.2
@@ -1469,6 +1472,7 @@ function build_glibc() {
 # ======================= build gcc =======================
 function build_gcc() {
   INSTALL_PREFIX_PATH="$1"
+  STAGE_GCC_VERSION="$2"
   STAGE_CFLAGS=""
   STAGE_LDFLAGS=""
 
@@ -1494,16 +1498,16 @@ function build_gcc() {
 
   if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list gcc $BUILD_TARGET_COMPOMENTS) ]]; then
     # ======================= gcc包 =======================
-    GCC_PKG=$(check_and_download "gcc" "gcc-$COMPOMENTS_GCC_VERSION*.tar.xz" "$REPOSITORY_MIRROR_URL_GNU/gcc/gcc-$COMPOMENTS_GCC_VERSION/gcc-$COMPOMENTS_GCC_VERSION.tar.xz")
+    GCC_PKG=$(check_and_download "gcc" "gcc-$STAGE_GCC_VERSION*.tar.xz" "$REPOSITORY_MIRROR_URL_GNU/gcc/gcc-$STAGE_GCC_VERSION/gcc-$STAGE_GCC_VERSION.tar.xz")
     if [[ $? -ne 0 ]]; then
       echo -e "$GCC_PKG"
       exit 1
     fi
     if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
-      GCC_DIR=$(ls -d gcc-$COMPOMENTS_GCC_VERSION* | grep -v \.tar\.xz)
+      GCC_DIR=$(ls -d gcc-$STAGE_GCC_VERSION* | grep -v \.tar\.xz)
       if [[ -z "$GCC_DIR" ]]; then
         tar -axvf $GCC_PKG
-        GCC_DIR=$(ls -d gcc-$COMPOMENTS_GCC_VERSION* | grep -v \.tar\.xz)
+        GCC_DIR=$(ls -d gcc-$STAGE_GCC_VERSION* | grep -v \.tar\.xz)
       fi
       if [[ -e gcc_build_dir ]]; then
         rm -rf gcc_build_dir
@@ -1572,8 +1576,9 @@ function build_gcc() {
         exit 1
       fi
 
-      # ======================= 建立cc软链接 =======================
-      ln -s $INSTALL_PREFIX_PATH/bin/gcc $INSTALL_PREFIX_PATH/bin/cc
+      # ======================= 建立cc和c++软链接 =======================
+      ln -s $INSTALL_PREFIX_PATH/bin/gcc $INSTALL_PREFIX_PATH/bin/cc || true
+      ln -s $INSTALL_PREFIX_PATH/bin/g++ $INSTALL_PREFIX_PATH/bin/c++ || true
     fi
   fi
 }
@@ -1681,7 +1686,11 @@ build_lz4 "$BUILD_STAGE1_LIBRARY_PREFIX"
 build_bison "$BUILD_STAGE1_LIBRARY_PREFIX"
 build_bintuils "$BUILD_STAGE1_TOOLS_PREFIX" "$COMPOMENTS_BINUTILS_STAGE1_VERSION"
 build_make "$BUILD_STAGE1_TOOLS_PREFIX"
-build_gcc "$BUILD_STAGE1_GCC_PREFIX"
+if [[ "$CC" == "gcc" ]] && [[ $("$CC" -dM -E - </dev/null | grep __GNUC__ | awk '{print $NF}') -lt ${COMPOMENTS_BOOTSTRAP_GCC_VERSION/.*/} ]]; then
+  build_gcc "$BUILD_STAGE1_GCC_PREFIX" "$COMPOMENTS_BOOTSTRAP_GCC_VERSION"
+else
+  build_gcc "$BUILD_STAGE1_GCC_PREFIX" "$COMPOMENTS_GCC_VERSION"
+fi
 
 if [[ "x$BUILD_BACKUP_LD_LIBRARY_PATH" == "x" ]]; then
   export LD_LIBRARY_PATH="$PREFIX_DIR/lib64:$PREFIX_DIR/lib:$BUILD_STAGE1_GCC_PREFIX/lib64:$BUILD_STAGE1_GCC_PREFIX/lib"
@@ -1753,7 +1762,7 @@ build_lz4 "$PREFIX_DIR"
 build_make "$PREFIX_DIR"
 build_bison "$PREFIX_DIR"
 build_bintuils "$PREFIX_DIR"
-build_gcc "$PREFIX_DIR"
+build_gcc "$PREFIX_DIR" "$COMPOMENTS_GCC_VERSION"
 
 if [[ "x$BUILD_BACKUP_LD_LIBRARY_PATH" == "x" ]]; then
   export LD_LIBRARY_PATH="$PREFIX_DIR/lib64:$PREFIX_DIR/lib"
