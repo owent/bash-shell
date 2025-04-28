@@ -37,6 +37,7 @@ COMPOMENTS_LIBICONV_VERSION=1.18
 COMPOMENTS_XZ_VERSION=5.8.1
 COMPOMENTS_ZSTD_VERSION=1.5.7
 COMPOMENTS_LZ4_VERSION=1.10.0
+COMPOMENTS_MOLD_VERSION=2.38.1
 # 大多数发行版并没有开启 libssp , 开启会导致需要增加链接选项 -fstack-protector-all
 # 为了兼容性考虑我们默认也不开
 if [[ "x$COMPOMENTS_LIBSSP_ENABLE" == "x" ]]; then
@@ -96,7 +97,7 @@ while getopts "dp:cht:u:g:ln" OPTION; do
     echo "-c                          clean build cache."
     echo "-d                          download only."
     echo "-h                          help message."
-    echo "-t [build target]           set build target(m4 autoconf automake libtool pkgconfig gmp mpfr mpc isl xz zstd lz4 zlib libiconv libffi gcc bison binutils make openssl readline ncurses libexpat libxcrypt gdbm gdb libatomic_ops bdw-gc global)."
+    echo "-t [build target]           set build target(m4 autoconf automake libtool pkgconfig gmp mpfr mpc isl xz zstd lz4 zlib libiconv libffi gcc bison binutils make openssl readline ncurses libexpat libxcrypt gdbm gdb libatomic_ops bdw-gc global mold)."
     echo "-u [compoment option]       add dependency compoments build options."
     echo "-g [gnu option]             add gcc,binutils,gdb build options."
     echo "-n                          print toolchain version and exit."
@@ -1577,6 +1578,78 @@ function build_gcc() {
   fi
 }
 
+# install mold
+function build_mold() {
+  INSTALL_PREFIX_PATH="$1"
+  STAGE_CFLAGS=""
+  STAGE_LDFLAGS=""
+  if [[ "$INSTALL_PREFIX_PATH" == "$BUILD_STAGE1_LIBRARY_PREFIX" ]] || [[ "$INSTALL_PREFIX_PATH" == "$BUILD_STAGE1_TOOLS_PREFIX" ]]; then
+    STAGE_CONFIGURE_OPTIONS="-DBUILD_SHARED_LIBS=OFF "
+    BUILD_BACKUP_PKG_CONFIG_PATH="$PKG_CONFIG_PATH"
+    if [[ "x$BUILD_BACKUP_PKG_CONFIG_PATH" == "x" ]]; then
+      export PKG_CONFIG_PATH="$BUILD_STAGE1_LIBRARY_PREFIX/lib64/pkgconfig:$BUILD_STAGE1_LIBRARY_PREFIX/lib/pkgconfig"
+    else
+      export PKG_CONFIG_PATH="$BUILD_STAGE1_LIBRARY_PREFIX/lib64/pkgconfig:$BUILD_STAGE1_LIBRARY_PREFIX/lib/pkgconfig:$BUILD_BACKUP_PKG_CONFIG_PATH"
+    fi
+    STAGE_CFLAGS="-I$BUILD_STAGE1_LIBRARY_PREFIX/include "
+    STAGE_LDFLAGS="-L$BUILD_STAGE1_LIBRARY_PREFIX/lib64 -L$BUILD_STAGE1_LIBRARY_PREFIX/lib "
+  else
+    STAGE_CONFIGURE_OPTIONS="-DBUILD_SHARED_LIBS=ON "
+    STAGE_CFLAGS="-I$INSTALL_PREFIX_PATH/include "
+    STAGE_LDFLAGS="-L$INSTALL_PREFIX_PATH/lib64 -L$INSTALL_PREFIX_PATH/lib "
+  fi
+
+  echo "$LDFLAGS" | grep -F '$ORIGIN/../lib64' || STAGE_LDFLAGS="$STAGE_LDFLAGS -Wl,-rpath=\$ORIGIN:\$ORIGIN/../lib64:\$ORIGIN/../lib"
+  echo "$LDFLAGS" | grep -F '$ORIGIN/../../lib64' || STAGE_LDFLAGS="$STAGE_LDFLAGS -Wl,-rpath=\$ORIGIN/../../lib64:\$ORIGIN/../../lib:\$ORIGIN"
+
+  if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list mold $BUILD_TARGET_COMPOMENTS) ]]; then
+    MOLD_PKG=$(check_and_download "mold" "mold-$COMPOMENTS_MOLD_VERSION*.tar.gz" "$REPOSITORY_MIRROR_URL_GITHUB/rui314/mold/archive/refs/tags/v$COMPOMENTS_MOLD_VERSION.tar.gz" "mold-$COMPOMENTS_MOLD_VERSION.tar.gz")
+    if [[ $? -ne 0 ]]; then
+      echo -e "$MOLD_PKG"
+      exit 1
+    fi
+    if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
+      tar -axvf $MOLD_PKG
+      MOLD_DIR=$(ls -d mold-$COMPOMENTS_MOLD_VERSION* | grep -v \.tar\.gz)
+      mkdir -p "$MOLD_DIR/build_jobs_dir"
+      cd "$MOLD_DIR/build_jobs_dir"
+
+      if [[ -e CMakeCache.txt ]]; then
+        cmake --build . --target clean
+        rm -f CMakeCache.txt
+      fi
+
+      env LDFLAGS="${STAGE_LDFLAGS}${LDFLAGS}" CFLAGS="${STAGE_CFLAGS}${CFLAGS}" CXXFLAGS="${STAGE_CFLAGS}${CXXFLAGS}" \
+        cmake ../build/cmake "-DCMAKE_POSITION_INDEPENDENT_CODE=ON" "-DBUILD_TESTING=OFF" \
+        "-DCMAKE_INSTALL_PREFIX=$INSTALL_PREFIX_PATH" \
+        "-DCMAKE_FIND_ROOT_PATH=$INSTALL_PREFIX_PATH;$INSTALL_PREFIX_PATH/internal-packages" \
+        "-DCMAKE_PREFIX_PATH=$INSTALL_PREFIX_PATH;$INSTALL_PREFIX_PATH/internal-packages" \
+        $STAGE_CONFIGURE_OPTIONS
+      if [[ $? -ne 0 ]]; then
+        echo -e "\\033[31;1mError: configure mold failed.\\033[39;49;0m"
+        exit 1
+      fi
+
+      env LDFLAGS="${STAGE_LDFLAGS}${LDFLAGS}" CFLAGS="${STAGE_CFLAGS}${CFLAGS}" CXXFLAGS="${STAGE_CFLAGS}${CXXFLAGS}" \
+        cmake --build . $BUILD_THREAD_OPT
+      if [[ $? -ne 0 ]]; then
+        echo -e "\\033[31;1mError: build mold failed.\\033[39;49;0m"
+        exit 1
+      fi
+
+      env LDFLAGS="${STAGE_LDFLAGS}${LDFLAGS}" CFLAGS="${STAGE_CFLAGS}${CFLAGS}" CXXFLAGS="${STAGE_CFLAGS}${CXXFLAGS}" \
+        cmake --install . --prefix "$INSTALL_PREFIX_PATH"
+
+      if [[ $? -ne 0 ]]; then
+        echo -e "\\033[31;1mError: install mold failed.\\033[39;49;0m"
+        exit 1
+      fi
+
+      cd "$WORKING_DIR"
+    fi
+  fi
+}
+
 # Build stage1 libraries and tools
 if [[ "x$BUILD_BACKUP_PKG_CONFIG_PATH" == "x" ]]; then
   export PKG_CONFIG_PATH="$BUILD_STAGE1_LIBRARY_PREFIX/lib64/pkgconfig:$BUILD_STAGE1_LIBRARY_PREFIX/lib/pkgconfig:$BUILD_STAGE1_TOOLS_PREFIX/lib64/pkgconfig:$BUILD_STAGE1_TOOLS_PREFIX/lib/pkgconfig"
@@ -1657,6 +1730,15 @@ build_autoconf "$PREFIX_DIR"
 build_automake "$PREFIX_DIR"
 build_libtool "$PREFIX_DIR"
 build_libiconv "$PREFIX_DIR"
+build_mold "$PREFIX_DIR"
+
+# Switch linker to mold
+if [[ -e "$PREFIX_DIR/libexec/mold/ld" ]]; then
+  export LDFLAGS="$LDFLAGS -fuse-ld=mold -B$PREFIX_DIR/libexec/mold -B$PREFIX_DIR/bin"
+else
+  export LDFLAGS="$LDFLAGS -fuse-ld=mold -B$PREFIX_DIR/bin"
+fi
+
 build_pkgconfig "$PREFIX_DIR"
 build_gmp "$PREFIX_DIR"
 build_mpfr "$PREFIX_DIR"

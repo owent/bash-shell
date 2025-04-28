@@ -117,6 +117,7 @@ export LDFLAGS="$LDFLAGS"
 ORIGIN_COMPILER_CC="$(readlink -f "$CC")"
 ORIGIN_COMPILER_CXX="$(readlink -f "$CXX")"
 
+BOOTSTRAP_BUILD_USE_LD=lld
 echo '
 #include <stdio.h>
 int main() {
@@ -124,9 +125,24 @@ int main() {
     return 0;
 }
 ' >contest.tmp.c
-$CC -o contest.tmp.exe -O2 -fuse-ld=gold contest.tmp.c
+$CC -o contest.tmp.exe -O2 -fuse-ld=mold contest.tmp.c
 if [[ $? -eq 0 ]]; then
-  BUILD_USE_LD="gold"
+  BUILD_USE_LD="mold"
+  BOOTSTRAP_BUILD_USE_LD="mold"
+fi
+
+if [[ -z "$BUILD_USE_LD" ]]; then
+  echo '
+#include <stdio.h>
+int main() {
+    puts("test ld.gold");
+    return 0;
+}
+' >contest.tmp.c
+  $CC -o contest.tmp.exe -O2 -fuse-ld=gold contest.tmp.c
+  if [[ $? -eq 0 ]]; then
+    BUILD_USE_LD="gold"
+  fi
 fi
 rm -f contest.tmp.exe contest.tmp.c
 
@@ -304,6 +320,7 @@ echo "SYS_LONG_BIT              = $SYS_LONG_BIT"
 echo "CC                        = $CC"
 echo "CXX                       = $CXX"
 echo "BUILD_USE_LD              = $BUILD_USE_LD"
+echo "BOOTSTRAP_BUILD_USE_LD    = $BOOTSTRAP_BUILD_USE_LD"
 
 echo -e "\\033[32;1mnotice: now, sleep for $CHECK_INFO_SLEEP seconds.\\033[39;49;0m"
 sleep $CHECK_INFO_SLEEP
@@ -445,10 +462,30 @@ function build_llvm_toolchain() {
   fi
   # See https://stackoverflow.com/questions/42344932/how-to-include-correctly-wl-rpath-origin-linker-argument-in-a-makefile
   if [[ "x$LDFLAGS" == "x" ]]; then
-    export LDFLAGS="-L$PREFIX_DIR/lib"
+    LDFLAGS="-L$PREFIX_DIR/lib -B$PREFIX_DIR/bin"
   else
-    export LDFLAGS="$LDFLAGS -L$PREFIX_DIR/lib"
+    LDFLAGS="$LDFLAGS -L$PREFIX_DIR/lib -B$PREFIX_DIR/bin"
   fi
+  if [[ ! -z "$BUILD_USE_LD" ]]; then
+    if [[ "$BUILD_USE_LD" == "mold" ]]; then
+      MOLD_DIR="$(dirname "$(which mold)")"
+      MOLD_PREFIX_DIR="$(dirname "$MOLD_DIR")"
+      if [[ -e "$MOLD_PREFIX_DIR/libexec/mold" ]]; then
+        LDFLAGS="$LDFLAGS -B$MOLD_PREFIX_DIR/libexec/mold"
+      fi
+      LDFLAGS="$LDFLAGS -B$MOLD_DIR"
+    elif [[ "$BUILD_USE_LD" == "gold" ]]; then
+      LD_GOLD_DIR="$(dirname "$(which ld.gold)")"
+      LDFLAGS="$LDFLAGS -B$LD_GOLD_DIR"
+    fi
+  fi
+  export LDFLAGS="$LDFLAGS"
+
+  echo "======================== Build LLVM with environment ========================"
+  echo "PATH                     = $PATH"
+  echo "CFLAGS                   = $CFLAGS"
+  echo "CXXFLAGS                 = $CXXFLAGS"
+  echo "LDFLAGS                  = $LDFLAGS"
 
   # Try to use the same triple as gcc, so we can find the correct libgcc
   BUILD_TARGET_TRIPLE=$(env LANG=en_US.UTF-8 LANGUAGE=en_US.UTF-8 LC_ALL=en_US.UTF-8 "$CC" -v 2>&1 | grep -i 'Target:' | awk '{print $NF}')
@@ -475,7 +512,8 @@ function build_llvm_toolchain() {
   fi
 
   if [[ ! -z "$BUILD_USE_LD" ]]; then
-    STAGE_BUILD_EXT_COMPILER_FLAGS=("${STAGE_BUILD_EXT_COMPILER_FLAGS[@]}" "-DLLVM_USE_LINKER=$BUILD_USE_LD")
+    STAGE_BUILD_EXT_COMPILER_FLAGS=("${STAGE_BUILD_EXT_COMPILER_FLAGS[@]}"
+      "-DLLVM_USE_LINKER=$BUILD_USE_LD" "-DBOOTSTRAP_LLVM_USE_LINKER=$BOOTSTRAP_BUILD_USE_LD")
   fi
 
   STAGE_BUILD_EXT_COMPILER_FLAGS=("${STAGE_BUILD_EXT_COMPILER_FLAGS[@]}"
