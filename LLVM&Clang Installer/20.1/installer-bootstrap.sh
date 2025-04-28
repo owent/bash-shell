@@ -444,6 +444,25 @@ if [[ ! -z "$BUILD_USE_GCC_TOOLCHAIN" ]]; then
   BUILD_USE_GCC_TRIPLE="$(basename "$(dirname "$BUILD_USE_GCC_INSTALL_DIR")")"
 fi
 
+function build_with_modern_ld() {
+  if [[ ! -z "$BUILD_USE_LD" ]]; then
+    if [[ "$BUILD_USE_LD" == "mold" ]]; then
+      MOLD_DIR="$(dirname "$(which mold)")"
+      MOLD_PREFIX_DIR="$(dirname "$MOLD_DIR")"
+      if [[ -e "$MOLD_PREFIX_DIR/libexec/mold" ]]; then
+        LDFLAGS="$LDFLAGS -B$MOLD_PREFIX_DIR/libexec/mold"
+      fi
+      LDFLAGS="$LDFLAGS -B$MOLD_DIR"
+    elif [[ "$BUILD_USE_LD" == "gold" ]]; then
+      LD_GOLD_DIR="$(dirname "$(which ld.gold)")"
+      LDFLAGS="$LDFLAGS -B$LD_GOLD_DIR"
+    fi
+  fi
+  export LDFLAGS="$LDFLAGS"
+
+  "$@"
+}
+
 function build_llvm_toolchain() {
   STAGE_BUILD_EXT_COMPILER_FLAGS=("-DCMAKE_FIND_ROOT_PATH=$PREFIX_DIR"
     "-DCMAKE_PREFIX_PATH=$PREFIX_DIR"
@@ -582,7 +601,7 @@ if [[ -e "libedit-$COMPOMENTS_LIBEDIT_VERSION.tar.gz" ]]; then
   fi
   tar -axvf "libedit-$COMPOMENTS_LIBEDIT_VERSION.tar.gz"
   cd "libedit-$COMPOMENTS_LIBEDIT_VERSION-stage-1"
-  env LDFLAGS="${LDFLAGS//\$/\$\$}" ./configure --prefix=$PREFIX_DIR --with-pic=yes
+  env LDFLAGS="${LDFLAGS//\$/\$\$}" build_with_modern_ld ./configure --prefix=$PREFIX_DIR --with-pic=yes
   make $BUILD_JOBS_OPTION || make
   if [[ $? -ne 0 ]]; then
     echo -e "\\033[31;1mBuild libedit failed.\\033[39;49;0m"
@@ -598,7 +617,7 @@ if [[ -e "zlib-$COMPOMENTS_ZLIB_VERSION" ]]; then
   if [[ -e "CMakeCache.txt" ]]; then
     cmake --build . -- clean || true
   fi
-  cmake .. $CMAKE_BUILD_WITH_NINJA -DCMAKE_POSITION_INDEPENDENT_CODE=YES "-DCMAKE_INSTALL_PREFIX=$PREFIX_DIR"
+  build_with_modern_ld cmake .. $CMAKE_BUILD_WITH_NINJA -DCMAKE_POSITION_INDEPENDENT_CODE=YES "-DCMAKE_INSTALL_PREFIX=$PREFIX_DIR"
   cmake --build . $BUILD_JOBS_OPTION || cmake --build .
   if [[ $? -ne 0 ]]; then
     echo -e "\\033[31;1mBuild zlib failed.\\033[39;49;0m"
@@ -614,7 +633,7 @@ if [[ -e "libffi-$COMPOMENTS_LIBFFI_VERSION.tar.gz" ]]; then
   fi
   cd "libffi-$COMPOMENTS_LIBFFI_VERSION"
   make clean || true
-  env LDFLAGS="${LDFLAGS//\$/\$\$}" ./configure "--prefix=$PREFIX_DIR" --with-pic=yes
+  env LDFLAGS="${LDFLAGS//\$/\$\$}" build_with_modern_ld ./configure "--prefix=$PREFIX_DIR" --with-pic=yes
   make $BUILD_JOBS_OPTION || make
   if [[ $? -ne 0 ]]; then
     echo -e "\\033[31;1mBuild libffi failed.\\033[39;49;0m"
@@ -640,7 +659,7 @@ if [[ -e "libxml2-v$COMPOMENTS_LIBXML2_VERSION.tar.gz" ]]; then
   elif [[ ! -z "$TRY_GCC_HOME" ]] && [[ -e "$TRY_GCC_HOME/load-gcc-envs.sh" ]]; then
     LIBXML2_CMAKE_OPTIONS=(${LIBXML2_CMAKE_OPTIONS[@]} "-DCMAKE_FIND_ROOT_PATH=$TRY_GCC_HOME" "-DCMAKE_PREFIX_PATH=$TRY_GCC_HOME")
   fi
-  cmake .. $CMAKE_BUILD_WITH_NINJA ${LIBXML2_CMAKE_OPTIONS[@]}
+  build_with_modern_ld cmake .. $CMAKE_BUILD_WITH_NINJA ${LIBXML2_CMAKE_OPTIONS[@]}
   cmake --build . $BUILD_JOBS_OPTION || cmake --build .
   if [[ $? -ne 0 ]]; then
     echo -e "\\033[31;1mBuild zlib failed.\\033[39;49;0m"
@@ -654,7 +673,7 @@ if [[ -z "$(find $PREFIX_DIR -name swig)" ]]; then
   cd "swig-$COMPOMENTS_SWIG_VERSION"
   ./autogen.sh
   make clean || true
-  env LDFLAGS="${LDFLAGS//\$/\$\$}" ./configure "--prefix=$PREFIX_DIR"
+  env LDFLAGS="${LDFLAGS//\$/\$\$}" build_with_modern_ld ./configure "--prefix=$PREFIX_DIR"
   make $BUILD_JOBS_OPTION || make
   if [[ $? -ne 0 ]]; then
     echo -e "\\033[31;1mBuild swig failed.\\033[39;49;0m"
@@ -691,7 +710,7 @@ elif [[ -z "$(find $PREFIX_DIR -name Python.h)" ]]; then
     PYTHON_CONFIGURE_OPTIONS=(${PYTHON_CONFIGURE_OPTIONS[@]} "--with-openssl=$OPENSSL_INSTALL_DIR")
   fi
   make clean || true
-  env LDFLAGS="${LDFLAGS//\$/\$\$}" ./configure ${PYTHON_CONFIGURE_OPTIONS[@]}
+  env LDFLAGS="${LDFLAGS//\$/\$\$}" build_with_modern_ld ./configure ${PYTHON_CONFIGURE_OPTIONS[@]}
   make $BUILD_JOBS_OPTION || make
   if [[ $? -ne 0 ]]; then
     echo -e "\\033[31;1mBuild python failed.\\033[39;49;0m"
