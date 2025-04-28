@@ -158,7 +158,9 @@ if(UNIX)
   set(BOOTSTRAP_CMAKE_EXE_LINKER_FLAGS "-ldl -lpthread" CACHE STRING "")
 endif()
 
-set(BOOTSTRAP_LLVM_ENABLE_LLD ON CACHE BOOL "")
+if(NOT BOOTSTRAP_LLVM_USE_LINKER)
+  set(BOOTSTRAP_LLVM_ENABLE_LLD ON CACHE BOOL "")
+endif()
 set(BOOTSTRAP_LLVM_ENABLE_LTO ON CACHE BOOL "")
 #[[
 # https://github.com/llvm/llvm-project/issues/57545
