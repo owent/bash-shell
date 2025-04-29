@@ -128,7 +128,6 @@ int main() {
 $CC -o contest.tmp.exe -O2 -fuse-ld=mold contest.tmp.c
 if [[ $? -eq 0 ]]; then
   BUILD_USE_LD="mold"
-  BOOTSTRAP_BUILD_USE_LD="mold"
 fi
 
 if [[ -z "$BUILD_USE_LD" ]]; then
