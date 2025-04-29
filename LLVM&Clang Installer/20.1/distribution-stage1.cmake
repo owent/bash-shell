@@ -160,8 +160,12 @@ endif()
 
 if(NOT BOOTSTRAP_LLVM_USE_LINKER)
   set(BOOTSTRAP_LLVM_ENABLE_LLD ON CACHE BOOL "")
+  set(BOOTSTRAP_LLVM_ENABLE_LTO ON CACHE BOOL "")
+elseif(BOOTSTRAP_LLVM_USE_LINKER STREQUAL "mold")
+  set(BOOTSTRAP_LLVM_ENABLE_LTO "Thin" CACHE STRING "")
+else()
+  set(BOOTSTRAP_LLVM_ENABLE_LTO ON CACHE BOOL "")
 endif()
-set(BOOTSTRAP_LLVM_ENABLE_LTO ON CACHE BOOL "")
 #[[
 # https://github.com/llvm/llvm-project/issues/57545
 # ld.gold: internal error in do_layout
