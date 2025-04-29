@@ -128,6 +128,7 @@ int main() {
 $CC -o contest.tmp.exe -O2 -fuse-ld=mold contest.tmp.c
 if [[ $? -eq 0 ]]; then
   BUILD_USE_LD="mold"
+  BOOTSTRAP_BUILD_USE_LD="mold"
 fi
 
 if [[ -z "$BUILD_USE_LD" ]]; then
@@ -516,10 +517,10 @@ function build_llvm_toolchain() {
     cat "$LLVM_DIR/clang/include/clang/Config/config.h.cmake"
   fi
 
-  # if [[ ! -z "$BUILD_USE_LD" ]]; then
-  #   STAGE_BUILD_EXT_COMPILER_FLAGS=("${STAGE_BUILD_EXT_COMPILER_FLAGS[@]}"
-  #     "-DLLVM_USE_LINKER=$BUILD_USE_LD" "-DBOOTSTRAP_LLVM_USE_LINKER=$BOOTSTRAP_BUILD_USE_LD")
-  # fi
+  if [[ ! -z "$BUILD_USE_LD" ]]; then
+    STAGE_BUILD_EXT_COMPILER_FLAGS=("${STAGE_BUILD_EXT_COMPILER_FLAGS[@]}"
+      "-DLLVM_USE_LINKER=$BUILD_USE_LD" "-DBOOTSTRAP_LLVM_USE_LINKER=$BOOTSTRAP_BUILD_USE_LD")
+  fi
 
   STAGE_BUILD_EXT_COMPILER_FLAGS=("${STAGE_BUILD_EXT_COMPILER_FLAGS[@]}"
     "-DLLVM_PARALLEL_LINK_JOBS=$LINK_JOBS_MAX_NUMBER" "-DBOOTSTRAP_LLVM_PARALLEL_LINK_JOBS=$LINK_JOBS_MAX_NUMBER"
@@ -896,14 +897,12 @@ if [ $BUILD_DOWNLOAD_ONLY -eq 0 ]; then
   if [[ -e "include-what-you-use-$COMPOMENTS_INCLUDE_WHAT_YOU_USE_VERSION" ]]; then
     mkdir -p "include-what-you-use-$COMPOMENTS_INCLUDE_WHAT_YOU_USE_VERSION/build_jobs_dir"
 
-    USE_LD_FLAGS="-fuse-ld=mold"
-    which mold || USE_LD_FLAGS=""
     # GCC_LIBSTDCXX_LIB_PATH=$(find "$GCC_HOME_DIR" -name libstdc++.so | head -n 1)
     LIBCLANG_CPP_PATH=$(find "$PREFIX_DIR" -name libclang-cpp.so | head -n 1)
     SELECT_STDLIB="-stdlib=libstdc++"
     ldd "$LIBCLANG_CPP_PATH" | grep -F 'libstdc++' >/dev/null 2>&1 || SELECT_STDLIB="$(llvm-config --cxxflags)"
     cd "include-what-you-use-$COMPOMENTS_INCLUDE_WHAT_YOU_USE_VERSION/build_jobs_dir"
-    env CXXFLAGS="$CXXFLAGS $SELECT_STDLIB" LDFLAGS="$LDFLAGS $USE_LD_FLAGS -L$GCC_HOME_DIR/lib64 -L$GCC_HOME_DIR/lib $(llvm-config --ldflags)" \
+    env CXXFLAGS="$CXXFLAGS $SELECT_STDLIB" LDFLAGS="$LDFLAGS -L$GCC_HOME_DIR/lib64 -L$GCC_HOME_DIR/lib $(llvm-config --ldflags)" \
       cmake $CMAKE_BUILD_WITH_NINJA .. -DCMAKE_POSITION_INDEPENDENT_CODE=YES "-DCMAKE_FIND_ROOT_PATH=$PREFIX_DIR" \
       "-DCMAKE_PREFIX_PATH=$PREFIX_DIR" "-DCMAKE_C_COMPILER=$PREFIX_DIR/bin/clang" "-DCMAKE_CXX_COMPILER=$PREFIX_DIR/bin/clang++" \
       "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON" "-DIWYU_LINK_CLANG_DYLIB=ON"
