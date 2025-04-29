@@ -121,14 +121,13 @@ BOOTSTRAP_BUILD_USE_LD=lld
 echo '
 #include <stdio.h>
 int main() {
-    puts("test ld.gold");
+    puts("test mold");
     return 0;
 }
 ' >contest.tmp.c
 $CC -o contest.tmp.exe -O2 -fuse-ld=mold contest.tmp.c
 if [[ $? -eq 0 ]]; then
   BUILD_USE_LD="mold"
-  BOOTSTRAP_BUILD_USE_LD="mold"
 fi
 
 if [[ -z "$BUILD_USE_LD" ]]; then
@@ -519,7 +518,7 @@ function build_llvm_toolchain() {
 
   if [[ ! -z "$BUILD_USE_LD" ]]; then
     STAGE_BUILD_EXT_COMPILER_FLAGS=("${STAGE_BUILD_EXT_COMPILER_FLAGS[@]}"
-      "-DLLVM_USE_LINKER=$BUILD_USE_LD")
+      "-DLLVM_USE_LINKER=$BUILD_USE_LD" "-DBOOTSTRAP_LLVM_USE_LINKER=$BOOTSTRAP_BUILD_USE_LD")
   fi
 
   STAGE_BUILD_EXT_COMPILER_FLAGS=("${STAGE_BUILD_EXT_COMPILER_FLAGS[@]}"
