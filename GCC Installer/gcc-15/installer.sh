@@ -1541,15 +1541,14 @@ function build_gcc() {
       else
         GCC_CONF_LD_RUN_PATH="$LD_RUN_PATH ${GCC_CONF_OPTION_LD_RPATH}"
       fi
-      if [[ ! -z "$GCC_CONF_OPTION_LD_RPATH" ]]; then
-        GCC_CONF_OPTION_ALL="$GCC_CONF_OPTION_ALL --with-boot-ldflags=${GCC_CONF_OPTION_LD_RPATH//\$/\\\$}"
-      fi
       GCC_CONF_OPTION_ALL="$GCC_CONF_OPTION_ALL $GCC_OPT_DISABLE_MULTILIB $BUILD_TARGET_CONF_OPTION"
       # env CFLAGS="--ggc-min-expand=0 --ggc-min-heapsize=6291456" CXXFLAGS="--ggc-min-expand=0 --ggc-min-heapsize=6291456" 老版本的gcc没有这个选项
       env LDFLAGS="$GCC_CONF_LDFLAGS" LD_RUN_PATH="$GCC_CONF_LD_RUN_PATH" \
         LDFLAGS_FOR_TARGET="$GCC_CONF_LDFLAGS" LDFLAGS_FOR_BUILD="$GCC_CONF_LDFLAGS" BOOT_LDFLAGS="$GCC_CONF_LDFLAGS" \
         CFLAGS="${STAGE_CFLAGS}${CFLAGS}" CXXFLAGS="${STAGE_CFLAGS}${CXXFLAGS}" \
-        ../$GCC_DIR/configure --with-pkgversion="OWenT GCC $COMPOMENTS_GCC_VERSION" $GCC_CONF_OPTION_ALL $STAGE_CONFIGURE_OPTIONS
+        ../$GCC_DIR/configure --with-pkgversion="OWenT GCC $COMPOMENTS_GCC_VERSION" \
+        "--with-boot-ldflags=${GCC_CONF_OPTION_LD_RPATH//\$/\\\$}" \
+        $GCC_CONF_OPTION_ALL $STAGE_CONFIGURE_OPTIONS
       if [[ $? -ne 0 ]]; then
         echo -e "\\033[31;1mError: configure gcc failed.\\033[39;49;0m"
         exit 1
