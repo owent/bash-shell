@@ -1485,14 +1485,14 @@ function build_gcc() {
     else
       export PKG_CONFIG_PATH="$BUILD_STAGE1_LIBRARY_PREFIX/lib64/pkgconfig:$BUILD_STAGE1_LIBRARY_PREFIX/lib/pkgconfig:$BUILD_BACKUP_PKG_CONFIG_PATH"
     fi
-    STAGE_CFLAGS="-fPIC"
-    STAGE_LDFLAGS=""
+    STAGE_CFLAGS="-fPIC -B$INSTALL_PREFIX_PATH/bin"
+    STAGE_LDFLAGS="-B$BUILD_STAGE1_LIBRARY_PREFIX/bin"
     STAGE_LIBRARY_PREFIX="$BUILD_STAGE1_LIBRARY_PREFIX"
     GCC_CONF_OPTION_LD_RPATH=""
   else
     STAGE_CONFIGURE_OPTIONS="--enable-bootstrap --enable-shared --enable-static"
-    STAGE_CFLAGS="-fPIC "
-    STAGE_LDFLAGS=""
+    STAGE_CFLAGS="-fPIC -B$INSTALL_PREFIX_PATH/bin"
+    STAGE_LDFLAGS="-B$INSTALL_PREFIX_PATH/bin"
     STAGE_LIBRARY_PREFIX="$INSTALL_PREFIX_PATH"
     GCC_CONF_OPTION_LD_RPATH="-Wl,-rpath=\$ORIGIN:$INSTALL_PREFIX_PATH/lib64:$INSTALL_PREFIX_PATH/lib:\$ORIGIN/../lib64:\$ORIGIN/../lib:\$ORIGIN/../../../../lib64:\$ORIGIN/../../../../lib"
   fi
@@ -1552,7 +1552,8 @@ function build_gcc() {
       env LDFLAGS="$GCC_CONF_LDFLAGS" LD_RUN_PATH="$GCC_CONF_LD_RUN_PATH" \
         LDFLAGS_FOR_TARGET="$GCC_CONF_LDFLAGS" LDFLAGS_FOR_BUILD="$GCC_CONF_LDFLAGS" BOOT_LDFLAGS="$GCC_CONF_LDFLAGS" \
         CFLAGS="${STAGE_CFLAGS}${CFLAGS}" CXXFLAGS="${STAGE_CFLAGS}${CXXFLAGS}" \
-        ../$GCC_DIR/configure --with-pkgversion="OWenT GCC $COMPOMENTS_GCC_VERSION" \
+        ../$GCC_DIR/configure \
+        --with-pkgversion="OWenT GCC $COMPOMENTS_GCC_VERSION" \
         "${GCC_CONF_OPTION_BOOT_LDFLAGS[@]}" $GCC_CONF_OPTION_ALL $STAGE_CONFIGURE_OPTIONS
       if [[ $? -ne 0 ]]; then
         echo -e "\\033[31;1mError: configure gcc failed.\\033[39;49;0m"
