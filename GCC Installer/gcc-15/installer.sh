@@ -1484,10 +1484,10 @@ function build_gcc() {
     else
       export PKG_CONFIG_PATH="$BUILD_STAGE1_LIBRARY_PREFIX/lib64/pkgconfig:$BUILD_STAGE1_LIBRARY_PREFIX/lib/pkgconfig:$BUILD_BACKUP_PKG_CONFIG_PATH"
     fi
-    STAGE_CFLAGS="-fPIC"
+    STAGE_CFLAGS="-fPIC -I$BUILD_STAGE1_LIBRARY_PREFIX/include -I$BUILD_STAGE1_TOOLS_PREFIX/include"
     STAGE_LDFLAGS=""
     STAGE_LIBRARY_PREFIX="$BUILD_STAGE1_LIBRARY_PREFIX"
-    GCC_CONF_OPTION_LD_RPATH=""
+    GCC_CONF_OPTION_LD_RPATH="-L$BUILD_STAGE1_LIBRARY_PREFIX/lib64 -L$BUILD_STAGE1_LIBRARY_PREFIX/lib -L$BUILD_STAGE1_TOOLS_PREFIX/lib64 -L$BUILD_STAGE1_TOOLS_PREFIX/lib"
   else
     STAGE_CONFIGURE_OPTIONS="--enable-bootstrap --enable-shared --enable-static"
     STAGE_CFLAGS="-fPIC "
@@ -1714,14 +1714,14 @@ for ADDITIONAL_PKGCONFIG_PATH in $(find $PREFIX_DIR -name pkgconfig); do
 done
 
 if [[ -z "$CFLAGS" ]]; then
-  export CFLAGS="-fPIC"
+  export CFLAGS="-fPIC -I$PREFIX_DIR/include"
 else
-  export CFLAGS="$CFLAGS -fPIC"
+  export CFLAGS="$CFLAGS -fPIC -I$PREFIX_DIR/include"
 fi
 if [[ -z "$CXXFLAGS" ]]; then
-  export CXXFLAGS="-fPIC"
+  export CXXFLAGS="-fPIC -I$PREFIX_DIR/include"
 else
-  export CXXFLAGS="$CXXFLAGS -fPIC"
+  export CXXFLAGS="$CXXFLAGS -fPIC -I$PREFIX_DIR/include"
 fi
 if [[ -z "$LDFLAGS" ]]; then
   export LDFLAGS="-L$PREFIX_DIR/lib64 -L$PREFIX_DIR/lib"
