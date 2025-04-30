@@ -17,7 +17,8 @@ COMPOMENTS_LIBATOMIC_OPS_VERSION=7.8.2
 COMPOMENTS_BDWGC_VERSION=8.2.8
 # According to https://gcc.gnu.org/install/prerequisites.html
 # Bootstrap gcc with a middle version if local version is too low
-COMPOMENTS_BOOTSTRAP_GCC_VERSION=9.5.0
+# Last successful version is 14.2.0
+COMPOMENTS_BOOTSTRAP_GCC_VERSION=12.4.0
 COMPOMENTS_GCC_VERSION=15.1.0
 COMPOMENTS_INTERNAL_GLIBC_VERSION=2.41
 COMPOMENTS_BISON_VERSION=3.8.2
@@ -1484,10 +1485,10 @@ function build_gcc() {
     else
       export PKG_CONFIG_PATH="$BUILD_STAGE1_LIBRARY_PREFIX/lib64/pkgconfig:$BUILD_STAGE1_LIBRARY_PREFIX/lib/pkgconfig:$BUILD_BACKUP_PKG_CONFIG_PATH"
     fi
-    STAGE_CFLAGS="-fPIC -I$BUILD_STAGE1_LIBRARY_PREFIX/include -I$BUILD_STAGE1_TOOLS_PREFIX/include"
+    STAGE_CFLAGS="-fPIC"
     STAGE_LDFLAGS=""
     STAGE_LIBRARY_PREFIX="$BUILD_STAGE1_LIBRARY_PREFIX"
-    GCC_CONF_OPTION_LD_RPATH="-L$BUILD_STAGE1_LIBRARY_PREFIX/lib64 -L$BUILD_STAGE1_LIBRARY_PREFIX/lib -L$BUILD_STAGE1_TOOLS_PREFIX/lib64 -L$BUILD_STAGE1_TOOLS_PREFIX/lib"
+    GCC_CONF_OPTION_LD_RPATH=""
   else
     STAGE_CONFIGURE_OPTIONS="--enable-bootstrap --enable-shared --enable-static"
     STAGE_CFLAGS="-fPIC "
@@ -1527,7 +1528,7 @@ function build_gcc() {
         GCC_CONF_OPTION_ALL="$GCC_CONF_OPTION_ALL --build=$BUILD_TARGET_TRIPLE"
       fi
       GCC_CONF_OPTION_ALL="$GCC_CONF_OPTION_ALL --with-gmp=$STAGE_LIBRARY_PREFIX --with-mpc=$STAGE_LIBRARY_PREFIX --with-mpfr=$STAGE_LIBRARY_PREFIX"
-      GCC_CONF_OPTION_ALL="$GCC_CONF_OPTION_ALL --with-isl=$STAGE_LIBRARY_PREFIX --with-zstd=$STAGE_LIBRARY_PREFIX $BDWGC_PREBIUILT "
+      GCC_CONF_OPTION_ALL="$GCC_CONF_OPTION_ALL --with-isl=$STAGE_LIBRARY_PREFIX --with-zstd=$STAGE_LIBRARY_PREFIX --with-libiconv-prefix=$STAGE_LIBRARY_PREFIX $BDWGC_PREBIUILT "
       GCC_CONF_OPTION_ALL="$GCC_CONF_OPTION_ALL --enable-gnu-unique-object --enable-build-with-cxx --disable-libjava-multilib --enable-checking=release"
       GCC_CONF_OPTION_ALL="$GCC_CONF_OPTION_ALL --enable-gold --enable-ld --enable-libada --enable-lto --enable-objc-gc --enable-gprofng --enable-vtable-verify"
       if [[ $COMPOMENTS_LIBSSP_ENABLE -ne 0 ]]; then
@@ -1541,14 +1542,18 @@ function build_gcc() {
       else
         GCC_CONF_LD_RUN_PATH="$LD_RUN_PATH ${GCC_CONF_OPTION_LD_RPATH}"
       fi
+      if [[ ! -z "$GCC_CONF_OPTION_LD_RPATH" ]]; then
+        GCC_CONF_OPTION_BOOT_LDFLAGS=("--with-boot-ldflags=${GCC_CONF_OPTION_LD_RPATH//\$/\\\$}")
+      else
+        GCC_CONF_OPTION_BOOT_LDFLAGS=()
+      fi
       GCC_CONF_OPTION_ALL="$GCC_CONF_OPTION_ALL $GCC_OPT_DISABLE_MULTILIB $BUILD_TARGET_CONF_OPTION"
       # env CFLAGS="--ggc-min-expand=0 --ggc-min-heapsize=6291456" CXXFLAGS="--ggc-min-expand=0 --ggc-min-heapsize=6291456" 老版本的gcc没有这个选项
       env LDFLAGS="$GCC_CONF_LDFLAGS" LD_RUN_PATH="$GCC_CONF_LD_RUN_PATH" \
         LDFLAGS_FOR_TARGET="$GCC_CONF_LDFLAGS" LDFLAGS_FOR_BUILD="$GCC_CONF_LDFLAGS" BOOT_LDFLAGS="$GCC_CONF_LDFLAGS" \
         CFLAGS="${STAGE_CFLAGS}${CFLAGS}" CXXFLAGS="${STAGE_CFLAGS}${CXXFLAGS}" \
         ../$GCC_DIR/configure --with-pkgversion="OWenT GCC $COMPOMENTS_GCC_VERSION" \
-        "--with-boot-ldflags=${GCC_CONF_OPTION_LD_RPATH//\$/\\\$}" \
-        $GCC_CONF_OPTION_ALL $STAGE_CONFIGURE_OPTIONS
+        "${GCC_CONF_OPTION_BOOT_LDFLAGS[@]}" $GCC_CONF_OPTION_ALL $STAGE_CONFIGURE_OPTIONS
       if [[ $? -ne 0 ]]; then
         echo -e "\\033[31;1mError: configure gcc failed.\\033[39;49;0m"
         exit 1
