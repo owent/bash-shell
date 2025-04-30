@@ -345,7 +345,7 @@ sleep $CHECK_INFO_SLEEP
 
 # ======================= 关闭交换分区，否则就爽死了 =======================
 if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
-  swapoff -a
+  swapoff -a || true
 fi
 
 # ======================= 统一的包检查和下载函数 =======================
@@ -443,6 +443,7 @@ if [[ $? -ne 0 ]]; then
 fi
 
 if [[ $BUILD_DOWNLOAD_ONLY -ne 0 ]]; then
+  echo "Download sources for building LLVM complete."
   exit 0
 fi
 
