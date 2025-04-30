@@ -348,6 +348,19 @@ function build_m4() {
     STAGE_LDFLAGS="-L$INSTALL_PREFIX_PATH/lib64 -L$INSTALL_PREFIX_PATH/lib "
   fi
 
+  # m4 do not support c23 now
+  CC_SUPPORT_C23=1
+  echo "int main() { return 0; }" | "$CC" -o /dev/null -x c -std=c23 -pipe - || CC_SUPPORT_C23=0
+  if [[ $CC_SUPPORT_C23 -ne 0 ]]; then
+    CC_SUPPORT_GNU17=1
+    echo "int main() { return 0; }" | "$CC" -o /dev/null -x c -std=gnu17 -pipe - || CC_SUPPORT_GNU17=0
+    if [[ $CC_SUPPORT_GNU17 -ne 0 ]]; then
+      CFLAGS="$CFLAGS -std=gnu17"
+    else
+      CFLAGS="$CFLAGS -std=c17"
+    fi
+  fi
+
   echo "$LDFLAGS" | grep -F '$ORIGIN/../lib64' || STAGE_LDFLAGS="$STAGE_LDFLAGS -Wl,-rpath=\$ORIGIN:\$ORIGIN/../lib64:\$ORIGIN/../lib"
 
   if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list m4 $BUILD_TARGET_COMPOMENTS) ]]; then
@@ -369,6 +382,11 @@ function build_m4() {
       if [[ $? -ne 0 ]]; then
         echo -e "\\033[31;1mError: build m4 failed.\\033[39;49;0m"
         # exit 1; # m4 is optional, maybe can use m4 on system
+        if [[ "$INSTALL_PREFIX_PATH" == "$BUILD_STAGE1_LIBRARY_PREFIX" ]] || [[ "$INSTALL_PREFIX_PATH" == "$BUILD_STAGE1_TOOLS_PREFIX" ]]; then
+          echo -e "\\033[31;1mError: build m4 failed, but m4 is optional in stage 1.\\033[39;49;0m"
+        else
+          exit 1
+        fi
       fi
       cd "$WORKING_DIR"
     fi
@@ -1883,54 +1901,75 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list libffi $BUILD_T
 fi
 
 # ======================= install ncurses =======================
-if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list ncurses $BUILD_TARGET_COMPOMENTS) ]]; then
-  NCURSES_PKG=$(check_and_download "ncurses" "ncurses-$COMPOMENTS_NCURSES_VERSION*.tar.gz" "$REPOSITORY_MIRROR_URL_GNU/ncurses/ncurses-$COMPOMENTS_NCURSES_VERSION.tar.gz")
-  if [[ $? -ne 0 ]]; then
-    echo -e "$NCURSES_PKG"
-    exit 1
-  fi
-  if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
-    tar -axvf "$NCURSES_PKG"
-    NCURSES_DIR=$(ls -d ncurses-$COMPOMENTS_NCURSES_VERSION* | grep -v \.tar\.gz)
-    cd $NCURSES_DIR
-    cleanup_configure_cache
-
-    # Pyhton require shared libraries
-    # expected --with-xterm-kbs=DEL for linux-gnu
-    env LDFLAGS="${LDFLAGS//\$/\$\$}" CFLAGS="-fPIC ${CFLAGS}" CXXFLAGS="-fPIC ${CXXFLAGS}" ./configure "--prefix=$PREFIX_DIR" "--with-pkg-config-libdir=$PREFIX_DIR/lib/pkgconfig" \
-      --with-normal --without-debug --without-ada --with-termlib --enable-termcap \
-      --disable-widec --enable-pc-files --with-cxx-binding --with-shared --with-cxx-shared \
-      --enable-ext-colors --enable-ext-mouse --enable-bsdpad --enable-opaque-curses \
-      --with-xterm-kbs=DEL \
-      --with-terminfo-dirs=/etc/terminfo:/usr/share/terminfo:/lib/terminfo \
-      --with-termpath=/etc/termcap:/usr/share/misc/termcap
-
-    make $BUILD_THREAD_OPT O='$$$$O' || make O='$$$$O'
+function build_ncurses() {
+  INSTALL_PREFIX_PATH="$1"
+  if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list ncurses $BUILD_TARGET_COMPOMENTS) ]]; then
+    NCURSES_PKG=$(check_and_download "ncurses" "ncurses-$COMPOMENTS_NCURSES_VERSION*.tar.gz" "$REPOSITORY_MIRROR_URL_GNU/ncurses/ncurses-$COMPOMENTS_NCURSES_VERSION.tar.gz")
     if [[ $? -ne 0 ]]; then
-      echo -e "\\033[31;1mError: Build ncurse failed.\\033[39;49;0m"
+      echo -e "$NCURSES_PKG"
       exit 1
     fi
-    make install
+    if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
+      tar -axvf "$NCURSES_PKG"
+      NCURSES_DIR=$(ls -d ncurses-$COMPOMENTS_NCURSES_VERSION* | grep -v \.tar\.gz)
+      cd $NCURSES_DIR
+      cleanup_configure_cache
 
-    cleanup_configure_cache
-    # Pyhton require shared libraries
-    # expected --with-xterm-kbs=DEL for linux-gnu
-    env LDFLAGS="${LDFLAGS//\$/\$\$}" CFLAGS="-fPIC ${CFLAGS}" CXXFLAGS="-fPIC ${CXXFLAGS}" ./configure "--prefix=$PREFIX_DIR" "--with-pkg-config-libdir=$PREFIX_DIR/lib/pkgconfig" \
-      --with-normal --without-debug --without-ada --with-termlib --enable-termcap \
-      --enable-widec --enable-pc-files --with-cxx-binding --with-shared --with-cxx-shared \
-      --enable-ext-colors --enable-ext-mouse --enable-bsdpad --enable-opaque-curses \
-      --with-xterm-kbs=DEL \
-      --with-terminfo-dirs=/etc/terminfo:/usr/share/terminfo:/lib/terminfo \
-      --with-termpath=/etc/termcap:/usr/share/misc/termcap
+      # m4 do not support c23 now
+      CC_SUPPORT_C23=1
+      echo "int main() { return 0; }" | "$CC" -o /dev/null -x c -std=c23 -pipe - || CC_SUPPORT_C23=0
+      if [[ $CC_SUPPORT_C23 -ne 0 ]]; then
+        CC_SUPPORT_GNU17=1
+        echo "int main() { return 0; }" | "$CC" -o /dev/null -x c -std=gnu17 -pipe - || CC_SUPPORT_GNU17=0
+        if [[ $CC_SUPPORT_GNU17 -ne 0 ]]; then
+          CFLAGS="$CFLAGS -std=gnu17"
+        else
+          CFLAGS="$CFLAGS -std=c17"
+        fi
+      fi
 
-    make $BUILD_THREAD_OPT O='$$$$O' || make O='$$$$O'
-    if [[ $? -ne 0 ]]; then
-      echo -e "\\033[31;1mError: Build ncursew failed.\\033[39;49;0m"
-      exit 1
+      # Pyhton require shared libraries
+      # expected --with-xterm-kbs=DEL for linux-gnu
+      env LDFLAGS="${LDFLAGS//\$/\$\$}" CFLAGS="-fPIC ${CFLAGS}" CXXFLAGS="-fPIC ${CXXFLAGS}" ./configure "--prefix=$INSTALL_PREFIX_PATH" "--with-pkg-config-libdir=$INSTALL_PREFIX_PATH/lib/pkgconfig" \
+        --with-normal --without-debug --without-ada --with-termlib --enable-termcap \
+        --disable-widec --enable-pc-files --with-cxx-binding --with-shared --with-cxx-shared \
+        --enable-ext-colors --enable-ext-mouse --enable-bsdpad --enable-opaque-curses \
+        --with-xterm-kbs=DEL \
+        --with-terminfo-dirs=/etc/terminfo:/usr/share/terminfo:/lib/terminfo \
+        --with-termpath=/etc/termcap:/usr/share/misc/termcap
+
+      make $BUILD_THREAD_OPT O='$$$$O' || make O='$$$$O'
+      if [[ $? -ne 0 ]]; then
+        echo -e "\\033[31;1mError: Build ncurse failed.\\033[39;49;0m"
+        exit 1
+      fi
+      make install
+
+      cleanup_configure_cache
+      # Pyhton require shared libraries
+      # expected --with-xterm-kbs=DEL for linux-gnu
+      env LDFLAGS="${LDFLAGS//\$/\$\$}" CFLAGS="-fPIC ${CFLAGS}" CXXFLAGS="-fPIC ${CXXFLAGS}" ./configure "--prefix=$INSTALL_PREFIX_PATH" "--with-pkg-config-libdir=$INSTALL_PREFIX_PATH/lib/pkgconfig" \
+        --with-normal --without-debug --without-ada --with-termlib --enable-termcap \
+        --enable-widec --enable-pc-files --with-cxx-binding --with-shared --with-cxx-shared \
+        --enable-ext-colors --enable-ext-mouse --enable-bsdpad --enable-opaque-curses \
+        --with-xterm-kbs=DEL \
+        --with-terminfo-dirs=/etc/terminfo:/usr/share/terminfo:/lib/terminfo \
+        --with-termpath=/etc/termcap:/usr/share/misc/termcap
+
+      make $BUILD_THREAD_OPT O='$$$$O' || make O='$$$$O'
+      if [[ $? -ne 0 ]]; then
+        echo -e "\\033[31;1mError: Build ncursew failed.\\033[39;49;0m"
+        exit 1
+      fi
+      make install
+      cd "$WORKING_DIR"
     fi
-    make install
-    cd "$WORKING_DIR"
   fi
+}
+build_ncurses "$PREFIX_DIR"
+if [[ $? -ne 0 ]]; then
+  echo -e "\\033[31;1mError: Build ncurses failed.\\033[39;49;0m"
+  exit 1
 fi
 
 if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list libexpat $BUILD_TARGET_COMPOMENTS) ]]; then
