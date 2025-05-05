@@ -23,7 +23,7 @@ GCC 15的大致(C/C++)内容如下：
 12. STL默认开启Debug模式assert
 
 
-详见: https://gcc.gnu.org/gcc-13/changes.html
+详见: https://gcc.gnu.org/gcc-15/changes.html
 
 ## 编译安装 GCC 15.X.X
 
