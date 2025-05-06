@@ -1765,6 +1765,7 @@ build_libiconv "$PREFIX_DIR"
 build_mold "$PREFIX_DIR"
 
 # Switch linker to mold
+LDFLAGS_WITH_DEFAULT_LINKER="$LDFLAGS -B$PREFIX_DIR/bin"
 if [[ -e "$PREFIX_DIR/libexec/mold/ld" ]]; then
   export LDFLAGS="$LDFLAGS -fuse-ld=mold -B$PREFIX_DIR/libexec/mold -B$PREFIX_DIR/bin"
 else
@@ -1875,6 +1876,7 @@ fi
 
 # Add rpath of internal-packages
 export LDFLAGS="$LDFLAGS -Wl,-rpath=\$ORIGIN/../internal-packages/lib64:\$ORIGIN/../internal-packages/lib:$PREFIX_DIR/internal-packages/lib64:$PREFIX_DIR/internal-packages/lib"
+export LDFLAGS_WITH_DEFAULT_LINKER="$LDFLAGS_WITH_DEFAULT_LINKER -Wl,-rpath=\$ORIGIN/../internal-packages/lib64:\$ORIGIN/../internal-packages/lib:$PREFIX_DIR/internal-packages/lib64:$PREFIX_DIR/internal-packages/lib"
 
 # ======================= install libffi [后面有些组件依赖] =======================
 if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list libffi $BUILD_TARGET_COMPOMENTS) ]]; then
@@ -1972,6 +1974,19 @@ if [[ $? -ne 0 ]]; then
   exit 1
 fi
 
+# ------------------------ patch for global 6.6.5/Python linking error ------------------------
+echo "int main() { return 0; }" | gcc -x c -ltinfow -o /dev/null - 2>/dev/null
+if [[ $? -eq 0 ]]; then
+  BUILD_TARGET_COMPOMENTS_PATCH_TINFO="-ltinfo -ltinfow"
+else
+  echo "int main() { return 0; }" | gcc -x c -ltinfo -o /dev/null - 2>/dev/null
+  if [[ $? -eq 0 ]]; then
+    BUILD_TARGET_COMPOMENTS_PATCH_TINFO="-ltinfo"
+  else
+    BUILD_TARGET_COMPOMENTS_PATCH_TINFO=0
+  fi
+fi
+
 if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list libexpat $BUILD_TARGET_COMPOMENTS) ]]; then
   LIBEXPAT_PKG=$(check_and_download "expat" "expat-$COMPOMENTS_LIBEXPAT_VERSION*.tar.gz" "$REPOSITORY_MIRROR_URL_GITHUB/libexpat/libexpat/releases/download/R_${COMPOMENTS_LIBEXPAT_VERSION//./_}/expat-$COMPOMENTS_LIBEXPAT_VERSION.tar.gz")
   if [[ $? -ne 0 ]]; then
@@ -2037,7 +2052,11 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list gdbm $BUILD_TAR
     cleanup_configure_cache
 
     # add -fcommon to solve multiple definition of `parseopt_program_args'
-    env CFLAGS="$CFLAGS -fcommon" LDFLAGS="${LDFLAGS//\$/\$\$}" ./configure "--prefix=$PREFIX_DIR" --with-pic=yes --enable-libgdbm-compat
+    if [[ "$BUILD_TARGET_COMPOMENTS_PATCH_TINFO" != "0" ]]; then
+      env "LIBS=$LIBS $BUILD_TARGET_COMPOMENTS_PATCH_TINFO" CFLAGS="$CFLAGS -fcommon" LDFLAGS="${LDFLAGS//\$/\$\$}" ./configure "--prefix=$PREFIX_DIR" --with-pic=yes --enable-libgdbm-compat
+    else
+      env CFLAGS="$CFLAGS -fcommon" LDFLAGS="${LDFLAGS//\$/\$\$}" ./configure "--prefix=$PREFIX_DIR" --with-pic=yes --enable-libgdbm-compat
+    fi
     make $BUILD_THREAD_OPT || make
     if [[ $? -ne 0 ]]; then
       echo -e "\\033[31;1mError: Build gdbm failed.\\033[39;49;0m"
@@ -2061,14 +2080,19 @@ if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list readline $BUILD
     cd "$READLINE_DIR"
     cleanup_configure_cache
 
-    env LDFLAGS="${LDFLAGS//\$/\$\$} -static" CFLAGS="${CFLAGS} -fPIC" ./configure "--prefix=$PREFIX_DIR" --with-pic=yes --enable-static=yes --enable-shared=no \
-      --enable-multibyte --with-curses
-    env LDFLAGS="${LDFLAGS//\$/\$\$} -static" CFLAGS="${CFLAGS} -fPIC" make $BUILD_THREAD_OPT || env LDFLAGS="${LDFLAGS//\$/\$\$} -static" CFLAGS="${CFLAGS} -fPIC" make
+    if [[ "$BUILD_TARGET_COMPOMENTS_PATCH_TINFO" != "0" ]]; then
+      env "LIBS=$LIBS $BUILD_TARGET_COMPOMENTS_PATCH_TINFO" LDFLAGS="${LDFLAGS_WITH_DEFAULT_LINKER//\$/\$\$} -static" CFLAGS="${CFLAGS} -fPIC" ./configure "--prefix=$PREFIX_DIR" --with-pic=yes --enable-static=yes --enable-shared=no \
+        --enable-multibyte --with-curses
+    else
+      env LDFLAGS="${LDFLAGS_WITH_DEFAULT_LINKER//\$/\$\$} -static" CFLAGS="${CFLAGS} -fPIC" ./configure "--prefix=$PREFIX_DIR" --with-pic=yes --enable-static=yes --enable-shared=no \
+        --enable-multibyte --with-curses
+    fi
+    env LDFLAGS="${LDFLAGS_WITH_DEFAULT_LINKER//\$/\$\$} -static" CFLAGS="${CFLAGS} -fPIC" make $BUILD_THREAD_OPT || env LDFLAGS="${LDFLAGS_WITH_DEFAULT_LINKER//\$/\$\$} -static" CFLAGS="${CFLAGS} -fPIC" make
     if [[ $? -ne 0 ]]; then
       echo -e "\\033[31;1mError: Build readline failed.\\033[39;49;0m"
       exit 1
     fi
-    env LDFLAGS="${LDFLAGS//\$/\$\$} -static" make install
+    env LDFLAGS="${LDFLAGS_WITH_DEFAULT_LINKER//\$/\$\$} -static" make install
 
     cd "$WORKING_DIR"
   fi
@@ -2076,19 +2100,6 @@ fi
 
 # bootstrap bison, because it may depend on readline and libiconv
 build_bison "$PREFIX_DIR"
-
-# ------------------------ patch for global 6.6.5/Python linking error ------------------------
-echo "int main() { return 0; }" | gcc -x c -ltinfow -o /dev/null - 2>/dev/null
-if [[ $? -eq 0 ]]; then
-  BUILD_TARGET_COMPOMENTS_PATCH_TINFO="-ltinfo -ltinfow"
-else
-  echo "int main() { return 0; }" | gcc -x c -ltinfo -o /dev/null - 2>/dev/null
-  if [[ $? -eq 0 ]]; then
-    BUILD_TARGET_COMPOMENTS_PATCH_TINFO="-ltinfo"
-  else
-    BUILD_TARGET_COMPOMENTS_PATCH_TINFO=0
-  fi
-fi
 
 # ======================= install gdb =======================
 function build_python() {
