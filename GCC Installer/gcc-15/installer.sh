@@ -1931,7 +1931,7 @@ function build_ncurses() {
       # Pyhton require shared libraries
       # expected --with-xterm-kbs=DEL for linux-gnu
       env LDFLAGS="${LDFLAGS//\$/\$\$}" CFLAGS="-fPIC ${CFLAGS}" CXXFLAGS="-fPIC ${CXXFLAGS}" ./configure "--prefix=$INSTALL_PREFIX_PATH" "--with-pkg-config-libdir=$INSTALL_PREFIX_PATH/lib/pkgconfig" \
-        --with-normal --without-debug --without-ada --with-termlib --enable-termcap \
+        --with-normal --without-debug --without-ada --with-termlib --with-bool=bool --enable-termcap \
         --disable-widec --enable-pc-files --with-cxx-binding --with-shared --with-cxx-shared \
         --enable-ext-colors --enable-ext-mouse --enable-bsdpad --enable-opaque-curses \
         --with-xterm-kbs=DEL \
@@ -1949,7 +1949,7 @@ function build_ncurses() {
       # Pyhton require shared libraries
       # expected --with-xterm-kbs=DEL for linux-gnu
       env LDFLAGS="${LDFLAGS//\$/\$\$}" CFLAGS="-fPIC ${CFLAGS}" CXXFLAGS="-fPIC ${CXXFLAGS}" ./configure "--prefix=$INSTALL_PREFIX_PATH" "--with-pkg-config-libdir=$INSTALL_PREFIX_PATH/lib/pkgconfig" \
-        --with-normal --without-debug --without-ada --with-termlib --enable-termcap \
+        --with-normal --without-debug --without-ada --with-termlib --with-bool=bool --enable-termcap \
         --enable-widec --enable-pc-files --with-cxx-binding --with-shared --with-cxx-shared \
         --enable-ext-colors --enable-ext-mouse --enable-bsdpad --enable-opaque-curses \
         --with-xterm-kbs=DEL \
