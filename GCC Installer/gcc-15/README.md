@@ -109,3 +109,8 @@ CentOS 7 & CentOS 8
 ### History
 
 + 2025-04-27    Created
++ 2025-07-09    Update
+  + openssl -> 3.5.1
+  + python -> 3.13.5
+  + gdb -> 16.3
+  + mold -> 2.40.1
