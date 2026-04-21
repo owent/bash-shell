@@ -593,6 +593,7 @@ Set-ExecutionPolicy RemoteSigned -scope CurrentUser
 Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://get.scoop.sh')
 scoop install git git-lfs sudo
 scoop bucket add extras
+scoop bucket add sysinternals
 ```
 
 ```ps
@@ -604,6 +605,9 @@ scoop install foobar2000 bitwarden screentogif snipaste draw.io pwsh typora
 
 # Document
 scoop install pandoc graphviz hugo hugo-extended mdbook
+
+# Utility(Maybe used by AI agents)
+scoop install regdelnull sysinternals-suite
 
 # dev
 scoop install tabby git git-lfs # gitextensions
@@ -680,6 +684,9 @@ Store: https://www.microsoft.com/en-us/p/app-installer/9nblggh4nns1
 ```ps
 winget install --silent 7Zip Graphviz ".NET Core" ScreenToGif
 # winget install --silent "Windows Terminal"
+
+# Utility
+winget install --silent Microsoft.Sysinternals.Suite
 
 # dev
 winget install --silent Git TortoiseGit GitLFS tabby
