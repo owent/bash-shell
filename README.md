@@ -607,7 +607,7 @@ scoop install foobar2000 bitwarden screentogif snipaste draw.io pwsh typora
 scoop install pandoc graphviz hugo hugo-extended mdbook
 
 # Utility(Maybe used by AI agents)
-scoop install regdelnull sysinternals-suite
+scoop install regdelnull sysinternals-suite microsoft-coreutils gawk sed lz4 zstd
 
 # dev
 scoop install tabby git git-lfs # gitextensions
@@ -686,7 +686,7 @@ winget install --silent 7Zip Graphviz ".NET Core" ScreenToGif
 # winget install --silent "Windows Terminal"
 
 # Utility
-winget install --silent Microsoft.Sysinternals.Suite
+winget install --silent Microsoft.Sysinternals.Suite Microsoft.Coreutils Microsoft.Edit sed mcmilk.7zip-zstd
 
 # dev
 winget install --silent Git TortoiseGit GitLFS tabby
