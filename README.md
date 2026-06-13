@@ -606,14 +606,14 @@ scoop install foobar2000 bitwarden screentogif snipaste draw.io pwsh typora
 # Document
 scoop install pandoc graphviz hugo hugo-extended mdbook
 
-# Utility(Maybe used by AI agents)
-scoop install regdelnull sysinternals-suite microsoft-coreutils gawk sed lz4 zstd
+# Utility(Maybe used by AI agents), sysinternals-suite 可以商店安装
+scoop install regdelnull ripgrep microsoft-coreutils gawk sed lz4 zstd
 
 # dev
 scoop install tabby git git-lfs # gitextensions
 
 # dev - network
-sudo scoop install --global wireshark nmap-portable
+sudo scoop install --global wireshark nmap
 scoop install connect
 
 # c & c++
@@ -686,7 +686,7 @@ winget install --silent 7Zip Graphviz ".NET Core" ScreenToGif
 # winget install --silent "Windows Terminal"
 
 # Utility
-winget install --silent Microsoft.Sysinternals.Suite Microsoft.Coreutils Microsoft.Edit sed mcmilk.7zip-zstd
+winget install --silent Microsoft.Sysinternals.Suite BurntSushi.ripgrep.MSVC Microsoft.Coreutils Microsoft.Edit sed mcmilk.7zip-zstd
 
 # dev
 winget install --silent Git TortoiseGit GitLFS tabby
