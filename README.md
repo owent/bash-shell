@@ -609,6 +609,9 @@ scoop install pandoc graphviz hugo hugo-extended mdbook
 # Utility(Maybe used by AI agents), sysinternals-suite 可以商店安装
 scoop install regdelnull ripgrep microsoft-coreutils gawk sed lz4 zstd
 
+# Hardware
+scoop install smartmontools crystaldiskinfo crystaldiskmark cpu-z gpu-z hwinfo speccy
+
 # dev
 scoop install tabby git git-lfs # gitextensions
 
@@ -687,6 +690,9 @@ winget install --silent 7Zip Graphviz ".NET Core" ScreenToGif
 
 # Utility
 winget install --silent Microsoft.Sysinternals.Suite BurntSushi.ripgrep.MSVC Microsoft.Coreutils Microsoft.Edit sed mcmilk.7zip-zstd
+
+# Hardware
+winget install --silent smartmontools CrystalDiskInfo CrystalDiskMark CPUID.CPU-Z TechPowerUp.GPU-Z REALiX.HWiNFO Piriform.Speccy
 
 # dev
 winget install --silent Git TortoiseGit GitLFS tabby
