@@ -701,10 +701,13 @@ winget install --silent Git TortoiseGit GitLFS tabby
 winget install --silent Wireshark Nmap
 
 # c & c++
-winget install --silent CMake Doxygen llvm
+winget install --silent CMake Doxygen llvm Ninja-build.Ninja
 
 # nodejs
 winget install --silent Node.js
+
+# python
+winget install --silent Python.Python.3.14
 
 # java
 winget install --silent AdoptOpenJDK
