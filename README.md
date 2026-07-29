@@ -620,7 +620,7 @@ sudo scoop install --global wireshark nmap
 scoop install connect
 
 # c & c++
-scoop install cmake bazel doxygen llvm ninja global perl
+scoop install cmake bazel bazel-buildtools doxygen llvm ninja global perl
 
 # nodejs
 scoop install nodejs-lts
@@ -701,7 +701,7 @@ winget install --silent Git TortoiseGit GitLFS tabby
 winget install --silent Wireshark Nmap
 
 # c & c++
-winget install --silent CMake Doxygen llvm Ninja-build.Ninja
+winget install --silent CMake Bazel.Bazelisk Doxygen llvm Ninja-build.Ninja
 
 # nodejs
 winget install --silent Node.js
